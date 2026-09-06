@@ -80,6 +80,8 @@
   const catalogAdditions=['one-two-slip-six','one-two-pull-six','slip-slip-body-upper-hook','roll-counter-chain','full-defense-chain','step-in-jab','step-back-cross','movement-flow','jab-cross-hook-rear-kick','double-jab-double-kick','cross-hook-cross-lead-kick','jab-cross-jab-rear-kick','mixed-kick-chain','advanced-kick-chain','uppercut-speed'];
   let settings={comboCatalogVersion:3,trainingMode:'bag',structured:'off',skill:'basic',complexity:'low',repeats:'none',unique:'yes',focusEnabled:'no',focuses:['jabs','short','mixed'],stance:'orthodox',format:'numbers',shortcutLabels:true,voice:true,speechRate:5,volume:80,showTimeLeft:true,showStatus:true,secondary:false,includeTypes:['punch','defense','footwork'],workout:{rounds:6,warmupTime:45,roundTime:180,restTime:30,pace:6},allowedCombos:null,shortcuts:{start:'Space',next:'N',restart:'R',mute:'M'}};
   let running=false, phase='ready', round=1, time=180, tick=null, comboTick=null, resetHoldTimer=null, speechTimers=[], current=[], comboVisible=true, roundAnnouncementActive=false, lastKey='', roundUsed=new Set(), repeatLeft=0, locked=new Set(combos.map(c=>c.id)),focusPlan={},blockPlan={},blockIndex=0;
+  const appleMobile=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),playbackBridge=appleMobile?new Audio('audio/playback-bridge.mp3'):null;
+  if(playbackBridge){playbackBridge.loop=true;playbackBridge.preload='auto';playbackBridge.playsInline=true}
   function val(id){const el=$('#'+id);return el.classList.contains('time-input')?+(el.dataset.seconds||0):+el.value}
   function saveSettings(){try{localStorage.setItem('cornerwork-settings',JSON.stringify(settings))}catch(e){}}
   function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
@@ -123,7 +125,7 @@
   }
   function cadence(){const focuses=activeFocuses();if(focuses.includes('freestyle'))return settings.structured==='off'?15:+settings.structured;if(focuses.includes('power'))return Math.max(3,Math.round(val('pace')*1.35));const fast=focuses.includes('high')||focuses.includes('speed')||focuses.includes('explosive');return Math.max(2,Math.round(val('pace')*(fast ? .65 : 1)))}
   function workoutRemaining(){const rounds=val('rounds'),roundTime=val('roundTime'),restTime=val('restTime');if(phase==='complete')return 0;if(phase==='ready')return val('warmupTime')+rounds*roundTime+Math.max(0,rounds-1)*restTime;if(phase==='warmup')return time+rounds*roundTime+Math.max(0,rounds-1)*restTime;if(phase==='work')return time+(rounds-round)*roundTime+(rounds-round)*restTime;return time+(rounds-round)*roundTime+Math.max(0,rounds-round-1)*restTime}
-  function prepareAudio(){try{if('audioSession'in navigator)navigator.audioSession.type='playback'}catch(e){}}
+  function prepareAudio(){try{if('audioSession'in navigator)navigator.audioSession.type='playback';if(playbackBridge&&playbackBridge.paused){const p=playbackBridge.play();if(p&&p.catch)p.catch(()=>{})}}catch(e){}}
   function cancelSpeech(){speechTimers.forEach(clearTimeout);speechTimers=[];if('speechSynthesis'in window)speechSynthesis.cancel()}
   function speakUtterance(text,onend,rate=.95){if(!isOn('voice')||settings.volume<=0||!('speechSynthesis'in window))return;prepareAudio();const u=new SpeechSynthesisUtterance(text);u.rate=rate;u.pitch=.88;u.volume=settings.volume/100;if(onend)u.onend=onend;speechSynthesis.speak(u)}
   function say(text,onend){cancelSpeech();speakUtterance(text,onend)}
@@ -151,6 +153,7 @@
   }
   function clear(){clearInterval(tick);clearInterval(comboTick);tick=comboTick=null}
   function start(){
+    prepareAudio();
     if(phase==='ready'&&!available().length){$('#combo').textContent='Select at least one combo';$('#comboNumbers').style.display='none';return}
     if(phase==='complete'){round=1;phase='ready';time=val('roundTime');newCombo(false)}
     if(phase==='ready'){buildFocusPlan();roundUsed.clear();repeatLeft=0;if(val('warmupTime')>0){phase='warmup';time=val('warmupTime');say('Warmup. Get ready.');beep(650,.2)}else{comboVisible=false;newCombo(false);phase='work';time=val('roundTime');announceRound();beep(850,.25)}}
