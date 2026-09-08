@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="features.css?v=65">
+  <link rel="stylesheet" href="features.css?v=66">
   <meta name="apple-mobile-web-app-title" content="Cornerwork">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -289,8 +289,9 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   $('#volumeControl').onclick=e=>e.stopPropagation();
   const primaryControl=$('#start');primaryControl.onclick=e=>{if(primaryHoldTriggered){primaryHoldTriggered=false;e.preventDefault();return}start()};primaryControl.onpointerdown=startPrimaryHold;primaryControl.onpointerup=cancelPrimaryHold;primaryControl.onpointercancel=cancelPrimaryHold;primaryControl.onpointerleave=e=>{if(e.pointerType==='mouse')cancelPrimaryHold()};primaryControl.oncontextmenu=e=>{if(primaryHoldTimer)e.preventDefault()};$('#restart').onclick=restart;$('#skip').onclick=nextAction;
   function renderComboList(){
-    const shown=visibleCombos();$('#comboList').innerHTML=shown.map(c=>{const nums=c.m.map(numbered).join('-'),words=c.m.map(phrase).join(' · '),label=settings.format==='numbers'?(isOn('secondary')?nums+' | '+words:nums):(isOn('secondary')?words+' | '+nums:words);return '<label class="combo-choice"><input type="checkbox" data-combo="'+c.id+'" '+(locked.has(c.id)?'checked':'')+'><span>'+label+'</span></label>'}).join('');
+    const shown=visibleCombos(),labelFor=c=>{const nums=c.m.map(numbered).join('-'),words=c.m.map(phrase).join(' · ');return settings.format==='numbers'?(isOn('secondary')?nums+' | '+words:nums):(isOn('secondary')?words+' | '+nums:words)},standard=shown.filter(c=>!c.custom),custom=shown.filter(c=>c.custom),standardRows=standard.map(c=>'<label class="combo-choice"><input type="checkbox" data-combo="'+c.id+'" '+(locked.has(c.id)?'checked':'')+'><span>'+labelFor(c)+'</span></label>').join(''),customRows=custom.map(c=>'<div class="combo-choice custom-combo-choice"><label><input type="checkbox" data-combo="'+c.id+'" '+(locked.has(c.id)?'checked':'')+'><span><strong>'+safeText(c.n)+'</strong><small>'+labelFor(c)+'</small></span></label><button type="button" data-edit-custom="'+c.id+'">Edit</button></div>').join('');$('#comboList').innerHTML=standardRows+(customRows?'<div class="combo-group-title"><span>Custom combos</span><i></i></div>'+customRows:'');
     $('#comboList').querySelectorAll('input').forEach(i=>i.onchange=()=>{if(i.checked)locked.add(i.dataset.combo);else locked.delete(i.dataset.combo);settings.allowedCombos=[...locked];saveSettings();repeatLeft=0;newCombo(false);renderComboList();render()});
+    $('#comboList').querySelectorAll('[data-edit-custom]').forEach(button=>button.onclick=()=>window.dispatchEvent(new CustomEvent('cornerwork-edit-combo',{detail:{id:button.dataset.editCustom}})));
     const enabled=shown.filter(c=>locked.has(c.id)).length,level=settings.skill[0].toUpperCase()+settings.skill.slice(1);$('#comboCount').textContent=enabled===shown.length?'All '+shown.length+' '+level+' combos are enabled.':enabled+' of '+shown.length+' '+level+' combos enabled.';
   }
   function refreshShortcutInputs(){$$('.shortcut-input').forEach(i=>i.value=displayKey(settings.shortcuts[i.dataset.action]));const keys=['start','next','restart','mute'];$$('#sidebarShortcuts kbd').forEach((kbd,i)=>kbd.textContent=displayKey(settings.shortcuts[keys[i]]))}
@@ -313,11 +314,12 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   document.addEventListener('visibilitychange',syncWakeLock);
   document.addEventListener('keydown',e=>{if($$('.preset-modal').some(modal=>modal.open))return;if($('#settingsPage').classList.contains('open')){if(e.key==='Escape')showPreferences(false);return}if(['SELECT','INPUT'].includes(document.activeElement.tagName))return;const key=normalizedKey(e);if(key===settings.shortcuts.start){e.preventDefault();start()}else if(key===settings.shortcuts.next)nextAction();else if(key===settings.shortcuts.restart)restart();else if(key===settings.shortcuts.mute)$('#voice').click()});
   window.CornerworkApp={
-    get settings(){return settings},get phase(){return phase},get presets(){return presets.map(p=>({...p}))},snapshot:workoutSnapshot,
+    get settings(){return settings},get phase(){return phase},get presets(){return presets.map(p=>({...p}))},get customCombos(){return customCombos.map(combo=>({...combo,m:[...combo.m],types:[...combo.types]}))},snapshot:workoutSnapshot,
     applyConfig(config){if(applyWorkout(config))location.reload()},startWorkout:start,
     upsertPreset(preset){const clean={...preset,id:preset.id||Date.now().toString(36),updatedAt:Date.now()};const index=presets.findIndex(p=>p.id===clean.id);if(index>=0)presets[index]=clean;else presets.unshift(clean);presets.sort((a,b)=>(b.favorite?1:0)-(a.favorite?1:0)||(b.updatedAt||0)-(a.updatedAt||0));savePresets();savePresetToCloud(clean);renderPresets();return clean},
     addCustomCombo(combo){const clean={id:'custom-'+Date.now().toString(36),n:String(combo.n||'Custom combo').slice(0,60),m:combo.m.slice(0,12),types:[...new Set(combo.types)],level:Math.min(3,Math.max(1,+combo.level||1)),custom:true};customCombos.push(clean);localStorage.setItem('cornerwork-custom-combos',JSON.stringify(customCombos));if(Array.isArray(settings.allowedCombos)&&!settings.allowedCombos.includes(clean.id)){settings.allowedCombos.push(clean.id);saveSettings()}location.reload()},
-    removeCustomCombo(id){customCombos=customCombos.filter(c=>c.id!==id);localStorage.setItem('cornerwork-custom-combos',JSON.stringify(customCombos));location.reload()},
+    updateCustomCombo(id,combo){const index=customCombos.findIndex(c=>c.id===id);if(index<0)return;customCombos[index]={...customCombos[index],n:String(combo.n||'Custom combo').slice(0,60),m:combo.m.slice(0,12),types:[...new Set(combo.types)],level:Math.min(3,Math.max(1,+combo.level||1)),custom:true};localStorage.setItem('cornerwork-custom-combos',JSON.stringify(customCombos));location.reload()},
+    removeCustomCombo(id){customCombos=customCombos.filter(c=>c.id!==id);localStorage.setItem('cornerwork-custom-combos',JSON.stringify(customCombos));locked.delete(id);if(Array.isArray(settings.allowedCombos)){settings.allowedCombos=settings.allowedCombos.filter(comboId=>comboId!==id);saveSettings()}location.reload()},
     exportData(){return {version:1,settings,workouts:presets,customCombos,history:JSON.parse(localStorage.getItem('cornerwork-history')||'[]')}},
     importData(data){if(data.settings)localStorage.setItem('cornerwork-settings',JSON.stringify(data.settings));if(Array.isArray(data.workouts))localStorage.setItem('cornerwork-presets',JSON.stringify(data.workouts));if(Array.isArray(data.customCombos))localStorage.setItem('cornerwork-custom-combos',JSON.stringify(data.customCombos));if(Array.isArray(data.history))localStorage.setItem('cornerwork-history',JSON.stringify(data.history));location.reload()}
   };
@@ -325,6 +327,6 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-<script src="features.js?v=65" defer></script>
+<script src="features.js?v=66" defer></script>
 </body>
 </html>
