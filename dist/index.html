@@ -207,7 +207,7 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   function render(){
     syncWakeLock();
     document.body.classList.toggle('high-contrast',!!settings.highContrast);document.body.classList.toggle('color-blind',!!settings.colorBlind);document.body.classList.toggle('left-controls',!!settings.leftControls);
-    const workoutLocked=!['ready','complete'].includes(phase);$('#setup').classList.toggle('workout-locked',workoutLocked);$$('#setup button:not(.close),#setup input,#setup select').forEach(el=>el.disabled=workoutLocked);
+    const workoutLocked=!['ready','complete'].includes(phase);$('#setup').classList.toggle('workout-locked',workoutLocked);$$('#setup button:not(.close),#setup input,#setup select').forEach(el=>el.disabled=workoutLocked||!!el.closest('.config-locked'));
     const clock=fmt(time).split(':');$('#timer').innerHTML=clock[0].split('').map(n=>'<span class="timer-digit">'+n+'</span>').join('')+'<span class="timer-colon">:</span>'+clock[1].split('').map(n=>'<span class="timer-digit">'+n+'</span>').join('');$('#comboTotal').textContent=comboTotal;$('#moveTotal').textContent=moveTotal;$('#workoutLeft').textContent='Workout time left: '+totalFmt(workoutRemaining());$('#workoutLeft').style.display=settings.showTimeLeft?'block':'none';
     const warmup=val('warmupTime'),work=val('rounds')*val('roundTime'),rest=Math.max(0,val('rounds')-1)*val('restTime');$('#totalTime').textContent=totalFmt(warmup+work+rest);$('#totalDetail').textContent=totalFmt(warmup)+' warmup + '+totalFmt(work)+' work + '+totalFmt(rest)+' rest';
     $('#stage').className='stage '+(phase==='warmup'?'warming':phase==='rest'?'resting':phase==='complete'?'complete':punchOutActive?'punchout':'');
