@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="features.css?v=73">
+  <link rel="stylesheet" href="features.css?v=74">
   <meta name="apple-mobile-web-app-title" content="Cornerwork">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -215,7 +215,7 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
     $('#stage').className='stage '+(phase==='warmup'?'warming':phase==='rest'?'resting':phase==='complete'?'complete':punchOutActive?'punchout':'');
     $('#phase').textContent=phase==='warmup'?'Warmup':phase==='rest'?'Rest and reset':phase==='complete'?'Workout complete':'Round '+round+' of '+val('rounds');
     const action=running?'Pause':phase==='complete'?'Start again':phase==='ready'?'Start round':'Resume',showKeys=settings.shortcutLabels,sc=settings.shortcuts,canHoldRestart=!running&&!['ready','complete'].includes(phase),meta=(showKeys?'<span class="keycap">'+displayKey(sc.start)+'</span>':'')+(canHoldRestart?'<span class="hold-restart">Hold to restart</span>':'');
-    $('#start').innerHTML='<span>'+action+'</span><span class="primary-meta">'+meta+'</span>';$('#start').classList.toggle('restart-ready',canHoldRestart);$('#start').classList.toggle('is-pause',running);$('#start').classList.toggle('is-resume',canHoldRestart);$('#start').setAttribute('aria-label',canHoldRestart?'Resume workout. Hold to restart workout':action);$('#restart').innerHTML='<span aria-hidden="true">←</span>'+(showKeys?'<span class="keycap">'+displayKey(sc.restart)+'</span>':'');$('#skip').innerHTML=(showKeys?'<span class="keycap">'+displayKey(sc.next)+'</span>':'')+'<span aria-hidden="true">→</span>';
+    $('#start').innerHTML='<span>'+action+'</span>'+(meta?'<span class="primary-meta">'+meta+'</span>':'');$('#start').classList.toggle('restart-ready',canHoldRestart);$('#start').classList.toggle('is-pause',running);$('#start').classList.toggle('is-resume',canHoldRestart);$('#start').setAttribute('aria-label',canHoldRestart?'Resume workout. Hold to restart workout':action);$('#restart').innerHTML='<span aria-hidden="true">←</span>'+(showKeys?'<span class="keycap">'+displayKey(sc.restart)+'</span>':'');$('#skip').innerHTML=(showKeys?'<span class="keycap">'+displayKey(sc.next)+'</span>':'')+'<span aria-hidden="true">→</span>';
     $('.keys').innerHTML='<kbd>'+displayKey(sc.start)+'</kbd><span>Start or pause</span><kbd>'+displayKey(sc.next)+'</kbd><span>Next phase</span><kbd>'+displayKey(sc.restart)+'</kbd><span>Previous phase</span><kbd>'+displayKey(sc.mute)+'</kbd><span>Mute voice</span>';
     if(phase==='ready'){$('#combo').textContent='Workout ready';$('#comboNumbers').style.display='none'}else if(phase==='warmup'){$('#combo').textContent='Get ready';$('#comboNumbers').style.display='none'}else if(phase==='rest'||phase==='complete'){$('#combo').textContent='';$('#comboNumbers').textContent='';$('#comboNumbers').style.display='none'}
     const summary=[settings.trainingMode==='bag'?'Bag':'Shadowboxing',settings.skill,settings.complexity+' complexity'];if(activeFocuses().length)summary.push(...activeFocuses().map(focusName));if(settings.structured!=='off'&&Object.keys(blockPlan).length){summary.push(settings.structured+' sec blocks');if(phase==='work'){const size=+settings.structured,totalBlocks=blockPlan[round]?.length||1,elapsed=val('roundTime')-time,left=Math.max(0,Math.min(time,(blockIndex+1)*size-elapsed));summary.push('Block '+(blockIndex+1)+' of '+totalBlocks+' · '+fmt(left)+' left')}}$('#summary').innerHTML=summary.map(x=>'<span class="summary-pill '+(summary.indexOf(x)>2?'focus-label':'')+'">'+x+'</span>').join('');
@@ -329,6 +329,6 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-<script src="features.js?v=73" defer></script>
+<script src="features.js?v=74" defer></script>
 </body>
 </html>
