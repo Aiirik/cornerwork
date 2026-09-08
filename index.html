@@ -1,1186 +1,0 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090b0f">
-  <title>Cornerwork | Boxing Combo Coach</title>
-  <meta name="description" content="A glove-friendly boxing round timer with smart randomized combos for every skill level.">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="features.css?v=63">
-  <meta name="apple-mobile-web-app-title" content="Cornerwork">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <style>
-    :root{--bg:#090b0f;--panel:#11151b;--panel2:#171c24;--line:#2a313c;--muted:#9199a6;--text:#f4f6f8;--red:#ff3b30;--orange:#ff8a1f;--green:#66e08d;--yellow:#ffd45a;--radius:18px;--shadow:0 20px 70px #0008;--clock-scale:1;--callout-scale:1}*{box-sizing:border-box}html{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}body{margin:0;min-height:100vh;background:var(--bg)}button,input,select{font:inherit;color:inherit}button{cursor:pointer}.app{min-height:100vh;display:grid;grid-template-columns:330px 1fr}.setup{border-right:1px solid var(--line);background:#0d1015;padding:28px 24px;display:flex;flex-direction:column;gap:26px}.brand{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.mark{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--red);box-shadow:0 0 0 5px #ff3b3020}.mark svg{width:20px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}.modes{display:grid;gap:8px}.mode{background:transparent;border:1px solid var(--line);border-radius:13px;text-align:left;padding:13px 14px;display:flex;justify-content:space-between;align-items:center}.mode:hover{background:var(--panel)}.mode.active{border-color:var(--red);background:#ff3b3012}.mode strong{font-size:15px}.mode span{font-size:12px;color:var(--muted)}.mode.active span{color:#ff918b}.settings{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{font-size:12px;color:var(--muted);display:block;margin:0 0 7px}.field select,.field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px}.toggles{display:grid;gap:12px}.toggle{display:flex;align-items:center;justify-content:space-between;font-size:14px}.switch{width:42px;height:24px;border:0;border-radius:99px;background:#373e49;padding:3px}.switch i{display:block;width:18px;height:18px;border-radius:50%;background:white;transition:.2s}.switch.on{background:var(--red)}.switch.on i{transform:translateX(18px)}.shortcut-card{margin-top:auto;border-top:1px solid var(--line);padding-top:20px}.keys{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;color:var(--muted);font-size:12px}.keys kbd{color:var(--text);border:1px solid #3b4350;background:#181d25;border-radius:6px;padding:3px 7px;justify-self:start;box-shadow:inset 0 -1px #000}.stage{padding:26px 34px;display:flex;flex-direction:column;min-width:0;background:radial-gradient(circle at 50% -10%,#252b35 0,transparent 36%),var(--bg)}.topbar{display:flex;align-items:center;justify-content:space-between}.workout{flex:1;display:grid;place-items:center;padding:20px 0}.center{width:min(940px,100%);text-align:center}.timer{font-variant-numeric:tabular-nums;font-size:calc(clamp(84px,13vw,172px)*var(--clock-scale));line-height:.92;font-weight:900;letter-spacing:-.025em;margin:8px auto 6px;width:5ch;white-space:nowrap;text-align:center}.workout-left{color:var(--muted);font-size:14px;font-weight:700;letter-spacing:.05em;margin-bottom:16px}.phase{font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);font-weight:900}.combo-wrap{min-height:215px;display:flex;flex-direction:column;justify-content:center;margin:15px 0}.combo{font-size:calc(clamp(34px,5.5vw,76px)*var(--callout-scale));line-height:1.08;font-weight:900;letter-spacing:-.045em;text-wrap:balance}.combo-numbers{margin-top:14px;color:var(--muted);font-size:calc(16px*var(--callout-scale));font-weight:700;letter-spacing:.12em;text-transform:uppercase}.next{margin-top:30px;color:#6f7783;font-size:13px}.next strong{color:#aab1bb}.timeline{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;width:min(700px,100%);margin:0 auto}.round-pip{height:5px;border-radius:10px;background:#282e37;overflow:hidden}.round-pip.done{background:#4b5360}.round-pip.current{background:var(--red)}.controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:30px}.circle,.primary{border:1px solid var(--line);background:var(--panel2);height:58px}.circle{width:58px;border-radius:50%;font-size:20px}.circle:hover{background:#232a34}.primary{min-width:172px;border-radius:18px;background:var(--red);border-color:var(--red);font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;box-shadow:0 10px 35px #ff3b3036}.primary:hover{filter:brightness(1.08)}.mobile-settings{display:none}.hint{color:var(--muted);font-size:12px;margin-top:15px}.resting .phase{color:var(--green)}.resting .primary{background:var(--green);border-color:var(--green);color:#07140b}.complete .phase{color:var(--yellow)}
-    .setup{height:100vh;overflow-y:auto;gap:22px;scrollbar-width:thin}.segmented{display:flex;background:var(--panel2);border:1px solid var(--line);padding:3px;border-radius:11px;gap:3px}.segmented button{flex:1;border:0;background:transparent;border-radius:8px;padding:8px 5px;color:var(--muted);font-size:12px;font-weight:750}.segmented button.active{background:#343b46;color:white}.checks{display:flex;flex-wrap:wrap;gap:7px}.check{border:1px solid var(--line);background:transparent;border-radius:99px;padding:8px 11px;color:var(--muted);font-size:12px}.check.active{border-color:#ff5c53;background:#ff3b3018;color:#fff}.section-head{display:flex;align-items:center;justify-content:space-between}.customize{border:0;background:transparent;color:#ff7770;font-size:12px;font-weight:750}.combo-bulk{display:none;gap:7px;margin-top:2px}.combo-bulk.open{display:flex}.combo-bulk button{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:7px 10px;color:#cbd0d7;font-size:12px;font-weight:750}.combo-list{display:none;gap:6px;margin-top:9px}.combo-list.open{display:grid}.combo-choice{display:flex;align-items:center;gap:9px;background:var(--panel2);padding:8px 10px;border-radius:9px;font-size:12px;color:#c6cbd2}.combo-choice input{accent-color:var(--red)}.mini-note{font-size:11px;line-height:1.4;color:#747d89;margin-top:8px}.workout-summary{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:-8px;margin-bottom:8px}.summary-pill{border:1px solid var(--line);border-radius:99px;padding:6px 9px;color:var(--muted);font-size:11px;text-transform:capitalize}.shortcut-card{margin-top:0}.top-actions{display:flex;align-items:center;gap:10px}.settings-btn{width:38px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--panel);display:grid;place-items:center;font-size:18px}.settings-page{display:none;position:fixed;top:76px;right:26px;z-index:20;width:min(440px,calc(100vw - 32px));max-height:calc(100vh - 94px);background:#0d1117;border:1px solid #343c48;border-radius:20px;box-shadow:0 26px 80px #000b;overflow:auto}.settings-page.open{display:block}.settings-shell{width:auto;margin:0;padding:20px}.settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.back-btn{order:2;border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:7px 10px}.settings-header h1{font-size:21px;margin:0}.settings-group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}.settings-group h2{font-size:15px;margin:0 0 6px}.settings-group p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 12px}.setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;border-top:1px solid var(--line)}.setting-row:first-of-type{border-top:0}.setting-row>span{font-size:13px}.settings-group .segmented{width:min(240px,58%)}.keycap{display:inline-block;margin-left:8px;padding:3px 6px;border:1px solid #ffffff55;border-radius:5px;font-size:10px;line-height:1;letter-spacing:.04em}.circle .keycap{margin:0;font-size:9px}.circle{display:inline-flex;align-items:center;justify-content:center;gap:3px}.shortcut-input{width:100px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center;font-weight:800;cursor:pointer}.shortcut-input:focus{border-color:var(--red);outline:none;box-shadow:0 0 0 3px #ff3b3020}.focus-choices{display:none;flex-wrap:wrap;gap:7px;margin-top:10px}.focus-choices.show{display:flex}.focus-label{color:var(--yellow)!important;border-color:#ffd45a55!important}.number-control{display:grid;grid-template-columns:32px 1fr 32px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel2)}.field .number-control input{border:0;border-radius:0;padding:9px 2px;text-align:center;min-width:0;appearance:textfield}.field .number-control input::-webkit-inner-spin-button,.field .number-control input::-webkit-outer-spin-button{appearance:none;margin:0}.step-btn{border:0;background:#222832;color:#cbd0d7;font-size:18px}.step-btn:hover{background:#303845;color:white}.danger-zone{text-align:center;padding:8px 0 2px}.reset-btn{border:1px solid #ff5c5355;background:#ff3b3010;color:#ff817a;border-radius:10px;padding:9px 14px;font-weight:750}.reset-confirm{display:none;background:#231517;border:1px solid #6e302d;border-radius:12px;padding:13px;margin-top:10px}.reset-confirm.show{display:block}.confirm-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}.confirm-actions button{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:7px 11px}.confirm-actions .confirm-reset{background:var(--red);border-color:var(--red);font-weight:800}
-    .setup,.settings-page{scrollbar-width:thin;scrollbar-color:#48515f #11161d}.setup::-webkit-scrollbar,.settings-page::-webkit-scrollbar{width:10px}.setup::-webkit-scrollbar-track,.settings-page::-webkit-scrollbar-track{background:#11161d;border-radius:99px}.setup::-webkit-scrollbar-thumb,.settings-page::-webkit-scrollbar-thumb{background:#48515f;border:2px solid #11161d;border-radius:99px}.setup::-webkit-scrollbar-thumb:hover,.settings-page::-webkit-scrollbar-thumb:hover{background:#626d7d}.controls .circle{width:82px;border-radius:17px;display:inline-flex;align-items:center;justify-content:center;gap:9px}.controls .primary{min-width:184px;height:66px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;line-height:1}.controls .primary .keycap{margin:0}.controls .circle .keycap{margin:0;font-size:10px}.controls .circle,.controls .primary{padding:0 14px}.workout-total{margin-top:12px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:11px 12px}.total-main{display:flex;justify-content:space-between;align-items:center;font-size:13px}.total-main strong{font-size:17px;font-variant-numeric:tabular-nums}.total-detail{margin-top:5px;color:var(--muted);font-size:11px;text-align:right}.warming .phase{color:var(--yellow)}.warming .primary{background:var(--yellow);border-color:var(--yellow);color:#181300}.speed-control{width:min(220px,58%);display:flex;align-items:center;gap:10px}.speed-control input{width:100%;accent-color:var(--red)}.speed-value{min-width:30px;height:30px;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);border-radius:8px;font-size:13px;font-weight:850}.eyebrow-row{position:relative;display:flex;align-items:center;gap:7px;margin-bottom:10px}.eyebrow-row .eyebrow{margin:0}.help{position:static;width:18px;height:18px;padding:0;border:1px solid #46505e;border-radius:50%;background:#191e26;color:#aeb6c1;font-size:11px;font-weight:900}.help:after{content:attr(data-tip);display:none;position:absolute;z-index:30;left:0;top:24px;width:min(260px,calc(100vw - 64px));padding:10px 11px;border:1px solid #3b4552;border-radius:10px;background:#202630;color:#e5e8ec;font-size:12px;font-weight:500;line-height:1.4;text-transform:none;letter-spacing:0;box-shadow:0 10px 35px #0009;text-align:left}.help:hover:after,.help:focus:after,.help.open:after{display:block}.settings-title{position:relative;display:flex;align-items:center;gap:7px;margin-bottom:6px}.settings-title h2{margin:0}.settings-help:after{display:none!important}.settings-tip{display:none;position:absolute;z-index:40;left:0;top:26px;width:100%;padding:11px 12px;border:1px solid #3b4552;border-radius:10px;background:#202630;box-shadow:0 10px 35px #0009;color:#d8dde4;font-size:12px;line-height:1.45}.settings-tip span{display:block;padding:5px 0;border-top:1px solid #343d49}.settings-tip span:first-child{padding-top:0;border-top:0}.settings-tip span:last-child{padding-bottom:0}.settings-tip strong{color:#fff}.settings-help:hover+.settings-tip,.settings-help:focus+.settings-tip,.settings-help.open+.settings-tip{display:block}.time-input{font-variant-numeric:tabular-nums}.volume-control{height:38px;display:flex;align-items:center;border:1px solid var(--line);border-radius:11px;background:var(--panel);overflow:hidden;padding:0}.volume-toggle{width:36px;height:36px;padding:0;border:0;background:transparent;display:grid;place-items:center;font-size:16px;flex:0 0 36px}.volume-panel{width:0;opacity:0;overflow:hidden;display:flex;align-items:center;gap:8px;pointer-events:none;transition:width .2s ease,opacity .15s ease}.volume-control.open .volume-panel,.volume-control:focus-within .volume-panel{width:132px;opacity:1;pointer-events:auto}@media(hover:hover){.volume-control:hover .volume-panel{width:132px;opacity:1;pointer-events:auto}}.volume-control input{width:90px;accent-color:var(--red)}.volume-value{min-width:34px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}.mark{border-radius:9px;background:transparent;box-shadow:0 0 0 4px #ff3b3015}.mark img{width:34px;height:34px;display:block}
-    @media(max-width:820px){.app{display:block}.setup{display:none;height:100vh}.stage{padding:20px 16px;min-height:100vh}.mobile-settings{display:block}.mobile-settings button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 12px}.workout{padding:5px 0}.combo-wrap{min-height:190px}.timer{font-size:clamp(78px,25vw,120px)}.combo{font-size:clamp(32px,10vw,52px)}.hint{display:none}.drawer{display:flex!important;position:fixed;inset:0;z-index:5;background:#0d1015;padding:24px;overflow:auto}.drawer .close{position:absolute;right:18px;top:18px}.controls{position:sticky;bottom:14px}.topbar{align-items:flex-start;padding-bottom:10px;gap:8px}.settings-page{top:70px;right:16px;max-height:calc(100vh - 86px)}.top-actions{max-width:260px;flex-wrap:wrap;justify-content:flex-end;gap:6px}.volume-control.open .volume-panel,.volume-control:focus-within .volume-panel{width:76px}.volume-control input{width:68px}.volume-value{display:none}}
-    .setup.workout-locked button:disabled,.setup.workout-locked input:disabled,.setup.workout-locked select:disabled{cursor:not-allowed;opacity:.46}.setup.workout-locked .close{opacity:1;cursor:pointer}
-    .controls{position:relative}.reset-workout{display:none;position:absolute;right:calc(50% + 198px);top:50%;transform:translateY(-50%);min-width:116px;height:46px;align-items:center;justify-content:center;overflow:hidden;touch-action:manipulation;user-select:none;border:1px solid #ff5c5355;background:#ff3b3010;color:#ffaaa5;border-radius:12px;padding:0 12px;font-size:12px;font-weight:800}.reset-workout:before{content:"";position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:#ff3b3055}.reset-workout.holding:before{animation:reset-hold 1.2s linear forwards}.reset-workout span{position:relative;z-index:1}.reset-workout:hover{background:#ff3b3020}@keyframes reset-hold{to{transform:scaleX(1)}}.round-marker{position:relative;min-width:0}.round-marker .round-pip{width:100%;height:34px;display:flex;align-items:center;justify-content:center;padding:0 7px}.rest-pip{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);width:32%;min-width:20px;max-width:60px;height:6px;border-radius:99px;background:var(--yellow);box-shadow:0 0 12px #ffd45a55}.round-focus-label{min-width:0;color:#fff;font-size:12px;font-weight:900;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.round-pip.done{background:var(--green)}.round-pip.done .round-focus-label{color:#07140b}.resting .timer{color:var(--yellow)}.help.block-help:after{white-space:pre-line}.structured-options{display:none}.structured-options.show{display:block}
-    @media(max-width:980px){.reset-workout{right:auto;left:0;top:auto;bottom:72px;transform:none}}
-    @media(max-width:820px){.controls{position:sticky}}
-    @media(max-width:820px){html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}.app{height:100dvh;min-height:100dvh;overflow:hidden}.stage{height:100dvh;min-height:0;overflow:hidden}.workout{min-height:0;overflow:hidden;padding-bottom:0}.top-actions{max-width:none;flex-wrap:nowrap;position:relative}.volume-control{position:relative;overflow:visible;z-index:12}.volume-panel{display:none;position:absolute;top:44px;right:0;width:190px!important;height:50px;padding:0 12px;border:1px solid #343c48;border-radius:12px;background:#11161d;box-shadow:0 14px 38px #000b}.volume-control.open .volume-panel,.volume-control:focus-within .volume-panel{display:flex;opacity:1;pointer-events:auto}.volume-control input{width:124px}.volume-value{display:block;min-width:32px}.controls{position:static;width:100%;gap:8px;padding:0 2px}.controls .circle{width:64px;flex:0 0 64px;padding:0 8px}.controls .primary{min-width:0;flex:1;padding:0 8px}.controls.show-reset{display:grid;grid-template-columns:64px minmax(0,1fr) 64px;row-gap:9px}.controls.show-reset .reset-workout{position:relative;inset:auto;transform:none;grid-column:1/-1;grid-row:1;width:144px;height:42px;justify-self:start}.controls.show-reset #restart{grid-column:1;grid-row:2}.controls.show-reset #start{grid-column:2;grid-row:2;width:100%}.controls.show-reset #skip{grid-column:3;grid-row:2}.drawer{display:flex!important;position:fixed;inset:70px 16px 16px;z-index:30;width:auto;height:auto!important;max-height:none;padding:58px 20px calc(24px + env(safe-area-inset-bottom));border:1px solid #343c48;border-radius:20px;background:#0d1117;box-shadow:0 26px 80px #000b;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}.drawer .close{position:absolute;right:16px;top:14px;width:38px;height:38px;border-radius:11px}.settings-page{overscroll-behavior:contain}}
-    .cloud-account{display:grid;grid-template-columns:1fr;gap:9px;margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#11161d}.cloud-status{min-width:0;color:var(--muted);font-size:11px;line-height:1.35;padding-left:17px;position:relative}.cloud-status:before{content:"";position:absolute;left:0;top:4px;width:8px;height:8px;border-radius:50%;background:#68717e;box-shadow:0 0 0 3px #68717e1c}.cloud-account.connected .cloud-status:before{background:var(--green);box-shadow:0 0 0 3px #66e08d1c}.cloud-status strong{display:block;color:#e8ebef;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cloud-account button{width:100%;border:1px solid #48515f;background:#fff;color:#17191c;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:850}.cloud-account button.signout{background:var(--panel2);color:#cbd0d7}.cloud-account button.hidden,.google-signin-slot.hidden{display:none!important}.google-signin-slot{width:100%;min-height:40px;display:flex;justify-content:center;overflow:hidden}.cloud-error{color:#ff918b}
-    @media(max-width:820px){.round-marker .round-pip{height:30px;padding:0 4px}.round-focus-label{font-size:10px}}
-    @media(max-width:820px) and (max-height:700px){.stage{padding-top:12px;padding-bottom:12px}.topbar{padding-bottom:4px}.combo-wrap{min-height:135px;margin:5px 0}.timer{font-size:clamp(68px,20vw,96px)}.controls{margin-top:14px}.round-marker .round-pip{height:26px}}
-    button,button *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.mobile-audio-note{display:none}
-    @media(max-width:820px){.mobile-audio-note{display:block;margin:9px 0 0;color:#89929f;font-size:11px;font-weight:650;line-height:1.3}}
-    .primary{position:relative;overflow:hidden}.primary:before{content:"";position:absolute;inset:0;background:#9f171dcc;transform:scaleX(0);transform-origin:left}.primary.holding:before{animation:primary-reset-hold 1s linear .2s forwards}.primary>span{position:relative;z-index:1}.primary-meta{min-height:14px;display:flex;align-items:center;justify-content:center;gap:7px}.hold-restart{font-size:10px;font-weight:750;letter-spacing:.02em;text-transform:none;white-space:nowrap}@keyframes primary-reset-hold{to{transform:scaleX(1)}}
-    .preset-launch{display:grid;gap:8px}.preset-launch button{width:100%;border:1px solid var(--line);background:var(--panel2);border-radius:11px;padding:10px 12px;font-size:12px;font-weight:850}.preset-launch .save-workout-open{background:#ff3b3018;border-color:#ff5c5355;color:#ff918b}.preset-create{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.preset-create input{min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px}.preset-create button,.preset-actions button{border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:8px 10px;font-size:11px;font-weight:800}.preset-create button{background:#ff3b3018;border-color:#ff5c5355;color:#ff918b}.preset-list{display:grid;gap:7px;margin-top:12px;max-height:min(52vh,420px);overflow:auto}.preset-item{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:#12171e;border-radius:11px;padding:8px}.preset-name{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:800}.preset-actions{display:flex;gap:5px}.preset-actions button{padding:6px 7px;color:#cbd0d7}.preset-actions .delete-preset{color:#ff817a}.preset-empty{color:var(--muted);font-size:12px;line-height:1.4}.preset-modal{width:min(430px,calc(100vw - 32px));max-height:calc(100dvh - 40px);margin:auto;padding:0;border:1px solid #343c48;border-radius:18px;background:#0d1117;color:var(--text);box-shadow:0 26px 80px #000d}.preset-modal::backdrop{background:#020409c9;backdrop-filter:blur(3px)}.preset-modal-shell{padding:20px}.preset-modal-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.preset-modal-head h2{margin:0;font-size:19px}.preset-modal-close{width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);font-size:20px;line-height:1}.preset-modal-note{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.45}
-    .sound-options.hidden{display:none}.sound-card{border-top:1px solid var(--line);padding:13px 0}.sound-card:first-of-type{border-top:0}.sound-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;font-size:13px;font-weight:850}.sound-title-actions{display:flex;align-items:center;gap:7px}.sound-gear{width:31px;height:31px;border:1px solid var(--line);background:var(--panel2);border-radius:9px;font-size:14px}.sound-gear.active{border-color:#ff5c5355;color:#ff918b}.sound-grid{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center}.sound-grid select{min-width:0;width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:12px}.test-sound{border:1px solid #ff5c5355;background:#ff3b3010;color:#ff918b;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:850}.sound-volume,.fine-row{grid-column:1/-1;display:grid;grid-template-columns:78px 1fr 54px;align-items:center;gap:9px;color:var(--muted);font-size:11px}.sound-volume input,.fine-row input{width:100%;accent-color:var(--red)}.sound-volume output,.fine-row output{text-align:right;color:var(--text);font-weight:800;font-variant-numeric:tabular-nums}.fine-tune{display:none;grid-column:1/-1;margin-top:2px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#0d1117;gap:10px}.fine-tune.open{display:grid}.sound-reset{justify-self:end;border:0;background:transparent;color:#ff918b;padding:3px 0;font-size:11px;font-weight:800}.sound-reset:hover{text-decoration:underline}
-    @media(max-width:820px){.timer{font-size:calc(clamp(78px,25vw,120px)*var(--clock-scale))}.combo{font-size:calc(clamp(32px,10vw,52px)*var(--callout-scale))}}
-    @media(max-width:820px) and (max-height:700px){.timer{font-size:calc(clamp(68px,20vw,96px)*var(--clock-scale))}}
-    .size-value{min-width:58px;padding:0 6px}.timer{width:100%;display:flex;align-items:baseline;justify-content:center;letter-spacing:0;position:relative;left:-.045em}.timer-digit{display:inline-block;flex:0 0 .62em;width:.62em;text-align:center;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}.timer-colon{display:inline-block;flex:0 0 .28em;width:.28em;text-align:center}.workout-stats{display:flex;align-items:center;justify-content:center;gap:9px;color:#858e9b;font-size:12px;font-weight:750;letter-spacing:.03em;font-variant-numeric:tabular-nums;margin:3px 0 5px}.workout-stats i{width:3px;height:3px;border-radius:50%;background:#4e5764}.primary{touch-action:manipulation}.primary>*{pointer-events:none}.primary.is-pause{background:#e99a25;border-color:#e99a25;color:#1c1102;box-shadow:0 10px 35px #e99a2538}.primary.is-resume{background:#38b66c;border-color:#38b66c;color:#06180d;box-shadow:0 10px 35px #38b66c38}.shortcut-card.hidden{display:none}
-    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-  </style>
-</head>
-<body>
-<main class="app">
-  <aside class="setup" id="setup">
-    <section><div class="eyebrow-row"><div class="eyebrow">Include</div><button class="help" data-tip="Choose which techniques the coach may use. Body shots adds combinations that change levels and target the body. Turning a type off also removes its combinations from Allowed Combos." aria-label="About included techniques">?</button></div><div class="checks" id="include">
-      <button class="check active" data-type="punch">Punches</button><button class="check" data-type="body">Body shots</button><button class="check active" data-type="defense">Defense</button><button class="check active" data-type="footwork">Footwork</button><button class="check" data-type="kick">Kicks</button><button class="check" data-type="knee">Knees &amp; elbows</button>
-    </div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Training mode</div><button class="help" data-tip="Bag enables every compatible focus, including power work. Shadowboxing keeps the workout technique and movement focused without power assignments." aria-label="About training mode">?</button></div><div class="segmented" data-setting="trainingMode"><button class="active" data-value="bag">Bag</button><button data-value="shadow">Shadowboxing</button></div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Skill level</div><button class="help" data-tip="Controls which techniques are available. Basic shows level 1 combos, Intermediate adds level 2, and Advanced adds level 3. Allowed Combos updates immediately." aria-label="About skill level">?</button></div><div class="segmented" data-setting="skill"><button class="active" data-value="basic">Basic</button><button data-value="intermediate">Intermediate</button><button data-value="advanced">Advanced</button></div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Combo complexity</div><button class="help" data-tip="Limits the number of movements in each combination. Low is short and easy to remember; High allows longer sequences." aria-label="About combo complexity">?</button></div><div class="segmented" data-setting="complexity"><button class="active" data-value="low">Low</button><button data-value="medium">Medium</button><button data-value="high">High</button></div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Combo repeats</div><button class="help" data-tip="Controls deliberate back-to-back practice. Some repeats certain combinations once; More repeats them twice." aria-label="About combo repeats">?</button></div><div class="segmented" data-setting="repeats"><button class="active" data-value="none">None</button><button data-value="some">Some</button><button data-value="more">More</button></div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Unique rounds</div><button class="help" data-tip="When enabled, the coach carries its combo memory across round breaks and explores the compatible list before recycling it. When disabled, combinations may return in later rounds." aria-label="About unique rounds">?</button></div><div class="segmented" data-setting="unique"><button class="active" data-value="yes">Yes</button><button data-value="no">No</button></div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Round focuses</div><button class="help" data-tip="After Start, selected themes are assigned randomly. Structured blocks can change the focus every 30 or 60 seconds while leaving some blocks open. Body work requires Body shots. Power is available in Bag mode." aria-label="About round focuses">?</button></div><div class="segmented" data-setting="focusEnabled"><button class="active" data-value="no">Off</button><button data-value="yes">On</button></div><div class="focus-choices" id="focusChoices"><button class="check active" data-focus="jabs">Focus jabs</button><button class="check active" data-focus="short">Short combos</button><button class="check active" data-focus="mixed">Mix up combos</button><button class="check" data-focus="explosive">Explosive bursts</button><button class="check" data-focus="high">High intensity</button><button class="check" data-focus="speed">Speed</button><button class="check" data-focus="power">Power</button><button class="check" data-focus="defense">Defense &amp; counters</button><button class="check" data-focus="footwork">Footwork &amp; angles</button><button class="check" data-focus="movement">Movement</button><button class="check" data-focus="body">Body work</button><button class="check" data-focus="uppercuts">Uppercuts</button><button class="check" data-focus="inside">Inside fighting</button><button class="check" data-focus="freestyle">Freestyle</button></div><div class="structured-options" id="structuredOptions"><div class="eyebrow-row" style="margin-top:14px"><div class="eyebrow">Structured blocks</div><button class="help block-help" data-tip="Off: A focus stays assigned to a whole round.&#10;30 sec: Each round is divided into 30-second sections.&#10;60 sec: Each round is divided into 60-second sections.&#10;Selected focuses are mixed into some sections, while others remain open boxing. The coach announces each change." aria-label="About structured blocks">?</button></div><div class="segmented" data-setting="structured"><button class="active" data-value="off">Off</button><button data-value="30">30 sec</button><button data-value="60">60 sec</button></div></div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Workout</div><button class="help" data-tip="Set preparation, work, and rest times. The total includes one warmup and rest only between rounds." aria-label="About workout timing">?</button></div><div class="settings">
-      <div class="field"><label for="rounds">Rounds</label><div class="number-control"><button class="step-btn" data-for="rounds" data-dir="down" aria-label="Decrease rounds">в€’</button><input id="rounds" type="number" value="6" min="1" max="30" step="1"><button class="step-btn" data-for="rounds" data-dir="up" aria-label="Increase rounds">+</button></div></div>
-      <div class="field"><label for="warmupTime">Warmup</label><div class="number-control"><button class="step-btn" data-for="warmupTime" data-dir="down" aria-label="Decrease warmup time">в€’</button><input class="time-input" id="warmupTime" type="text" value="0:45" inputmode="numeric" data-min="0" data-max="600" data-step="5"><button class="step-btn" data-for="warmupTime" data-dir="up" aria-label="Increase warmup time">+</button></div></div>
-      <div class="field"><label for="roundTime">Round length</label><div class="number-control"><button class="step-btn" data-for="roundTime" data-dir="down" aria-label="Decrease round length">в€’</button><input class="time-input" id="roundTime" type="text" value="3:00" inputmode="numeric" data-min="10" data-max="1800" data-step="5"><button class="step-btn" data-for="roundTime" data-dir="up" aria-label="Increase round length">+</button></div></div>
-      <div class="field"><label for="restTime">Rest</label><div class="number-control"><button class="step-btn" data-for="restTime" data-dir="down" aria-label="Decrease rest time">в€’</button><input class="time-input" id="restTime" type="text" value="0:30" inputmode="numeric" data-min="0" data-max="600" data-step="5"><button class="step-btn" data-for="restTime" data-dir="up" aria-label="Increase rest time">+</button></div></div>
-      <div class="field"><label for="pace">Combo frequency</label><div class="number-control"><button class="step-btn" data-for="pace" data-dir="down" aria-label="Decrease combo frequency">в€’</button><input class="time-input" id="pace" type="text" value="0:06" inputmode="numeric" data-min="2" data-max="60" data-step="1"><button class="step-btn" data-for="pace" data-dir="up" aria-label="Increase combo frequency">+</button></div></div>
-    </div><div class="workout-total"><div class="total-main"><span>Total workout</span><strong id="totalTime">21:15</strong></div><div class="total-detail" id="totalDetail">0:45 warmup + 18:00 work + 2:30 rest</div></div></section>
-    <section><div class="section-head"><div class="eyebrow-row"><div class="eyebrow">Allowed combos</div><button class="help" data-tip="Choose the exact combinations the coach can call. This list automatically follows the technique types selected above." aria-label="About allowed combos">?</button></div><button class="customize" id="customize">Customize</button></div><div class="combo-bulk" id="comboBulk"><button id="selectAllCombos">Select all</button><button id="clearAllCombos">Unselect all</button></div><div class="combo-list" id="comboList"></div><div class="mini-note" id="comboCount">All compatible combos are enabled.</div></section>
-    <section><div class="eyebrow-row"><div class="eyebrow">Saved workouts</div><button class="help" data-tip="Workouts always save on this device. Sign in with Google to also sync only your saved workouts across devices. Other settings stay local." aria-label="About saved workouts">?</button></div><div class="preset-launch"><button class="save-workout-open" id="openSavePreset">Save this workout</button><button id="openLoadPreset">Load saved workout</button></div><div class="cloud-account" id="cloudAccount"><div class="cloud-status" id="cloudStatus"><strong>Saved on this device</strong>Google sign-in is optional</div><div class="google-signin-slot" id="googleSignIn" aria-label="Sign in with Google"></div><button class="signout hidden" id="googleSignOut">Sign out</button></div></section>
-    <section class="shortcut-card hidden" id="sidebarShortcuts"><div class="eyebrow">Glove-friendly keys</div><div class="keys"><kbd>Space</kbd><span>Start or pause</span><kbd>N</kbd><span>Next phase</span><kbd>R</kbd><span>Previous phase</span><kbd>M</kbd><span>Mute voice</span></div></section>
-  </aside>
-  <section class="stage" id="stage">
-    <header class="topbar"><div class="brand"><span class="mark"><img src="icon.svg" alt=""></span> Cornerwork</div><div class="top-actions"><div class="volume-control" id="volumeControl"><button class="volume-toggle" id="volumeToggle" type="button" aria-label="Open volume control" aria-expanded="false" aria-controls="volumePanel"><span id="volumeIcon" aria-hidden="true">рџ”Љ</span></button><div class="volume-panel" id="volumePanel"><input id="volume" type="range" min="0" max="100" step="5" value="80" aria-label="Workout volume"><output class="volume-value" id="volumeValue" for="volume">80%</output></div></div><button class="settings-btn" id="preferences" aria-label="Open settings" aria-expanded="false" aria-controls="settingsPage">вљ™</button><div class="mobile-settings"><button id="openSettings" aria-expanded="false" aria-controls="setup">Workout</button></div></div></header>
-    <div class="workout"><div class="center">
-      <div class="phase" id="phase">Round 1 of 6</div><div class="timer" id="timer"><span class="timer-digit">3</span><span class="timer-colon">:</span><span class="timer-digit">0</span><span class="timer-digit">0</span></div><div class="workout-stats"><span>Combos: <b id="comboTotal">0</b></span><i></i><span>Moves: <b id="moveTotal">0</b></span></div><div class="workout-left" id="workoutLeft">Workout time left: 18:15</div>
-      <div class="combo-wrap"><div class="combo" id="combo">Jab В· Cross</div><div class="combo-numbers" id="comboNumbers">1 В· 2</div></div><div class="workout-summary" id="summary"></div>
-      <div class="timeline" id="timeline"></div>
-      <div class="controls"><button class="circle" id="restart" aria-label="Previous phase">в†ђ</button><button class="primary" id="start">Start round</button><button class="circle" id="skip" aria-label="Next phase">в†’</button></div>
-      <div class="mobile-audio-note">No voice? Turn off Silent Mode for callouts.</div>
-    </div></div>
-  </section>
-</main>
-<dialog class="preset-modal" id="savePresetModal"><div class="preset-modal-shell"><div class="preset-modal-head"><h2>Save this workout</h2><button class="preset-modal-close" data-close-modal="savePresetModal" aria-label="Close save workout window">Г—</button></div><p class="preset-modal-note">This saves the current workout setup, allowed combos, focus choices, sounds, and display preferences.</p><div class="preset-create"><input id="presetName" maxlength="36" placeholder="Workout name" aria-label="Custom workout name"><button id="savePreset">Save workout</button></div></div></dialog>
-<dialog class="preset-modal" id="loadPresetModal"><div class="preset-modal-shell"><div class="preset-modal-head"><h2>Saved workouts</h2><button class="preset-modal-close" data-close-modal="loadPresetModal" aria-label="Close saved workouts window">Г—</button></div><p class="preset-modal-note" id="presetModalNote">Load a workout, copy its share link, or remove it from this device.</p><div class="preset-list" id="presetList"></div></div></dialog>
-<section class="settings-page" id="settingsPage" aria-hidden="true"><div class="settings-shell">
-  <header class="settings-header"><button class="back-btn" id="closePreferences">Done</button><h1>Settings</h1></header>
-  <div class="settings-group"><div class="settings-title"><h2>Combo callouts</h2><button class="help settings-help" aria-label="About combo callout settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Primary format:</strong> Choose whether the large callout and spoken coach use punch numbers or full punch names.</span></div></div><p>Choose what appears largest on screen and what the coach says aloud.</p><div class="setting-row"><span>Primary format</span><div class="segmented" data-setting="format"><button class="active" data-value="numbers">Numbers</button><button data-value="names">Punch names</button></div></div></div>
-  <div class="settings-group"><div class="settings-title"><h2>Boxing stance</h2><button class="help settings-help" aria-label="About boxing stance settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Stance:</strong> Orthodox places your left side forward. Southpaw places your right side forward and adjusts lead and rear instructions.</span></div></div><p>Lead and rear movements are adjusted to match your stance.</p><div class="setting-row"><span>Stance</span><div class="segmented" data-setting="stance"><button class="active" data-value="orthodox">Orthodox</button><button data-value="southpaw">Southpaw</button></div></div></div>
-  <div class="settings-group"><div class="settings-title"><h2>Display</h2><button class="help settings-help" aria-label="About display settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Clock size:</strong> Makes the main countdown smaller or larger without changing its timing.</span><span><strong>Callout size:</strong> Adjusts the combo text independently from the clock.</span><span><strong>Show workout time left:</strong> Shows or hides the smaller total-workout countdown below the main timer.</span><span><strong>Show secondary format:</strong> Displays punch names below numbers, or numbers below punch names.</span><span><strong>Show keyboard shortcuts:</strong> Shows or hides the assigned keys inside the workout control buttons.</span></div></div><div class="setting-row"><span>Clock size</span><div class="speed-control"><input id="clockSize" type="range" min="70" max="200" step="5" value="100" aria-label="Main clock font size"><output class="speed-value size-value" id="clockSizeValue">100%</output></div></div><div class="setting-row"><span>Callout size</span><div class="speed-control"><input id="calloutSize" type="range" min="70" max="200" step="5" value="100" aria-label="Combo callout font size"><output class="speed-value size-value" id="calloutSizeValue">100%</output></div></div><div class="setting-row"><span>Show workout time left</span><button class="switch on" id="showTimeLeft" aria-label="Show workout time left" aria-pressed="true"><i></i></button></div><div class="setting-row"><span>Show secondary format</span><button class="switch" id="secondary" aria-label="Toggle secondary combo format" aria-pressed="false"><i></i></button></div><div class="setting-row"><span>Show keyboard shortcuts on buttons</span><button class="switch on" id="shortcutLabels" aria-label="Show keyboard shortcuts on workout buttons" aria-pressed="true"><i></i></button></div></div>
-  <div class="settings-group">
-    <div class="settings-title"><h2>Audio</h2><button class="help settings-help" aria-label="About audio settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Voice callouts:</strong> Turns spoken coach instructions on or off.</span><span><strong>Combo readout speed:</strong> Changes the spacing within spoken combos without speeding up other announcements.</span><span><strong>Final-seconds warning:</strong> Enables or disables the warning and hides its controls when off.</span><span><strong>Warning timing:</strong> Sounds with 10, 15, or 20 seconds remaining.</span><span><strong>Round-start sound:</strong> Plays after the spoken round announcement, before the timer and first combo begin.</span><span><strong>Fine tune:</strong> Each gear reveals strike count, spacing, pitch, and ring-length controls.</span><span><strong>Reset sound:</strong> Restores only that sound to the Cornerwork default.</span><span><strong>Test sound:</strong> Plays the sound immediately using every current adjustment.</span></div></div>
-    <div class="setting-row"><span>Voice callouts</span><button class="switch on" id="voice" aria-label="Toggle voice callouts" aria-pressed="true"><i></i></button></div><div class="setting-row"><span>Combo readout speed</span><div class="speed-control"><input id="speechRate" type="range" min="1" max="10" step="1" value="5" aria-label="Combo readout speed"><output class="speed-value" id="speechRateValue">5</output></div></div>
-    <div class="setting-row"><span>Final-seconds warning</span><button class="switch on" id="clapperEnabled" aria-label="Toggle final seconds warning" aria-pressed="true"><i></i></button></div>
-    <div class="sound-options" id="warningOptions">
-      <div class="setting-row"><span>Warning timing</span><div class="segmented" data-setting="clapperTime"><button class="active" data-value="10">10 sec</button><button data-value="15">15 sec</button><button data-value="20">20 sec</button></div></div>
-      <div class="sound-card"><div class="sound-title"><span>Warning sound</span><span class="sound-title-actions"><button class="sound-gear" id="warningGear" aria-label="Fine tune warning sound" aria-expanded="false">вљ™</button></span></div><div class="sound-grid"><select id="warningSound" aria-label="Final seconds warning sound"><option value="wood">Wooden clapper</option><option value="sharp">Sharp clapper</option><option value="deep">Deep clapper</option></select><button class="test-sound" id="testWarning">Test sound</button><label class="sound-volume"><span>Volume</span><input id="warningVolume" type="range" min="50" max="250" step="10" value="150" aria-label="Warning sound volume"><output id="warningVolumeValue">150%</output></label><div class="fine-tune" id="warningFine"><label class="fine-row"><span>Hits</span><input id="warningHits" type="range" min="1" max="4" step="1" value="2"><output id="warningHitsValue">2</output></label><label class="fine-row"><span>Hit spacing</span><input id="warningSpacing" type="range" min="80" max="500" step="10" value="200"><output id="warningSpacingValue">200 ms</output></label><label class="fine-row"><span>Pitch</span><input id="warningPitch" type="range" min="60" max="160" step="5" value="75"><output id="warningPitchValue">75%</output></label><button class="sound-reset" id="resetWarningSound">Reset warning sound</button></div></div></div>
-    </div>
-    <div class="sound-card"><div class="sound-title"><span>Round-start sound</span><span class="sound-title-actions"><button class="sound-gear" id="roundStartGear" aria-label="Fine tune round start sound" aria-expanded="false">вљ™</button></span></div><div class="sound-grid"><select id="roundStartSound" aria-label="Round start sound"><option value="classic">Classic ding</option><option value="boxing">Boxing bell</option><option value="buzzer">Arena buzzer</option></select><button class="test-sound" id="testRoundStart">Test sound</button><label class="sound-volume"><span>Volume</span><input id="roundStartVolume" type="range" min="50" max="200" step="10" value="100" aria-label="Round start sound volume"><output id="roundStartVolumeValue">100%</output></label><div class="fine-tune" id="roundStartFine"><label class="fine-row"><span>Strikes</span><input id="roundStartHits" type="range" min="1" max="4" step="1" value="1"><output id="roundStartHitsValue">1</output></label><label class="fine-row"><span>Strike spacing</span><input id="roundStartSpacing" type="range" min="150" max="1200" step="10" value="300"><output id="roundStartSpacingValue">300 ms</output></label><label class="fine-row"><span>Pitch</span><input id="roundStartPitch" type="range" min="60" max="160" step="5" value="100"><output id="roundStartPitchValue">100%</output></label><label class="fine-row"><span>Ring length</span><input id="roundStartDecay" type="range" min="300" max="2000" step="100" value="1000"><output id="roundStartDecayValue">1.0 sec</output></label><button class="sound-reset" id="resetRoundStartSound">Reset round-start sound</button></div></div></div>
-    <div class="sound-card"><div class="sound-title"><span>Round-end sound</span><span class="sound-title-actions"><button class="sound-gear" id="roundEndGear" aria-label="Fine tune round end sound" aria-expanded="false">вљ™</button></span></div><div class="sound-grid"><select id="roundEndSound" aria-label="Round end sound"><option value="boxing">Boxing bell</option><option value="classic">Classic bell</option><option value="buzzer">Arena buzzer</option></select><button class="test-sound" id="testRoundEnd">Test sound</button><label class="sound-volume"><span>Volume</span><input id="roundEndVolume" type="range" min="50" max="200" step="10" value="100" aria-label="Round end sound volume"><output id="roundEndVolumeValue">100%</output></label><div class="fine-tune" id="roundEndFine"><label class="fine-row"><span>Strikes</span><input id="roundEndHits" type="range" min="1" max="4" step="1" value="2"><output id="roundEndHitsValue">2</output></label><label class="fine-row"><span>Strike spacing</span><input id="roundEndSpacing" type="range" min="200" max="1200" step="20" value="300"><output id="roundEndSpacingValue">300 ms</output></label><label class="fine-row"><span>Pitch</span><input id="roundEndPitch" type="range" min="60" max="160" step="5" value="100"><output id="roundEndPitchValue">100%</output></label><label class="fine-row"><span>Ring length</span><input id="roundEndDecay" type="range" min="500" max="2500" step="100" value="1100"><output id="roundEndDecayValue">1.1 sec</output></label><button class="sound-reset" id="resetRoundEndSound">Reset round-end sound</button></div></div></div>
-  </div>
-  <div class="settings-group"><div class="settings-title"><h2>Keyboard shortcuts</h2><button class="help settings-help" aria-label="About keyboard shortcut settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Start or pause:</strong> Starts the workout or pauses the current countdown.</span><span><strong>Next phase:</strong> Moves forward one phase at a time, including warmup, rounds, and rests.</span><span><strong>Previous phase:</strong> Moves backward one phase at a time, including rests and warmup.</span><span><strong>Mute voice:</strong> Quickly turns spoken callouts on or off.</span></div></div><p>Select a field, then press the key you want to assign. If that key is already used, the two shortcuts switch places.</p><div class="setting-row"><span>Start or pause</span><input class="shortcut-input" data-action="start" readonly aria-label="Shortcut for start or pause"></div><div class="setting-row"><span>Next phase</span><input class="shortcut-input" data-action="next" readonly aria-label="Shortcut for next phase"></div><div class="setting-row"><span>Previous phase</span><input class="shortcut-input" data-action="restart" readonly aria-label="Shortcut for previous phase"></div><div class="setting-row"><span>Mute voice</span><input class="shortcut-input" data-action="mute" readonly aria-label="Shortcut for mute voice"></div></div>
-  <div class="danger-zone"><button class="reset-btn" id="resetAll">Reset all settings</button><div class="reset-confirm" id="resetConfirm"><strong>Reset everything?</strong><div class="mini-note">Your workout, combo, display, and shortcut preferences will return to their defaults.</div><div class="confirm-actions"><button id="cancelReset">Cancel</button><button class="confirm-reset" id="confirmReset">Yes, reset all</button></div></div></div>
-</div></section>
-<script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-<script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
-import {getAuth,GoogleAuthProvider,onAuthStateChanged,signInWithCredential,signOut} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-(() => {
-  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  const names={1:'Jab',2:'Cross',3:'Lead hook',4:'Rear hook',5:'Lead uppercut',6:'Rear uppercut'};
-  const combos=[
-    {id:'jab',n:'Jab',m:[1],types:['punch'],level:1},{id:'double-jab-only',n:'Double jab',m:[1,1],types:['punch'],level:1},{id:'one-two',n:'One two',m:[1,2],types:['punch'],level:1},{id:'double-jab',n:'Double jab cross',m:[1,1,2],types:['punch'],level:1},{id:'triple-jab',n:'Triple jab',m:[1,1,1],types:['punch'],level:1},{id:'jab-reset',n:'Jab cross jab',m:[1,2,1],types:['punch'],level:1},{id:'jab-rear-hook',n:'Jab rear hook',m:[1,4],types:['punch'],level:1},{id:'jab-rear-uppercut',n:'Jab rear uppercut',m:[1,6],types:['punch'],level:1},{id:'long-jab-hook',n:'Double jab cross hook',m:[1,1,2,3],types:['punch'],level:2},{id:'body-jab-cross',n:'Body jab cross',m:['body 1',2],types:['punch','body'],level:1},{id:'body-cross',n:'Jab body cross',m:[1,'body 2'],types:['punch','body'],level:1},{id:'jab-cross-body-hook',n:'Jab cross body hook',m:[1,2,'body 3'],types:['punch','body'],level:1},{id:'double-jab-body-hook',n:'Double jab rear body hook',m:[1,1,'body 4'],types:['punch','body'],level:1},{id:'triple-jab-body-cross',n:'Triple jab body cross',m:[1,1,1,'body 2'],types:['punch','body'],level:2},{id:'jab-body-cross-hook',n:'Jab body cross lead hook',m:[1,'body 2',3],types:['punch','body'],level:2},{id:'rear-hook-body-jab',n:'Rear hook body jab',m:[4,'body 1'],types:['punch','body'],level:2},{id:'basic-slip',n:'Jab slip cross',m:[1,'slip',2],types:['punch','defense'],level:1},{id:'hook-finish',n:'One two hook',m:[1,2,3],types:['punch'],level:1},{id:'hook-cross',n:'Jab hook cross',m:[1,3,2],types:['punch'],level:1},
-    {id:'slip-return',n:'Slip and return',m:[1,2,'slip outside',2],types:['punch','defense'],level:2},{id:'roll-return',n:'Hook roll hook cross',m:[1,3,'roll',3,2],types:['punch','defense'],level:2},{id:'pull-counter',n:'Pull counter',m:[1,2,'pull',2],types:['punch','defense'],level:2},{id:'one-two-slip-six',n:'One two slip rear uppercut',m:[1,2,'slip lead',6],types:['punch','defense'],level:2},{id:'one-two-pull-six',n:'One two pull rear uppercut',m:[1,2,'pull',6],types:['punch','defense'],level:2},{id:'slip-slip-body-upper-hook',n:'Slip slip body hook uppercut hook',m:['slip lead','slip rear','body 3',6,3],types:['punch','body','defense'],level:2},{id:'roll-counter-chain',n:'Cross hook roll counter chain',m:[2,3,'roll lead',3,2,'roll rear'],types:['punch','defense'],level:3},{id:'full-defense-chain',n:'Punches into defensive flow',m:[1,2,3,'slip lead','slip rear','roll lead','roll rear'],types:['punch','defense'],level:3},
-    {id:'step-out',n:'One two step out',m:[1,2,'step out'],types:['punch','footwork'],level:1},{id:'step-in-jab',n:'Step in jab',m:['step in',1],types:['punch','footwork'],level:1},{id:'pivot-exit',n:'One two hook pivot',m:[1,2,3,'pivot'],types:['punch','footwork'],level:2},{id:'angle-out',n:'Combination angle out',m:[2,3,2,'angle out'],types:['punch','footwork'],level:2},{id:'step-back-cross',n:'Cross hook cross step back cross',m:[2,3,2,'step back',2],types:['punch','footwork'],level:2},{id:'movement-flow',n:'Defensive movement flow',m:['slip lead','slip rear','roll lead','roll rear','shuffle back','shuffle forward'],types:['defense','footwork'],level:2},
-    {id:'uppercuts',n:'Uppercut combination',m:[1,6,3,2],types:['punch'],level:2},{id:'close-body-return',n:'Rear body hook uppercut hook cross',m:['body 4',6,3,2],types:['punch','body'],level:3},{id:'body-hooks-return',n:'Body hooks cross jab cross',m:['body 4','body 3',2,1,2],types:['punch','body'],level:3},{id:'body-hooks-uppercut',n:'Jab body hooks uppercut jab',m:[1,'body 4','body 3',6,1],types:['punch','body'],level:3},{id:'advanced-box',n:'Slip roll exit',m:[1,'slip',2,3,'roll',3,2,'angle out'],types:['punch','defense','footwork'],level:3},
-    {id:'defense-only',n:'Slip roll reset',m:['slip','roll','guard'],types:['defense'],level:1},{id:'movement-only',n:'Step pivot reset',m:['step in','pivot','step out'],types:['footwork'],level:1},
-    {id:'kick-only',n:'Lead rear kick',m:['lead kick','rear kick'],types:['kick'],level:1},{id:'rear-kick',n:'Cross lead hook rear kick',m:[2,3,'rear kick'],types:['punch','kick'],level:2},{id:'jab-kick',n:'Jab cross lead kick',m:[1,2,'lead kick'],types:['punch','kick'],level:1},{id:'jab-cross-hook-rear-kick',n:'Jab cross hook rear kick',m:[1,2,3,'rear kick'],types:['punch','kick'],level:1},{id:'double-jab-double-kick',n:'Double jab lead kick rear kick',m:[1,1,'lead kick','rear kick'],types:['punch','kick'],level:2},{id:'cross-hook-cross-lead-kick',n:'Cross hook cross lead kick',m:[2,3,2,'lead kick'],types:['punch','kick'],level:2},{id:'jab-cross-jab-rear-kick',n:'Jab cross jab rear kick',m:[1,2,1,'rear kick'],types:['punch','kick'],level:2},{id:'mixed-kick-chain',n:'Jab lead kick cross rear hook rear kick',m:[1,'lead kick',2,4,'rear kick'],types:['punch','kick'],level:3},{id:'advanced-kick-chain',n:'Front kick step punches elbow hook rear kick',m:['front kick','step in',2,3,'rear elbow',3,'rear kick'],types:['punch','kick','knee','footwork'],level:3},{id:'kick-return',n:'Check and return',m:['check kick',2,3,'rear kick'],types:['defense','punch','kick'],level:3},
-    {id:'uppercut-speed',n:'Jab cross lead uppercut rear uppercut',m:[1,2,5,6],types:['punch'],level:2},{id:'knees-only',n:'Lead rear knee',m:['lead knee','rear knee'],types:['knee'],level:1},{id:'knee-entry',n:'Punches to knee',m:[1,2,3,'rear knee'],types:['punch','knee'],level:2},{id:'elbow-exit',n:'Elbow and exit',m:[2,'lead elbow','step out'],types:['punch','knee','footwork'],level:2},{id:'clinch-work',n:'Knee elbow combination',m:['lead knee','rear knee','lead elbow'],types:['knee'],level:3}
-  ];
-  let customCombos=[];try{const stored=JSON.parse(localStorage.getItem('cornerwork-custom-combos'));if(Array.isArray(stored))customCombos=stored.filter(c=>c&&c.id&&c.n&&Array.isArray(c.m)&&Array.isArray(c.types))}catch(e){}combos.push(...customCombos);
-  const bodyComboIds=['body-jab-cross','body-cross','jab-cross-body-hook','double-jab-body-hook','triple-jab-body-cross','jab-body-cross-hook','rear-hook-body-jab','close-body-return','body-hooks-return','body-hooks-uppercut'];
-  const catalogAdditions=['one-two-slip-six','one-two-pull-six','slip-slip-body-upper-hook','roll-counter-chain','full-defense-chain','step-in-jab','step-back-cross','movement-flow','jab-cross-hook-rear-kick','double-jab-double-kick','cross-hook-cross-lead-kick','jab-cross-jab-rear-kick','mixed-kick-chain','advanced-kick-chain','uppercut-speed'];
-  const displayDefaults={clockSize:100,calloutSize:100};
-  const soundDefaults={warning:{warningSound:'wood',warningVolume:150,warningHits:2,warningSpacing:200,warningPitch:75},start:{roundStartSound:'classic',roundStartVolume:100,roundStartHits:1,roundStartSpacing:300,roundStartPitch:100,roundStartDecay:1000},end:{roundEndSound:'boxing',roundEndVolume:100,roundEndHits:2,roundEndSpacing:300,roundEndPitch:100,roundEndDecay:1100}};
-  let settings={comboCatalogVersion:3,roundStartDefaultV2:true,trainingMode:'bag',structured:'off',skill:'basic',complexity:'low',repeats:'none',unique:'yes',focusEnabled:'no',focuses:['jabs','short','mixed'],stance:'orthodox',format:'numbers',shortcutLabels:true,sidebarShortcuts:false,voice:true,speechRate:5,volume:80,...displayDefaults,clapperEnabled:true,clapperTime:'10',...soundDefaults.warning,...soundDefaults.start,...soundDefaults.end,showTimeLeft:true,secondary:false,coachCues:true,cueFrequency:5,guidedBeginner:false,punchOuts:false,punchOutDuration:15,haptics:true,highContrast:false,colorBlind:false,leftControls:false,includeTypes:['punch','defense','footwork'],workout:{rounds:6,warmupTime:45,roundTime:180,restTime:30,pace:6},allowedCombos:null,shortcuts:{start:'Space',next:'N',restart:'R',mute:'M'}};
-  const appleMobile=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  let running=false, phase='ready', round=1, time=180, tick=null, comboTick=null, primaryHoldTimer=null, primaryHoldTriggered=false, primaryHoldResetTimer=null, wakeLock=null, wakeLockPending=false, speechTimers=[], soundTimers=[], current=[], comboVisible=true, roundAnnouncementActive=false, lastKey='', roundUsed=new Set(), repeatLeft=0, comboTotal=0, moveTotal=0, locked=new Set(combos.map(c=>c.id)),focusPlan={},blockPlan={},blockIndex=0,combosSinceCue=0,punchOutActive=false,punchOutAt=-1,punchOutUntil=-1,workoutStartedAt=0,activeSeconds=0,completionReported=false;
-  function val(id){const el=$('#'+id);return el.classList.contains('time-input')?+(el.dataset.seconds||0):+el.value}
-  function saveSettings(){try{localStorage.setItem('cornerwork-settings',JSON.stringify(settings))}catch(e){}}
-  const presetFields=['trainingMode','structured','skill','complexity','repeats','unique','focusEnabled','stance','format','speechRate','clockSize','calloutSize','clapperEnabled','clapperTime','warningSound','warningVolume','warningHits','warningSpacing','warningPitch','roundStartSound','roundStartVolume','roundStartHits','roundStartSpacing','roundStartPitch','roundStartDecay','roundEndSound','roundEndVolume','roundEndHits','roundEndSpacing','roundEndPitch','roundEndDecay','coachCues','cueFrequency','guidedBeginner','punchOuts','punchOutDuration','haptics','highContrast','colorBlind','leftControls'];
-  let presets=[];try{const stored=JSON.parse(localStorage.getItem('cornerwork-presets'));if(Array.isArray(stored))presets=stored.map(p=>({...p,updatedAt:Number(p.updatedAt)||0}))}catch(e){}
-  const firebaseConfig={apiKey:'AIzaSyBauaNiL69nGyj_ZJiZB91ienhipHGjU1M',authDomain:'cornerwork-c8e9b.firebaseapp.com',projectId:'cornerwork-c8e9b',storageBucket:'cornerwork-c8e9b.firebasestorage.app',messagingSenderId:'420962558840',appId:'1:420962558840:web:91b294b3e3db551fe49e8d'};
-  const googleClientId='420962558840-fisu6dai881btckmoi34pqg5a6f7j678.apps.googleusercontent.com';
-  let auth=null,db=null,cloudUser=null,cloudReady=false,cloudUnsubscribe=null,googleButtonReady=false;const cloudDeletes=new Set();
-  function workoutSnapshot(){const config={};presetFields.forEach(k=>config[k]=settings[k]);config.focuses=[...settings.focuses];config.includeTypes=[...settings.includeTypes];config.workout={...settings.workout};config.allowedCombos=Array.isArray(settings.allowedCombos)?[...settings.allowedCombos]:null;return config}
-  function applyWorkout(config){if(!config||typeof config!=='object')return false;presetFields.forEach(k=>{if(k in config)settings[k]=config[k]});if(Array.isArray(config.focuses))settings.focuses=[...config.focuses];if(Array.isArray(config.includeTypes)&&config.includeTypes.length)settings.includeTypes=[...config.includeTypes];if(config.workout&&typeof config.workout==='object')settings.workout={...settings.workout,...config.workout};if(config.allowedCombos===null||Array.isArray(config.allowedCombos))settings.allowedCombos=config.allowedCombos===null?null:[...config.allowedCombos];saveSettings();return true}
-  function savePresets(){try{localStorage.setItem('cornerwork-presets',JSON.stringify(presets))}catch(e){}}
-  function cloudStatus(title,detail,error=false){const el=$('#cloudStatus');el.classList.toggle('cloud-error',error);$('#cloudAccount').classList.toggle('connected',!!cloudUser&&!error);el.innerHTML='<strong>'+safeText(title)+'</strong>'+safeText(detail)}
-  async function savePresetToCloud(preset){if(!cloudUser||!db)return;try{await setDoc(doc(db,'users',cloudUser.uid,'workouts',preset.id),{name:preset.name,config:preset.config,note:preset.note||'',favorite:!!preset.favorite,updatedAt:preset.updatedAt||Date.now()});cloudStatus('Workouts synced',cloudUser.email||'Google account connected')}catch(e){cloudStatus('Sync needs setup','Check Firebase configuration',true)}}
-  async function deletePresetFromCloud(id){if(!cloudUser||!db)return;cloudDeletes.add(id);try{await deleteDoc(doc(db,'users',cloudUser.uid,'workouts',id))}catch(e){cloudStatus('Could not delete from cloud','Saved locally on this device',true)}finally{setTimeout(()=>cloudDeletes.delete(id),1500)}}
-  function beginCloudSync(user){if(cloudUnsubscribe)cloudUnsubscribe();cloudUser=user;cloudReady=false;cloudStatus('Syncing workoutsвЂ¦',user.email||'Google account connected');const ref=collection(db,'users',user.uid,'workouts');cloudUnsubscribe=onSnapshot(ref,snapshot=>{const cloud=snapshot.docs.map(d=>({id:d.id,...d.data(),updatedAt:Number(d.data().updatedAt)||0})).filter(p=>p.name&&p.config&&!cloudDeletes.has(p.id));const merged=new Map(cloud.map(p=>[p.id,p]));presets.forEach(local=>{const remote=merged.get(local.id);if(!remote||Number(local.updatedAt)>=Number(remote.updatedAt))merged.set(local.id,local)});presets=[...merged.values()].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));savePresets();renderPresets();cloudReady=true;cloudStatus('Workouts synced',user.email||'Google account connected');const remoteIds=new Set(cloud.map(p=>p.id));presets.filter(p=>!remoteIds.has(p.id)).forEach(savePresetToCloud)},()=>cloudStatus('Cloud sync unavailable','Your workouts still save here',true))}
-  async function acceptGoogleCredential(response){if(!response?.credential||!auth)return;cloudStatus('Signing inвЂ¦','Connecting your saved workouts');try{const result=await signInWithCredential(auth,GoogleAuthProvider.credential(response.credential));if(result.user)beginCloudSync(result.user)}catch(e){cloudStatus('Could not sign in','Please try again',true)}}
-  function initGoogleSignIn(){if(googleButtonReady||!auth)return;if(!window.google?.accounts?.id){$('#googleIdentityScript').addEventListener('load',initGoogleSignIn,{once:true});return}google.accounts.id.initialize({client_id:googleClientId,callback:acceptGoogleCredential,auto_select:false,cancel_on_tap_outside:true});google.accounts.id.renderButton($('#googleSignIn'),{type:'standard',theme:'outline',size:'large',shape:'rectangular',text:'signin_with',logo_alignment:'left',width:250});googleButtonReady=true}
-  function initCloud(){try{const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);initGoogleSignIn();onAuthStateChanged(auth,user=>{if(user){$('#googleSignIn').classList.add('hidden');$('#googleSignOut').classList.remove('hidden');beginCloudSync(user)}else{if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null}cloudUser=null;cloudReady=false;$('#googleSignIn').classList.remove('hidden');$('#googleSignOut').classList.add('hidden');cloudStatus('Saved on this device','Google sign-in is optional');initGoogleSignIn()}})}catch(e){cloudStatus('Cloud sync unavailable','Workouts still save on this device',true)}}
-  function shareCode(value){const bytes=new TextEncoder().encode(JSON.stringify(value));let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
-  function readShare(code){try{const binary=atob(code.replace(/-/g,'+').replace(/_/g,'/')),bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));return JSON.parse(new TextDecoder().decode(bytes))}catch(e){return null}}
-  function safeText(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-  function renderPresets(){const list=$('#presetList');if(!presets.length){list.innerHTML='<div class="preset-empty">Your saved workouts will appear here.</div>';return}list.innerHTML=presets.map(p=>'<div class="preset-item"><span class="preset-name" title="'+safeText(p.name)+'">'+safeText(p.name)+'</span><span class="preset-actions"><button data-load="'+p.id+'">Load</button><button data-share="'+p.id+'">Share</button><button class="delete-preset" data-delete="'+p.id+'" aria-label="Delete '+safeText(p.name)+'">Г—</button></span></div>').join('');list.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>{const p=presets.find(x=>x.id===b.dataset.load);if(p&&applyWorkout(p.config))location.reload()});list.querySelectorAll('[data-share]').forEach(b=>b.onclick=async()=>{const p=presets.find(x=>x.id===b.dataset.share);if(!p)return;const url=location.origin+location.pathname+'#workout='+shareCode({name:p.name,config:p.config});try{await navigator.clipboard.writeText(url);const old=b.textContent;b.textContent='Copied';setTimeout(()=>b.textContent=old,1400)}catch(e){prompt('Copy this workout link',url)}});list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{const p=presets.find(x=>x.id===b.dataset.delete);if(p&&confirm('Delete "'+p.name+'"?')){presets=presets.filter(x=>x.id!==p.id);savePresets();deletePresetFromCloud(p.id);renderPresets();render()}})}
-  async function syncWakeLock(){if(!('wakeLock'in navigator))return;if(running&&document.visibilityState==='visible'){if(wakeLock||wakeLockPending)return;wakeLockPending=true;try{const lock=await navigator.wakeLock.request('screen');if(running&&document.visibilityState==='visible'){wakeLock=lock;lock.addEventListener('release',()=>{if(wakeLock===lock)wakeLock=null})}else await lock.release()}catch(e){}finally{wakeLockPending=false}}else if(wakeLock){const lock=wakeLock;wakeLock=null;try{await lock.release()}catch(e){}}}
-  function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
-  function parseTime(raw){const text=String(raw).trim();if(/^\d+:\d{1,2}$/.test(text)){const [m,s]=text.split(':').map(Number);return m*60+s}const n=Number(text);return Number.isFinite(n)?n:null}
-  function totalFmt(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'):m+':'+String(sec).padStart(2,'0')}
-  function isOn(id){return $('#'+id).classList.contains('on')}
-  function orient(text){const lead=settings.stance==='southpaw'?'Right':'Left',rear=settings.stance==='southpaw'?'Left':'Right';return text.replace(/\bLead\b/g,lead).replace(/\bRear\b/g,rear)}
-  function phrase(x){let text;if(typeof x==='number')text=names[x];else if(x.startsWith('body '))text=names[+x.slice(-1)]+' to body';else text=x.replace(/\b\w/g,c=>c.toUpperCase());return orient(text)}
-  function numbered(x){if(typeof x==='number')return String(x);if(x.startsWith('body '))return x.slice(-1)+' Body';if(x.startsWith('head '))return x.slice(-1)+' Head';return phrase(x)}
-  function spoken(c){return c.map(settings.format==='numbers'?numbered:phrase).join(', ')}
-  function displayKey(k){return k==='Space'?'Space':k.replace('Arrow','')}
-  function keyOf(c){return c.join('|')}
-  function included(){return new Set($$('#include .active').map(b=>b.dataset.type))}
-  function selectedLevel(){return {basic:1,intermediate:2,advanced:3}[settings.skill]}
-  function visibleCombos(){const inc=included(),level=selectedLevel();return combos.filter(c=>c.level<=level&&c.types.every(t=>inc.has(t)))}
-  function available(){
-    const inc=included(),level=selectedLevel(),max={low:3,medium:5,high:9}[settings.complexity];
-    let pool=combos.filter(c=>c.level<=level&&c.m.length<=max&&c.types.every(t=>inc.has(t))&&locked.has(c.id));
-    if(!pool.length)pool=combos.filter(c=>c.types.every(t=>inc.has(t))&&locked.has(c.id));
-    const focuses=activeFocuses();if(focuses.length&&!focuses.includes('freestyle')){const focused=pool.filter(c=>focuses.some(f=>matchesFocus(c,f)));if(focused.length)pool=focused}
-    return pool;
-  }
-  function activeFocuses(){if(settings.structured!=='off'&&phase==='work')return blockPlan[round]?.[blockIndex]||[];return focusPlan[round]||[]}
-  function matchesFocus(c,f){if(f==='jabs')return c.m.filter(x=>x===1||x==='body 1').length>=2;if(f==='short'||f==='speed')return c.m.length<=3;if(f==='mixed')return c.types.length>1||c.m.length>=3;if(f==='explosive')return c.m.length>=2&&c.m.length<=3&&c.types.includes('punch');if(f==='high')return c.m.length>=3;if(f==='power')return c.m.some(x=>[2,3,4,'body 3','body 4','rear kick'].includes(x));if(f==='defense')return c.types.includes('defense');if(f==='footwork'||f==='movement')return c.types.includes('footwork');if(f==='body')return c.m.some(x=>typeof x==='string'&&x.startsWith('body '));if(f==='uppercuts')return c.m.some(x=>x===5||x===6);if(f==='inside')return c.m.some(x=>[3,4,5,6,'body 3','body 4','lead knee','rear knee','lead elbow','rear elbow'].includes(x));if(f==='freestyle')return true;return false}
-  function focusName(f){return {jabs:'Focus jabs',short:'Short combos',mixed:'Mix up combos',explosive:'Explosive bursts',high:'High intensity',speed:'Speed',power:'Power',defense:'Defense & counters',footwork:'Footwork & angles',movement:'Movement',body:'Body work',uppercuts:'Uppercuts',inside:'Inside fighting',freestyle:'Freestyle'}[f]||f}
-  function callCombo(combo,options){comboTotal++;moveTotal+=combo.length;$('#comboTotal').textContent=comboTotal;$('#moveTotal').textContent=moveTotal;sayCombo(combo,options)}
-  const standardCues=['Hands back to guard','Move after the combination','Change levels','Relax your shoulders','Breathe with every punch','Finish with an angle'],beginnerCues=['Keep your chin tucked','Return every punch to guard','Stay balanced','Exhale on each punch','Keep your hands relaxed'];
-  function deliverCombo(combo,options){combosSinceCue++;const frequency=Math.max(2,+settings.cueFrequency||5),cuePool=settings.guidedBeginner?beginnerCues:standardCues;if(settings.coachCues&&combosSinceCue>=frequency&&isOn('voice')){combosSinceCue=0;say(cuePool[Math.floor(Math.random()*cuePool.length)],()=>callCombo(combo,{cancel:false}))}else callCombo(combo,options)}
-  function shuffle(list){for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}return list}
-  function buildFocusPlan(){focusPlan={};blockPlan={};blockIndex=0;if(settings.focusEnabled!=='yes'||!settings.focuses.length)return;const inc=included(),level=selectedLevel(),max={low:3,medium:5,high:9}[settings.complexity],valid=settings.focuses.filter(f=>(f!=='power'||settings.trainingMode==='bag')&&(f==='freestyle'||combos.some(c=>c.level<=level&&c.m.length<=max&&c.types.every(t=>inc.has(t))&&locked.has(c.id)&&matchesFocus(c,f))));if(!valid.length)return;const total=Math.max(1,val('rounds'));if(settings.structured!=='off'){const size=+settings.structured,count=Math.max(1,Math.ceil(val('roundTime')/size)),slots=shuffle(Array.from({length:total*count},(_,i)=>i));for(let r=1;r<=total;r++)blockPlan[r]=Array.from({length:count},()=>[]);valid.forEach((f,i)=>{const slot=slots[i%slots.length],r=Math.floor(slot/count)+1,b=slot%count;blockPlan[r][b]=[f]});slots.slice(valid.length).forEach(slot=>{if(Math.random()<.35){const r=Math.floor(slot/count)+1,b=slot%count;blockPlan[r][b]=[valid[Math.floor(Math.random()*valid.length)]]}});for(let r=1;r<=total;r++){const used=[...new Set(blockPlan[r].flat())];if(used.length)focusPlan[r]=used}return}const slots=shuffle(Array.from({length:total},(_,i)=>i+1)),usable=total>1?slots.slice(0,total-1):slots;valid.forEach((f,i)=>{const slot=usable[i%usable.length];(focusPlan[slot]||(focusPlan[slot]=[])).push(f)})}
-  function newCombo(speak=true){
-    if(activeFocuses().includes('freestyle')){current=['freestyle'];repeatLeft=0;renderCombo();if(speak&&running&&phase==='work')deliverCombo(current);return}
-    if(!available().length){current=[];$('#combo').textContent='Select at least one combo';$('#comboNumbers').style.display='none';return}
-    if(repeatLeft>0){repeatLeft--;renderComboз-ўG§ІЪоќЖ­yЭ[
-	Ь›Э[™[YIКK™\Э[YO][
-	Ь™\Э[YIКNЪYЉ\ЩOOOIШЫЫ\]IК\™]\›€ЪYЉ\ЩOOOIЬ™XYIК\™]\›€[
-	ЭШ\›]\[YIКJЬ›Э[™Књ›Э[™[YJУX]›X^
-›Э[™ЛLJJњ™\Э[YNЪYЉ\ЩOOOIЭШ\›]\	К\™]\›€[YJЬ›Э[™Књ›Э[™[YJУX]›X^
-›Э[™ЛLJJњ™\Э[YNЪYЉ\ЩOOOIЭЫЬљЙК\™]\›€[YJК›Э[™Л\›Э[™
-Jњ›Э[™[YJК›Э[™Л\›Э[™
-Jњ™\Э[YNЬ™]\›€[YJК›Э[™Л\›Э[™
-Jњ›Э[™[YJУX]›X^
-›Э[™Л\›Э[™LJJњ™\Э[Y_B€ќ[Э[Ы€Ш[Щ[ЬYXЪ
-
-^ЬЬYXЪ[Y\њЛ™›Ь‘XXЪ
-ЫX\•[Y[Э]
-NЬЬYXЪ[Y\њПVЧNЪYЉ	ЬЬYXЪЮ[ќ\Ъ\ЙЪ[€Ъ[™ЭК\ЬYXЪЮ[ќ\Ъ\ЛШ[Щ[
-
-_B€ќ[Э[Ы€ЬXZХ]\[ЩJ^Ы™[™]OKЋMJ^ЪYЉZ\УЫЉ	Э›ЪXЩIК_Щ][™ЬЛќ›Ы[YOLJ	ЬЬYXЪЮ[ќ\Ъ\ЙЪ[€Ъ[™ЭКJ\™]\›ЋШЫЫњЭO[™]ИЬYXЪЮ[ќ\Ъ\Х]\[ЩJ^
-NЭKњ]OX\S[Шљ[OУX]›X^
-ЌK]J‹ЋЉNњ]NЭKњ]ЪKЋЭKќ›Ы[YO\Щ][™ЬЛќ›Ы[YKМLЪYЉЫ™[™
-^ЭK›Ы™[™[Ы™[™ЭK›Ы™\њ›ЬЏ[Ы™[™\ЬYXЪЮ[ќ\Ъ\ЛњЬXZКJ_B€ќ[Э[Ы€Ш^J^Ы™[™
-^ШШ[Щ[ЬYXЪ
-
-NЬЬXZХ]\[ЩJ^Ы™[™
-_B€ќ[Э[Ы€Ш^PЫЫX›КЫЫX›ЛШШ[Щ[]ќY_O^ЯJ^ЪYЉШ[Щ[
-XШ[Щ[ЬYXЪ
-
-NШЫЫњЭЬYY\Щ][™ЬЛњЬYXЪ]K\ќПXЫЫX›Л›X\
-Щ][™ЬЛ™›Ь›X]OOIЫќ[X™\њЙПЫќ[X™\™Yњ\ЩJKЩ\\]ЬЏ\ЬYYLOЙИ‹‹€	ОњЬYYLПЙЛ	О‰И	Л]OLKЌJКЬYYMJJ‹ЊMЬЬXZХ]\[ЩJ\ќЛљ›Ъ[ЉЩ\\]ЬЉKќ[]J_B€ќ[Э[Ы€™YЪ[ђЫЫX›РШY[ЩJ
-^ШЫX\’[ќ\ќ[
-ЫЫX›ХXЪКNШЫЫX›ХXЪП\Щ][ќ\ќ[
-
-
-OO›™]РЫЫX›КќYJKШY[ЩJ
-JЊL
-_B€ќ[Э[Ы€X^X™PY[ЩP›ШЪК
-^ЪYЉЩ][™ЬЛњЭќXЭ\™YOOIЫЩ™‰Я\ЩHOOIЭЫЬљЙК\™]\›ЋШЫЫњЭ™^SX]›Z[Љ
-›ШЪФ[–Ь›Э[™OЛ›[™ЭJKLKX]™›ЫЬЉ
-[
-	Ь›Э[™[YIКK][YJKКЬЩ][™ЬЛњЭќXЭ\™Y
-JNЪYЉ™^OOX›ШЪТ[™^
-\™]\›ЋШ›ШЪТ[™^[™^ШЫX\’[ќ\ќ[
-ЫЫX›ХXЪКNЬ™\X]YќLШЫЫњЭX™[XXЭ]™Q›ШЭ\Щ\К
-K›X\
-›ШЭ\У[YJKљ›Ъ[Љ	И[™	К_	УЬ[€›Ю[™ЙЛ™\Э[YOJ
-OOћЪYЉќ[›љ[™Й‰њ\ЩOOOIЭЫЬљЙК^Ы™]РЫЫX›КќYJNШ™YЪ[ђЫЫX›РШY[ЩJ
-__NЪYЉZ\УЫЉ	Э›ЪXЩIК_Щ][™ЬЛќ›Ы[YOLJ	ЬЬYXЪЮ[ќ\Ъ\ЙЪ[€Ъ[™ЭКJ\™\Э[YJ
-NЩ[ЩHШ^JX™[™\Э[YJNЬ™[™\Љ
-_B€ќ[Э[Ы€љ[љ\Ъ›Э[™[››Э[Щ[Y[ќ
-
-^ЪYЉ\›Э[™[››Э[Щ[Y[ќXЭ]™J\™]\›ЋЬ›Э[™[››Э[Щ[Y[ќXЭ]™OY[ЩNЪYЉ\ќ[›љ[™Я\ЩHOOIЭЫЬљЙК\™]\›ЋЬЭ\ќ[™К
-
-OOћЪYЉ\ќ[›љ[™Я\ЩHOOIЭЫЬљЙК\™]\›ЋШЫЫX›Хљ\ЪX›O]ќYNЬ™[™\ђЫЫX›К
-NШЫX\’[ќ\ќ[
-XЪКNЭXЪП\Щ][ќ\ќ[
-Э\L
-NЩ[]™\ђЫЫX›КЭ\њ™[ќШШ[Щ[™[Щ_JNШ™YЪ[ђЫЫX›РШY[ЩJ
-_J_B€ќ[Э[Ы€[››Э[ЩT›Э[™
-
-^ШЫЫњЭ›ШЭ\ПXXЭ]™Q›ШЭ\Щ\К
-K›X\
-›ШЭ\У[YJKљ›Ъ[Љ	И[™	КNЬ›Э[™[››Э[Щ[Y[ќXЭ]™O]ќYNШЫЫX›Хљ\ЪX›OY[ЩNЬ™[™\ђЫЫX›К
-NЪYЉZ\УЫЉ	Э›ЪXЩIК_Щ][™ЬЛќ›Ы[YOLJ	ЬЬYXЪЮ[ќ\Ъ\ЙЪ[€Ъ[™ЭКJ^Щљ[љ\Ъ›Э[™[››Э[Щ[Y[ќ
-
-NЬ™]\›џ\Ш^J	Ф›Э[™	КЬ›Э[™
-К›ШЭ\ПЙЛ€	КЩ›ШЭ\О‰ЙКJЙЛ‰Лљ[љ\Ъ›Э[™[››Э[Щ[Y[ќ
-_B€ќ[Э[Ы€љXњ]J]\›Љ^ЪYЉЩ][™ЬЛљ\XЬЙ‰›]љYШ]Ь‹ќљXњ]J[]љYШ]Ь‹ќљXњ]J]\›Љ_B€ќ[Э[Ы€XЭ]]T›Э[™
-
-^Ь\ЩOIЭЫЬљЙОЭ[YO][
-	Ь›Э[™[YIКNШ›ШЪТ[™^LЬќ[›љ[™П]ќYNШЫЫX›Хљ\ЪX›OY[ЩNЬ[ЪЭ]XЭ]™OY[ЩNЬ[ЪЭ][ќ[KLNШЫЫњЭ\][ЫЏSX]›Z[Љ
-ЬЩ][™ЬЛњ[ЪЭ]\][ЫџMKX]›X^
-K[
-	Ь›Э[™[YIКKLL
-JNЬ[ЪЭ]]\Щ][™ЬЛњ[ЪЭ]Й‰ќ[
-	Ь›Э[™[YIКO™\][ЫЉМЊУX]™›ЫЬЉ[
-	Ь›Э[™[YIКJЉЌЉУX]њ[™ЫJ
-J‹ЊЌJJN‹LNЫ™]РЫЫX›К[ЩJNЭљXњ]JМLЊLJNШ[››Э[ЩT›Э[™
-
-_B€ќ[Э[Ы€™Y\
-њ™\OMМЊ\ЏKЊLJ^ЪYЉЩ][™ЬЛќ›Ы[YOL
-\™]\›ЋЭћ^ШЫЫњЭO[™]И
-Ъ[™ЭЛђ]Y[РЫЫќ^Ъ[™ЭЛќЩXљЪ]]Y[РЫЫќ^
-J
-KПXKЬ™X]SЬШЪ[]ЬЉ
-KПXKЬ™X]QШZ[Љ
-NЫЛЫЫ›™XЭ
-КNЩЛЫЫ›™XЭ
-K™\Э[][ЫЉNЫЛ™њ™\]Y[ЮKќ[YOYњ™\NЩЛ™ШZ[‹њЩ][YP][YJЊLЉЉЩ][™ЬЛќ›Ы[YKМL
-KKЭ\њ™[ќ[YJNЩЛ™ШZ[‹™^Ы™[ќX[[\Х[YP][YJЊKKЭ\њ™[ќ[YJЩ\ЉNЫЛњЭ\ќ
-
-NЫЛњЭЬ
-KЭ\њ™[ќ[YJЩ\Љ_XШ]Ъ
-J^Я_B€ќ[Э[Ы€ЫЭ[™]™[
-™[]]™J^Ь™]\›€Щ][™ЬЛќ›Ы[YKМL
-Љ™[]]™KМL
-_B€ќ[Э[Ы€Ы\\Љ
-^ЪYЉЩ][™ЬЛќ›Ы[YOL
-\™]\›ЋЭћ^ШЫЫњЭO[™]И
-Ъ[™ЭЛђ]Y[РЫЫќ^Ъ[™ЭЛќЩXљЪ]]Y[РЫЫќ^
-J
-KX\Э\ЏXKЬ™X]QШZ[Љ
-KЫЫ\™\ЬЫЬЏXKЬ™X]Q[[ZXЬРЫЫ\™\ЬЫЬЉ
-KЭ[O\Щ][™ЬЛќШ\›љ[™ФЫЭ[™OOIЬЪ\њ	ПМKЊЊЋњЩ][™ЬЛќШ\›љ[™ФЫЭ[™OOIЩY\	ПЛЌНЋЊK]ЪШШ[O\Э[JЉЩ][™ЬЛќШ\›љ[™Ф]ЪМL
-K]JЪ[‹]Ъ
-OOћШЫЫњЭ[™ЭSX]ЩZ[
-KњШ[\T]J‹ЊLJKќY™™\ЏXKЬ™X]PќY™™\ЉK[™ЭKњШ[\T]JK]OXќY™™\‹™Щ]Ъ[›™[]J
-NЩ›ЬЉ]OLЪO[™ЭЪJККY]VЪWOJX]њ[™ЫJ
-JЊ‹LJJ“X]њЭКKZKЫ[™ЭKЊКNШЫЫњЭ›Ъ\ЩOXKЬ™X]PќY™™\”ЫЭ\ЩJ
-KYЪXKЬ™X]Pљ\]XYљ[\Љ
-K[™XKЬ™X]Pљ\]XYљ[\Љ
-K™ПXKЬ™X]QШZ[Љ
-NЫ›Ъ\ЩKќY™™\ЏXќY™™\ЋЪYЪќ\OIЪYЪ\ЬЙОЪYЪ™њ™\]Y[ЮKќ[YOLММ
-њ]ЪШШ[NШ[™ќ\OIШ[™\ЬЙОШ[™™њ™\]Y[ЮKќ[YO\]Ъ
-њ]ЪШШ[NШ[™”Kќ[YOKЌЋЫ™Л™ШZ[‹њЩ][YP][YJKЪ[ЉNЫ™Л™ШZ[‹™^Ы™[ќX[[\Х[YP][YJЊKЪ[ЉЛЊLJNЫ›Ъ\ЩKЫЫ›™XЭ
-YЪ
-NЪYЪЫЫ›™XЭ
-[™
-NШ[™ЫЫ›™XЭ
-™КNЫ™ЛЫЫ›™XЭ
-X\Э\ЉNЫ›Ъ\ЩKњЭ\ќ
-Ъ[ЉNШЫЫњЭЫ›ШЪПXKЬ™X]SЬШЪ[]ЬЉ
-KЩПXKЬ™X]QШZ[Љ
-NЪЫ›ШЪЛќ\OIЬЬ]X\™IОЪЫ›ШЪЛ™њ™\]Y[ЮKњЩ][YP][YJ]Ъ
-‹ЌJњ]ЪШШ[KЪ[ЉNЪЫ›ШЪЛ™њ™\]Y[ЮK™^Ы™[ќX[[\Х[YP][YJMНJњ]ЪШШ[KЪ[ЉЛЊНJNЪЩЛ™ШZ[‹њЩ][YP][YJЌЛЪ[ЉNЪЩЛ™ШZ[‹™^Ы™[ќX[[\Х[YP][YJЊKЪ[ЉЛЊJNЪЫ›ШЪЛЫЫ›™XЭ
-ЩКNЪЩЛЫЫ›™XЭ
-X\Э\ЉNЪЫ›ШЪЛњЭ\ќ
-Ъ[ЉNЪЫ›ШЪЛњЭЬ
-Ъ[ЉЛЊJ_NШЫЫ\™\ЬЫЬ‹ќ™\ЪЫќ[YOKLMШЫЫ\™\ЬЫЬ‹њ][Лќ[YOLNЫX\Э\‹™ШZ[‹ќ[YOKЌНЉњЫЭ[™]™[
-Щ][™ЬЛќШ\›љ[™Х›Ы[YJNЫX\Э\‹ЫЫ›™XЭ
-ЫЫ\™\ЬЫЬЉNШЫЫ\™\ЬЫЬ‹ЫЫ›™XЭ
-K™\Э[][ЫЉNЩ›ЬЉ]OLЪOЩ][™ЬЛќШ\›љ[™Т]ОЪJККZ]
-KЭ\њ™[ќ[YJЪJњЩ][™ЬЛќШ\›љ[™ФЬXЪ[™ЛМLILЏМLЌLЊML
-_XШ]Ъ
-J^Я_B€ќ[Э[Ы€ќ^ћ™\Љ™[]]™O\Щ][™ЬЛќШ\›љ[™Х›Ы[YK\][ЫЏKЌЛ]ЪLL
-^ЪYЉЩ][™ЬЛќ›Ы[YOL
-\™]\›ЋЭћ^ШЫЫњЭO[™]И
-Ъ[™ЭЛђ]Y[РЫЫќ^Ъ[™ЭЛќЩXљЪ]]Y[РЫЫќ^
-J
-KX\Э\ЏXKЬ™X]QШZ[Љ
-KЫЫ\™\ЬЫЬЏXKЬ™X]Q[[ZXЬРЫЫ\™\ЬЫЬЉ
-K›ЭПXKЭ\њ™[ќ[YNЫX\Э\‹™ШZ[‹ќ[YOKЊО
-њЫЭ[™]™[
-™[]]™JNЫX\Э\‹ЫЫ›™XЭ
-ЫЫ\™\ЬЫЬЉNШЫЫ\™\ЬЫЬ‹ЫЫ›™XЭ
-K™\Э[][ЫЉNЦМNKНМMMWK™›Ь‘XXЪ
-
-њ™\KJOOћШЫЫњЭПXKЬ™X]SЬШЪ[]ЬЉ
-KПXKЬ™X]QШZ[Љ
-NЫЛќ\OZOЙЬЬ]X\™IО‰ЬШ]ЭЫЭ	ОЫЛ™њ™\]Y[ЮKќ[YOYњ™\Jњ]ЪМLЩЛ™ШZ[‹ќ[YOLKКJМJNЫЛЫЫ›™XЭ
-КNЩЛЫЫ›™XЭ
-X\Э\ЉNЫЛњЭ\ќ
-›ЭКNЫЛњЭЬ
-›ЭКЩ\][ЫЉ_JNЫX\Э\‹™ШZ[‹њЩ][YP][YJX\Э\‹™ШZ[‹ќ[YK›ЭКNЫX\Э\‹™ШZ[‹™^Ы™[ќX[[\Х[YP][YJЊK›ЭКЩ\][ЫЉ_XШ]Ъ
-J^Я_B€ќ[Э[Ы€^UШ\›љ[™К
-^ШЫ\\Љ
-_B€ќ[Э[Ы€™[Ы™JЭ[OIШ›Ю[™ЙЛ™[]]™O\Щ][™ЬЛњ›Э[™[™›Ы[YK]Ъ\Щ][™ЬЛњ›Э[™[™]ЪXШ^O\Щ][™ЬЛњ›Э[™[™XШ^J^ЪYЉЩ][™ЬЛќ›Ы[YOL
-\™]\›ЋЭћ^ШЫЫњЭO[™]И
-Ъ[™ЭЛђ]Y[РЫЫќ^Ъ[™ЭЛќЩXљЪ]]Y[РЫЫќ^
-J
-KX\Э\ЏXKЬ™X]QШZ[Љ
-KЫЫ\™\ЬЫЬЏXKЬ™X]Q[[ZXЬРЫЫ\™\ЬЫЬЉ
-K›ЭПXKЭ\њ™[ќ[YK\ќX[П\Э[OOOIШЫ\ЬЪXЙПЦЦНЌЊWKМLМЊЌL—KМNNЊЋKМЌМЊMWN–ЦНLKWKОMKЌЧKМLNMKЌ—KМMЌЌKЊМWKМЊНЊ—KММMМЊLWWK\][ЫЏYXШ^KМLЫX\Э\‹™ШZ[‹ќ[YOKЊН
-њЫЭ[™]™[
-™[]]™JNЫX\Э\‹ЫЫ›™XЭ
-ЫЫ\™\ЬЫЬЉNШЫЫ\™\ЬЫЬ‹ЫЫ›™XЭ
-K™\Э[][ЫЉNЬ\ќX[Л™›Ь‘XXЪ
-
-Щњ™\K]™[KJOOћШЫЫњЭПXKЬ™X]SЬШЪ[]ЬЉ
-KПXKЬ™X]QШZ[Љ
-NЫЛќ\OZOЏЙЭљX[™ЫIО‰ЬЪ[™IОЫЛ™њ™\]Y[ЮKќ[YOYњ™\Jњ]ЪМLЩЛ™ШZ[‹њЩ][YP][YJ]™[›ЭКNЩЛ™ШZ[‹™^Ы™[ќX[[\Х[YP][YJЊK›ЭКУX]›X^
-Њ‹\][Ы‹ZJ‹ЊЉJNЫЛЫЫ›™XЭ
-КNЩЛЫЫ›™XЭ
-X\Э\ЉNЫЛњЭ\ќ
-›ЭКNЫЛњЭЬ
-›ЭКЩ\][ЫЉ_JNШЫЫњЭ[™ЭSX]ЩZ[
-KњШ[\T]J‹ЊЌJKќY™™\ЏXKЬ™X]PќY™™\ЉK[™ЭKњШ[\T]JK]OXќY™™\‹™Щ]Ъ[›™[]J
-NЩ›ЬЉ]OLЪO[™ЭЪJККY]VЪWOJX]њ[™ЫJ
-JЊ‹LJJЉKZKЫ[™Э
-NШЫЫњЭЭљZЩOXKЬ™X]PќY™™\”ЫЭ\ЩJ
-KЩПXKЬ™X]QШZ[Љ
-NЬЭљZЩKќY™™\ЏXќY™™\ЋЬЩЛ™ШZ[‹њЩ][YP][YJЌЛ›ЭКNЬЩЛ™ШZ[‹™^Ы™[ќX[[\Х[YP][YJЊK›ЭКЛЊЌJNЬЭљZЩKЫЫ›™XЭ
-ЩКNЬЩЛЫЫ›™XЭ
-X\Э\ЉNЬЭљZЩKњЭ\ќ
-›ЭК_XШ]Ъ
-J^Я_B€ќ[Э[Ы€^PЫЫ™љYЭ\™Y]
-™Yљ^
-^ШЫЫњЭЭ[O\Щ][™ЬЦЬ™Yљ^
-ЙФЫЭ[™	ЧK›Ы[YO\Щ][™ЬЦЬ™Yљ^
-ЙХ›Ы[YIЧK]Ъ\Щ][™ЬЦЬ™Yљ^
-ЙФ]Ъ	ЧKXШ^O\Щ][™ЬЦЬ™Yљ^
-ЙСXШ^IЧNЪYЉЭ[OOOIШќ^ћ™\‰КXќ^ћ™\Љ›Ы[YKXШ^KМL]Ъ
-NЩ[ЩH™[Ы™JЭ[OOOIШЫ\ЬЪXЙПЙШЫ\ЬЪXЙО‰Ш›Ю[™ЙЛ›Ы[YK]ЪXШ^J_B€ќ[Э[Ы€^PЫЫ™љYЭ\™YЩ\]Y[ЩJ™Yљ^Ы™[™
-^Ь^PЫЫ™љYЭ\™Y]
-™Yљ^
-NШЫЫњЭ]П\Щ][™ЬЦЬ™Yљ^
-ЙТ]ЙЧKЬXЪ[™П\Щ][™ЬЦЬ™Yљ^
-ЙФЬXЪ[™ЙЧKXШ^O\Щ][™ЬЦЬ™Yљ^
-ЙСXШ^IЧNЩ›ЬЉ]OLNЪO]ОЪJКК\ЫЭ[™[Y\њЛњ\Ъ
-Щ][Y[Э]
-
-
-OOњ^PЫЫ™љYЭ\™Y]
-™Yљ^
-KJњЬXЪ[™КJNЪYЉЫ™[™
-\ЫЭ[™[Y\њЛњ\Ъ
-Щ][Y[Э]
-Ы™[™
-]ЛLJJњЬXЪ[™КЩXШ^JМLЊ
-J_B€ќ[Э[Ы€Э\ќ[™КЫ™[™
-^Ь^PЫЫ™љYЭ\™YЩ\]Y[ЩJ	Ь›Э[™Э\ќ	ЛЫ™[™
-_B€ќ[Э[Ы€^T›Э[™[™Щ\]Y[ЩJЫ™[™
-^Ь^PЫЫ™љYЭ\™YЩ\]Y[ЩJ	Ь›Э[™[™	ЛЫ™[™
-_B€ќ[Э[Ы€›Э[™[™™[
-Ы™[™
-^Ь^T›Э[™[™Щ\]Y[ЩJЫ™[™
-_B€ќ[Э[Ы€™[™\Љ
-^В€Ю[ХШZЩSШЪК
-NВ€ШЭ[Y[ќ›ЩKЫ\ЬУ\ЭќЩЩЫJ	ЪYЪXЫЫќ\Э	ЛH\Щ][™ЬЛљYЪЫЫќ\Э
-NЩШЭ[Y[ќ›ЩKЫ\ЬУ\ЭќЩЩЫJ	ШЫЫЬ‹X›[™	ЛH\Щ][™ЬЛЫЫЬђ›[™
-NЩШЭ[Y[ќ›ЩKЫ\ЬУ\ЭќЩЩЫJ	ЫYќXЫЫќ›ЫЙЛH\Щ][™ЬЛ›YќЫЫќ›ЫКNВ€ЫЫњЭЫЬљЫЭ]ШЪЩYHVЙЬ™XYIЛ	ШЫЫ\]IЧKљ[ЫY\К\ЩJNЙ
-	ИЬЩ]\	КKЫ\ЬУ\ЭќЩЩЫJ	ЭЫЬљЫЭ][ШЪЩY	ЛЫЬљЫЭ]ШЪЩY
-NЙ	
-	ИЬЩ]\ќ]ЫЋ››Э
-ЫЬЩJKЬЩ]\[њ]ЬЩ]\Щ[XЭ	КK™›Ь‘XXЪ
-[O™[™\ШX›Y]ЫЬљЫЭ]ШЪЩYHY[ЫЬЩ\Э
-	ЛЫЫ™љYЛ[ШЪЩY	КJNВ€ЫЫњЭЫШЪПY›]
-[YJKњЬ]
-	О‰КNЙ
-	ИЭ[Y\‰КKљ[›™\’SXЫШЪЦМKњЬ]
-	ЙКK›X\
-ЏO‰ПЬ[€Ы\ЬПHќ[Y\‹YYЪ]Џ‰КЫЉЙПЬЬ[Џ‰КKљ›Ъ[Љ	ЙКJЙПЬ[€Ы\ЬПHќ[Y\‹XЫЫЫ€ЏЋЏЬЬ[Џ‰КШЫШЪЦМWKњЬ]
-	ЙКK›X\
-ЏO‰ПЬ[€Ы\ЬПHќ[Y\‹YYЪ]Џ‰КЫЉЙПЬЬ[Џ‰КKљ›Ъ[Љ	ЙКNЙ
-	ИШЫЫX›ХЭ[	КKќ^ЫЫќ[ќXЫЫX›ХЭ[Й
-	ИЫ[Э™UЭ[	КKќ^ЫЫќ[ќ[[Э™UЭ[Й
-	ИЭЫЬљЫЭ]Yќ	КKќ^ЫЫќ[ќIХЫЬљЫЭ][YHYќ€	КЭЭ[›]
-ЫЬљЫЭ]™[XZ[љ[™К
-JNЙ
-	ИЭЫЬљЫЭ]Yќ	КKњЭ[K™\Ь^O\Щ][™ЬЛњЪЭХ[YSYќЙШ›ШЪЙО‰Ы›Ы™IОВ€ЫЫњЭШ\›]\][
-	ЭШ\›]\[YIКKЫЬљП][
-	Ь›Э[™ЙКJќ[
-	Ь›Э[™[YIКK™\ЭSX]›X^
-[
-	Ь›Э[™ЙКKLJJќ[
-	Ь™\Э[YIКNЙ
-	ИЭЭ[[YIКKќ^ЫЫќ[ќ]Э[›]
-Ш\›]\
-ЭЫЬљКЬ™\Э
-NЙ
-	ИЭЭ[]Z[	КKќ^ЫЫќ[ќ]Э[›]
-Ш\›]\
-JЙИШ\›]\
-И	КЭЭ[›]
-ЫЬљКJЙИЫЬљИ
-И	КЭЭ[›]
-™\Э
-JЙИ™\Э	ОВ€	
-	ИЬЭYЩIКKЫ\ЬУ[YOIЬЭYЩH	КК\ЩOOOIЭШ\›]\	ПЙЭШ\›Z[™ЙОњ\ЩOOOIЬ™\Э	ПЙЬ™\Э[™ЙОњ\ЩOOOIШЫЫ\]IПЙШЫЫ\]IОњ[ЪЭ]XЭ]™OЙЬ[ЪЭ]	О‰ЙКNВ€	
-	ИЬ\ЩIКKќ^ЫЫќ[ќ\\ЩOOOIЭШ\›]\	ПЙХШ\›]\	Оњ\ЩOOOIЬ™\Э	ПЙФ™\Э[™™\Щ]	Оњ\ЩOOOIШЫЫ\]IПЙХЫЬљЫЭ]ЫЫ\]IО‰Ф›Э[™	КЬ›Э[™
-ЙИЩ€	КЭ[
-	Ь›Э[™ЙКNВ€ЫЫњЭXЭ[ЫЏ\ќ[›љ[™ПЙФ]\ЩIОњ\ЩOOOIШЫЫ\]IПЙФЭ\ќYШZ[‰Оњ\ЩOOOIЬ™XYIПЙФЭ\ќ›Э[™	О‰Ф™\Э[YIЛЪЭТЩ^\П\Щ][™ЬЛњЪЬќЭ]X™[ЛШП\Щ][™ЬЛњЪЬќЭ]ЛШ[’Ы™\Э\ќH\ќ[›љ[™Й‰€VЙЬ™XYIЛ	ШЫЫ\]IЧKљ[ЫY\К\ЩJKY]OJЪЭТЩ^\ПЙПЬ[€Ы\ЬПHљЩ^XШ\Џ‰КЩ\Ь^RЩ^JШЛњЭ\ќ
-JЙПЬЬ[Џ‰О‰ЙКJКШ[’Ы™\Э\ќЙПЬ[€Ы\ЬПHљЫ\™\Э\ќЏ’ЫИ™\Э\ќЬЬ[Џ‰О‰ЙКNВ€	
-	ИЬЭ\ќ	КKљ[›™\’SIПЬ[Џ‰КШXЭ[ЫЉЙПЬЬ[ЏЏЬ[€Ы\ЬПHњљ[X\ћK[Y]HЏ‰КЫY]JЙПЬЬ[Џ‰ОЙ
-	ИЬЭ\ќ	КKЫ\ЬУ\ЭќЩЩЫJ	Ь™\Э\ќ\™XYIЛШ[’Ы™\Э\ќ
-NЙ
-	ИЬЭ\ќ	КKЫ\ЬУ\ЭќЩЩЫJ	Ъ\Л\]\ЩIЛќ[›љ[™КNЙ
-	ИЬЭ\ќ	КKЫ\ЬУ\ЭќЩЩЫJ	Ъ\Л\™\Э[YIЛШ[’Ы™\Э\ќ
-NЙ
-	ИЬЭ\ќ	КKњЩ]]љXќ]J	Ш\љXK[X™[	ЛШ[’Ы™\Э\ќЙФ™\Э[YHЫЬљЫЭ]€ЫИ™\Э\ќЫЬљЫЭ]	ОXЭ[ЫЉNЙ
-	ИЬ™\Э\ќ	КKљ[›™\’SIПЬ[€\љXKZY[ЏHќќYHЏёЎ¤ЬЬ[Џ‰ККЪЭТЩ^\ПЙПЬ[€Ы\ЬПHљЩ^XШ\Џ‰КЩ\Ь^RЩ^JШЛњ™\Э\ќ
-JЙПЬЬ[Џ‰О‰ЙКNЙ
-	ИЬЪЪ\	КKљ[›™\’SJЪЭТЩ^\ПЙПЬ[€Ы\ЬПHљЩ^XШ\Џ‰КЩ\Ь^RЩ^JШЛ›™^
-JЙПЬЬ[Џ‰О‰ЙКJЙПЬ[€\љXKZY[ЏHќќYHЏёЎ¤ЏЬЬ[Џ‰ОВ€	
-	ЛљЩ^\ЙКKљ[›™\’SIПШ™‰КЩ\Ь^RЩ^JШЛњЭ\ќ
-JЙПЪШ™ЏЬ[Џ”Э\ќЬ€]\ЩOЬЬ[ЏЏШ™‰КЩ\Ь^RЩ^JШЛ›™^
-JЙПЪШ™ЏЬ[Џ“™^\ЩOЬЬ[ЏЏШ™‰КЩ\Ь^RЩ^JШЛњ™\Э\ќ
-JЙПЪШ™ЏЬ[Џ”™]љ[Э\И\ЩOЬЬ[ЏЏШ™‰КЩ\Ь^RЩ^JШЛ›]]JJЙПЪШ™ЏЬ[Џ“]]H›ЪXЩOЬЬ[Џ‰ОВ€YЉ\ЩOOOIЬ™XYIК^Й
-	ИШЫЫX›ЙКKќ^ЫЫќ[ќIХЫЬљЫЭ]™XYIОЙ
-	ИШЫЫX›Уќ[X™\њЙКKњЭ[K™\Ь^OIЫ›Ы™IЯY[ЩHYЉ\ЩOOOIЭШ\›]\	К^Й
-	ИШЫЫX›ЙКKќ^ЫЫќ[ќIСЩ]™XYIОЙ
-	ИШЫЫX›Уќ[X™\њЙКKњЭ[K™\Ь^OIЫ›Ы™IЯY[ЩHYЉ\ЩOOOIЬ™\Э	Я\ЩOOOIШЫЫ\]IК^Й
-	ИШЫЫX›ЙКKќ^ЫЫќ[ќIЙОЙ
-	ИШЫЫX›Уќ[X™\њЙКKќ^ЫЫќ[ќIЙОЙ
-	ИШЫЫX›Уќ[X™\њЙКKњЭ[K™\Ь^OIЫ›Ы™IЯB€ЫЫњЭЭ[[X\ћOVЬЩ][™ЬЛќZ[љ[™У[ЩOOOIШYЙПЙРYЙО‰ФЪYЭШ›Ю[™ЙЛЩ][™ЬЛњЪЪ[Щ][™ЬЛЫЫ\^]JЙИЫЫ\^]IЧNЪYЉXЭ]™Q›ШЭ\Щ\К
-K›[™Э
-\Э[[X\ћKњ\Ъ
-‹‹XЭ]™Q›ШЭ\Щ\К
-K›X\
-›ШЭ\У[YJJNЪYЉЩ][™ЬЛњЭќXЭ\™YOOIЫЩ™‰Й‰“Шљ™XЭљЩ^\К›ШЪФ[ЉK›[™Э
-^ЬЭ[[X\ћKњ\Ъ
-Щ][™ЬЛњЭќXЭ\™Y
-ЙИЩXИ›ШЪЬЙКNЪYЉ\ЩOOOIЭЫЬљЙК^ШЫЫњЭЪ^™OJЬЩ][™ЬЛњЭќXЭ\™YЭ[›ШЪЬПX›ШЪФ[–Ь›Э[™OЛ›[™ЭK[\ЩY][
-	Ь›Э[™[YIКK][YKYќSX]›X^
-X]›Z[Љ[YK
-›ШЪТ[™^
-МJJњЪ^™KY[\ЩY
-JNЬЭ[[X\ћKњ\Ъ
-	Р›ШЪИ	КК›ШЪТ[™^
-МJJЙИЩ€	КЭЭ[›ШЪЬКЙИ0­И	КЩ›]
-Yќ
-JЙИYќ	К__I
-	ИЬЭ[[X\ћIКKљ[›™\’S\Э[[X\ћK›X\
-O‰ПЬ[€Ы\ЬПHњЭ[[X\ћK\[	ККЭ[[X\ћKљ[™^ЩЉ
-OЊЏЙЩ›ШЭ\Л[X™[	О‰ЙКJЙИЏ‰КЮ
-ЙПЬЬ[Џ‰КKљ›Ъ[Љ	ЙКNВ€ЫЫњЭЭ[][
-	Ь›Э[™ЙКK[•љ\ЪX›O\\ЩHOOIЬ™XYIЙ‰“Шљ™XЭљЩ^\К›ШЭ\Ф[ЉK›[™ЭЊЙ
-	ИЭ[Y[[™IКKњЭ[K™ЬљY[\]PЫЫ[[њПIЬ™\X]
-	КЭЭ[
-ЙЛYњЉIОЙ
-	ИЭ[Y[[™IКKљ[›™\’SP\њ^K™њ›ЫJЫ[™ЭќЭ[K
-ЛJOOћШЫЫњЭЏZJМK›ШЭ\П\[•љ\ЪX›I‰™›ШЭ\Ф[–Ь—OЩ›ШЭ\Ф[–Ь—K›X\
-›ШЭ\У[YJKљ›Ъ[Љ	И
-И	КN‰ЙЛЫ™O\Џ›Э[™
-ЏOO\›Э[™	‰Љ\ЩOOOIЬ™\Э	Я\ЩOOOIШЫЫ\]IКJK™\Э[™П\ЏOO\›Э[™	‰њ\ЩOOOIЬ™\Э	ОЬ™]\›€	ПЬ[€Ы\ЬПHњ›Э[™[X\љЩ\€ЏЏЬ[€Ы\ЬПHњ›Э[™\\	ККЫ™OЙЩЫ™IОњЏOO\›Э[™ЙШЭ\њ™[ќ	О‰ЙКJЙИЏЏЬ[€Ы\ЬПHњ›Э[™Y›ШЭ\Л[X™[€]OH‰КЩ›ШЭ\КЙИЏ‰КЩ›ШЭ\КЙПЬЬ[ЏЏЬЬ[Џ‰КК™\Э[™ПЙПЬ[€Ы\ЬПHњ™\Э\\€\љXK[X™[H”™\Э\љ[ЩЏЏЬЬ[Џ‰О‰ЙКJЙПЬЬ[Џ‰ЯJKљ›Ъ[Љ	ЙКNВ€YЉ\ЩOOOIШЫЫ\]IЙ‰€XЫЫ\][Ы”™\ЬќY
-^ШЫЫ\][Ы”™\ЬќY]ќYNЬЩ][Y[Э]
-
-
-OOќЪ[™ЭЛ™\Ь]Ъ]™[ќ
-™]ИЭ\ЭЫQ]™[ќ
-	ШЫЬ›™\ќЫЬљЛXЫЫ\]IЛЩ]Z[ћЩ]N‘]K››ЭК
-KЭ\ќY]ќЫЬљЫЭ]Э\ќY]]K››ЭК
-K\][ЫЋXЭ]™TЩXЫЫ™Л[›™Y\][ЫЋќ[
-	ЭШ\›]\[YIКJЭ[
-	Ь›Э[™ЙКJќ[
-	Ь›Э[™[YIКJУX]›X^
-[
-	Ь›Э[™ЙКKLJJќ[
-	Ь™\Э[YIКK›Э[™Оќ[
-	Ь›Э[™ЙКKЫЫX›ЬОЫЫX›ХЭ[[Э™\О›[Э™UЭ[›ШЭ\Щ\О–Л‹‹›™]ИЩ]
-Шљ™XЭќ[Y\К›ШЭ\Ф[ЉK™›]
-
-JWK›X\
-›ШЭ\У[YJK[ЩNњЩ][™ЬЛќZ[љ[™У[ЩKЪЪ[њЩ][™ЬЛњЪЪ[_JJK
-_B€B€ќ[Э[Ы€ЫX\Љ
-^ШЫX\’[ќ\ќ[
-XЪКNШЫX\’[ќ\ќ[
-ЫЫX›ХXЪКNЬЫЭ[™[Y\њЛ™›Ь‘XXЪ
-ЫX\•[Y[Э]
-NЬЫЭ[™[Y\њПVЧNЭXЪПXЫЫX›ХXЪП[ќ[B€ќ[Э[Ы€Э\ќ
-
-^В€YЉ\ЩOOOIЬ™XYIЙ‰€X]Z[X›J
-K›[™Э
-^Й
-	ИШЫЫX›ЙКKќ^ЫЫќ[ќIФЩ[XЭ]X\ЭЫ™HЫЫX›ЙОЙ
-	ИШЫЫX›Уќ[X™\њЙКKњЭ[K™\Ь^OIЫ›Ы™IОЬ™]\›џB€YЉ\ЩOOOIШЫЫ\]IК^Ь›Э[™LNЬ\ЩOIЬ™XYIОЭ[YO][
-	Ь›Э[™[YIКNЫ™]РЫЫX›К[ЩJ_B€YЉ\ЩOOOIЬ™XYIК^ШЫЫX›ХЭ[LЫ[Э™UЭ[LШЫЫ\][Ы”™\ЬќYY[ЩNЭЫЬљЫЭ]Э\ќY]Q]K››ЭК
-NШXЭ]™TЩXЫЫ™ПLШЫЫX›ЬФЪ[ЩPЭYOLШќZ[›ШЭ\Ф[Љ
-NЬ›Э[™\ЩYЫX\Љ
-NЬ™\X]YќLЪYЉ[
-	ЭШ\›]\[YIКOЊ
-^Ь\ЩOIЭШ\›]\	ОЭ[YO][
-	ЭШ\›]\[YIКNЬШ^J	ХШ\›]\€Щ]™XYK‰КNШ™Y\
-ЌLЊЉ_Y[Щ^ШЫЫX›Хљ\ЪX›OY[ЩNЫ™]РЫЫX›К[ЩJNЬ\ЩOIЭЫЬљЙОЭ[YO][
-	Ь›Э[™[YIКNШ™Y\
-LЊЌJ__B€ќ[›љ[™ПH\ќ[›љ[™ОШЫX\Љ
-NВ€YЉќ[›љ[™К^ЪYЉ\ЩOOOIЭЫЬљЙК^ЪYЉЫЫX›Хљ\ЪX›J^ЭXЪП\Щ][ќ\ќ[
-Э\L
-NШ™YЪ[ђЫЫX›РШY[ЩJ
-_Y[ЩHYЉ\›Э[™[››Э[Щ[Y[ќXЭ]™JX[››Э[ЩT›Э[™
-
-_Y[ЩHXЪП\Щ][ќ\ќ[
-Э\L
-_Y[Щ^ШШ[Щ[ЬYXЪ
-
-NЬ›Э[™[››Э[Щ[Y[ќXЭ]™OY[Щ_\™[™\Љ
-NВ€B€ќ[Э[Ы€Э\
-
-^В€XЭ]™TЩXЫЫ™ККОВ€[YKKNВ€YЉ\ЩOOOIЭЫЬљЙЙ‰ќ[YOЊ	‰њЩ][™ЬЛњ[ЪЭ]Й‰ќ[YOOO\[ЪЭ]]
-^Ь[ЪЭ]XЭ]™O]ќYNЬ[ЪЭ][ќ[SX]›X^
-K[YKJ
-ЬЩ][™ЬЛњ[ЪЭ]\][ЫџMJJNШЫX\’[ќ\ќ[
-ЫЫX›ХXЪКNШЫЫњЭ™YЪ[ђќ\њЭJ
-OOћЪYЉќ[›љ[™Й‰њ\ЩOOOIЭЫЬљЙК^Ы™]РЫЫX›КќYJNШЫЫX›ХXЪП\Щ][ќ\ќ[
-
-
-OO›™]РЫЫX›КќYJKЊ
-__NЪYЉ\УЫЉ	Э›ЪXЩIКJ\Ш^J	Ф[ЪЭ]	Л™YЪ[ђќ\њЭ
-NЩ[ЩH™YЪ[ђќ\њЭ
-
-NЭљXњ]JОLЊJ_B€YЉ\ЩOOOIЭЫЬљЙЙ‰њ[ЪЭ]XЭ]™I‰ќ[YOOO\[ЪЭ][ќ[
-^Ь[ЪЭ]XЭ]™OY[ЩNШЫX\’[ќ\ќ[
-ЫЫX›ХXЪКNШЫЫњЭ[™ќ\њЭJ
-OOћЪYЉќ[›љ[™Й‰њ\ЩOOOIЭЫЬљЙКX™YЪ[ђЫЫX›РШY[ЩJ
-_NЪYЉ\УЫЉ	Э›ЪXЩIКJ\Ш^J	РXЪИИ›Ю[™ЙЛ[™ќ\њЭ
-NЩ[ЩH[™ќ\њЭ
-
-_B€YЉ\ЩOOOIЭЫЬљЙЙ‰ќ[YOЊ	‰њЩ][™ЬЛЫ\\‘[X›Y	‰ќ[YOOOJЬЩ][™ЬЛЫ\\•[YJ^ШШ[Щ[ЬYXЪ
-
-NШЫX\’[ќ\ќ[
-ЫЫX›ХXЪКNЬ^UШ\›љ[™К
-NЭљXњ]JМMMJNШЫЫњЭ™\Э[YO\Щ][Y[Э]
-
-
-OOћЪYЉќ[›љ[™Й‰њ\ЩOOOIЭЫЬљЙКX™YЪ[ђЫЫX›РШY[ЩJ
-_K
-Щ][™ЬЛќШ\›љ[™Т]ЛLJJњЩ][™ЬЛќШ\›љ[™ФЬXЪ[™КММ
-NЬЫЭ[™[Y\њЛњ\Ъ
-™\Э[YJ_B€YЉ[YOL
-^ШЫX\Љ
-NЬќ[›љ[™ПY[ЩNЪYЉ\ЩOOOIЭШ\›]\	КXXЭ]]T›Э[™
-
-NЩ[ЩHYЉ\ЩOOOIЭЫЬљЙК^ШЫЫX›Хљ\ЪX›OY[ЩNЬ[ЪЭ]XЭ]™OY[ЩNЪYЉ›Э[™Џ][
-	Ь›Э[™ЙКJ^Ь\ЩOIШЫЫ\]IОЭ[YOLЭљXњ]JМNLNJNЬ›Э[™[™™[
-
-
-OOњШ^J	ХЫЬљЫЭ]ЫЫ\]K€Ь™X]ЫЬљЛ‰КJ_Y[ЩHYЉ[
-	Ь™\Э[YIКOЊ
-^Ь\ЩOIЬ™\Э	ОЭ[YO][
-	Ь™\Э[YIКNЬќ[›љ[™П]ќYNЭљXњ]JМMЊMЊJNЬ›Э[™[™™[
-
-
-OOњШ^J	Ф™\Э	КJNЭXЪП\Щ][ќ\ќ[
-Э\L
-_Y[Щ^Ь›Э[™[™™[
-
-
-OOћЬ›Э[™
-КОШXЭ]]T›Э[™
-
-_J__Y[Щ^Ь›Э[™
-КОШXЭ]]T›Э[™
-
-__Y[ЩHX^X™PY[ЩP›ШЪК
-NЬ™[™\Љ
-B€B€ќ[Э[Ы€™\Э\ќ
-
-^В€YЉ\ЩOOOIЬ™XYIК\™]\›ЋВ€ЫX\Љ
-NШШ[Щ[ЬYXЪ
-
-NЬ›Э[™[››Э[Щ[Y[ќXЭ]™OY[ЩNШЫЫX›Хљ\ЪX›O]ќYNЬ™\X]YќLВ€YЉ\ЩOOOIЭШ\›]\	К^Ьќ[›љ[™ПY[ЩNЬ\ЩOIЬ™XYIОЬ›Э[™LNЭ[YO][
-	Ь›Э[™[YIКNЫ™]РЫЫX›К[ЩJ_B€[ЩHYЉ\ЩOOOIЭЫЬљЙЙ‰њ›Э[™OOLI‰ќ[
-	ЭШ\›]\[YIКOЊ
-^Ьќ[›љ[™П]ќYNЬ\ЩOIЭШ\›]\	ОЭ[YO][
-	ЭШ\›]\[YIКNШЫЫX›Хљ\ЪX›OY[ЩNЬШ^J	ХШ\›]\€Щ]™XYK‰КNШ™Y\
-ЌLЊЉNЭXЪП\Щ][ќ\ќ[
-Э\L
-_B€[ЩHYЉ\ЩOOOIЭЫЬљЙЙ‰њ›Э[™OOLJ^Ьќ[›љ[™ПY[ЩNЬ\ЩOIЬ™XYIОЭ[YO][
-	Ь›Э[™[YIКNЫ™]РЫЫX›К[ЩJ_B€[ЩHYЉ\ЩOOOIЭЫЬљЙК^Ь›Э[™KNЬ\ЩOIЬ™\Э	ОЭ[YO][
-	Ь™\Э[YIКNЬќ[›љ[™П]ќYNШЫЫX›Хљ\ЪX›OY[ЩNЭXЪП\Щ][ќ\ќ[
-Э\L
-_B€[ЩHYЉ\ЩOOOIЬ™\Э	К^ШXЭ]]T›Э[™
-
-_B€[ЩHYЉ\ЩOOOIШЫЫ\]IК^Ь›Э[™][
-	Ь›Э[™ЙКNШXЭ]]T›Э[™
-
-_B€™[™\Љ
-NВ€B€ќ[Э[Ы€™\Щ]ЫЬљЫЭ]
-
-^ШЫX\Љ
-NШШ[Щ[ЬYXЪ
-
-NЬќ[›љ[™ПY[ЩNЬ\ЩOIЬ™XYIОЬ›Э[™LNЭ[YO][
-	Ь›Э[™[YIКNЬ™\X]YќLШЫЫX›ХЭ[LЫ[Э™UЭ[LЬ›Э[™\ЩYЫX\Љ
-NЩ›ШЭ\Ф[Џ^ЯNШ›ШЪФ[Џ^ЯNШ›ШЪТ[™^LШЫЫX›Хљ\ЪX›O]ќYNЬ›Э[™[››Э[Щ[Y[ќXЭ]™OY[ЩNЬ[ЪЭ]XЭ]™OY[ЩNЭЫЬљЫЭ]Э\ќY]LШXЭ]™TЩXЫЫ™ПLШЫЫ\][Ы”™\ЬќYY[ЩNЫ™]РЫЫX›К[ЩJNЬ™[™\Љ
-_B€ќ[Э[Ы€Ш[Щ[љ[X\ћRЫ
-
-^ШЫX\•[Y[Э]
-љ[X\ћRЫ[Y\ЉNЬљ[X\ћRЫ[Y\Џ[ќ[Й
-	ИЬЭ\ќ	КKЫ\ЬУ\Эњ™[[Э™J	ЪЫ[™ЙК_B€ќ[Э[Ы€Э\ќљ[X\ћRЫ
-
-^ЪYЉќ[›љ[™ЯЙЬ™XYIЛ	ШЫЫ\]IЧKљ[ЫY\К\ЩJ_љ[X\ћRЫ[Y\Љ\™]\›ЋЬљ[X\ћRЫљYЩЩ\™YY[ЩNШЫX\•[Y[Э]
-љ[X\ћRЫ™\Щ][Y\ЉNЙ
-	ИЬЭ\ќ	КKЫ\ЬУ\ЭY
-	ЪЫ[™ЙКNЬљ[X\ћRЫ[Y\Џ\Щ][Y[Э]
-
-
-OOћЬљ[X\ћRЫ[Y\Џ[ќ[Ьљ[X\ћRЫљYЩЩ\™Y]ќYNЙ
-	ИЬЭ\ќ	КKЫ\ЬУ\Эњ™[[Э™J	ЪЫ[™ЙКNЬ™\Щ]ЫЬљЫЭ]
-
-NЬљ[X\ћRЫ™\Щ][Y\Џ\Щ][Y[Э]
-
-
-OOњљ[X\ћRЫљYЩЩ\™YY[ЩKМ
-_KLЊ
-_B€ќ[Э[Ы€™^XЭ[ЫЉ
-^В€YЉ\ЩOOOIЬ™XYIЯ\ЩOOOIШЫЫ\]IК\™]\›ЋВ€ЫX\Љ
-NШШ[Щ[ЬYXЪ
-
-NЬ›Э[™[››Э[Щ[Y[ќXЭ]™OY[ЩNШЫЫX›Хљ\ЪX›OY[ЩNЬ™\X]YќLВ€YЉ\ЩOOOIЭШ\›]\	К^Ь›Э[™LNШXЭ]]T›Э[™
-
-_B€[ЩHYЉ\ЩOOOIЬ™\Э	К^Ь›Э[™
-КОШXЭ]]T›Э[™
-
-_B€[ЩHYЉ\ЩOOOIЭЫЬљЙЙ‰њ›Э[™[
-	Ь›Э[™ЙКI‰ќ[
-	Ь™\Э[YIКOЊ
-^Ь\ЩOIЬ™\Э	ОЭ[YO][
-	Ь™\Э[YIКNЬќ[›љ[™П]ќYNЭXЪП\Щ][ќ\ќ[
-Э\L
-_B€[ЩHYЉ\ЩOOOIЭЫЬљЙЙ‰њ›Э[™[
-	Ь›Э[™ЙКJ^Ь›Э[™
-КОШXЭ]]T›Э[™
-
-_B€[Щ^Ьќ[›љ[™ПY[ЩNЬ\ЩOIШЫЫ\]IОЭ[YOLЬШ^J	ХЫЬљЫЭ]ЫЫ\]K€Ь™X]ЫЬљЛ‰К_B€™[™\Љ
-NВ€B€ћ^ШЫЫњЭШ]™YR”УУ‹њ\њЩJШШ[ЭЬYЩK™Щ]][J	ШЫЬ›™\ќЫЬљЛ\Щ][™ЬЙКJNЪYЉШ]™Y
-^ЬЩ][™ЬП^Л‹‹њЩ][™ЬЛ‹‹њШ]™YЪЬќЭ]ОћЛ‹‹њЩ][™ЬЛњЪЬќЭ]Л‹‹ЉШ]™YњЪЬќЭ]ЯЯJ_KЫЬљЫЭ]ћЛ‹‹њЩ][™ЬЛќЫЬљЫЭ]‹‹ЉШ]™YќЫЬљЫЭ]ЯJ__NЪYЉ\Ш]™Yњ›Э[™Э\ќY][ЊЉ^ЪYЉШ]™Yњ›Э[™Э\ќXШ^OOOMМ
-\Щ][™ЬЛњ›Э[™Э\ќXШ^OLLЬЩ][™ЬЛњ›Э[™Э\ќY][ЊЏ]ќYNЬШ]™TЩ][™ЬК
-_ZYЉШ]™YЫЫX›РШ][ЩХ™\њЪ[Ы€OOLК^ЪYЉ\њ^Kљ\Р\њ^JЩ][™ЬЛ[ЭЩYЫЫX›ЬКJ\Щ][™ЬЛ[ЭЩYЫЫX›ЬПVЛ‹‹›™]ИЩ]
-Л‹‹њЩ][™ЬЛ[ЭЩYЫЫX›ЬЛ‹‹›ЩPЫЫX›ТYЛ‹‹Ш][ЩРY][ЫњЧJWNЬЩ][™ЬЛЫЫX›РШ][ЩХ™\њЪ[ЫЏLОЬШ]™TЩ][™ЬК
-___XШ]Ъ
-J^ЯZYЉ	ЬЪЭФЭ]\ЙЪ[€Щ][™ЬК^Щ[]HЩ][™ЬЛњЪЭФЭ]\ОЬШ]™TЩ][™ЬК
-_ZYЉVЙЭЫЫЩ	Л	ЬЪ\њ	Л	ЩY\	ЧKљ[ЫY\КЩ][™ЬЛќШ\›љ[™ФЫЭ[™
-J^ЬЩ][™ЬЛќШ\›љ[™ФЫЭ[™IЭЫЫЩ	ОЬЩ][™ЬЛќШ\›љ[™Т]ПLЋЬШ]™TЩ][™ЬК
-_XЫЫњЭЪ\™YX]Ъ[ШШ][Ы‹љ\Ъ›X]Ъ
-Ч€ЭЫЬљЫЭ]JРKVK^ЊNWЛWJКIКNЪYЉЪ\™YX]Ъ
-^ШЫЫњЭЪ\™Y\™XYЪ\™JЪ\™YX]ЪМWJNЪYЉЪ\™YЛЫЫ™љYК^ЬЩ\ЬЪ[Ы”ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛ\[™[™Л\Ъ\™Y	Л”УУ‹њЭљ[™ЪYћJЪ\™Y
-JNЪ\ЭЬћKњ™\XЩTЭ]Jќ[	ЙЛШШ][Ы‹њ][YJЫШШ][Ы‹њЩX\Ъ
-__B€YЉ\њ^Kљ\Р\њ^JЩ][™ЬЛ[ЭЩYЫЫX›ЬКJ[ШЪЩY[™]ИЩ]
-Щ][™ЬЛ[ЭЩYЫЫX›ЬЛ™љ[\ЉYOЫЫX›ЬЛњЫЫYJПOЛљYOOZY
-JJNВ€ЫЫњЭ\Ь^QЬ›Э\I	
-	ЛњЩ][™ЬЛYЬ›Э\	КK™љ[™
-Ь›Э\O™Ь›Э\њ]Y\ћTЩ[XЭЬЉ	Ъ‰КOЛќ^ЫЫќ[ќOOIС\Ь^IКNЪYЉ\Ь^QЬ›Э\
-^Щ\Ь^QЬ›Э\њ]Y\ћTЩ[XЭЬЉ	ЛњЩ][™ЬЛ]\	КOЛљ[њЩ\ќYXЩ[ќS
-	Ш™Y›Ь™Y[™	Л	ПЬ[ЏЏЭ›Ы™П•ЫЬљЫЭ][™[ЪЬќЭ]ОЏЬЭ›Ы™П€ЪЭЬИЬ€Y\ИHќ[Щ^X›Ш\™ЪЬќЭ]™Y™\™[ЩH]H›ЭЫHЩ€HЫЬљЫЭ][™[ЏЬЬ[Џ‰КNЩ\Ь^QЬ›Э\љ[њЩ\ќYXЩ[ќS
-	Ш™Y›Ь™Y[™	Л	П]€Ы\ЬПHњЩ][™Л\›ЭИЏЏЬ[Џ”ЪЭИЪЬќЭ]И[€ЫЬљЫЭ][™[ЬЬ[ЏЏќ]Ы€Ы\ЬПHњЭЪ]Ъ€YHњЪYX\”ЪЬќЭ]ЩЩЫH€\љXK[X™[H”ЪЭИЩ^X›Ш\™ЪЬќЭ]И[€ЫЬљЫЭ][™[€\љXK\™\ЬЩYH™[ЩHЏЏOЏЪOЏШќ]ЫЏЏЩ]Џ‰К_B€		
-	ИЪ[ЫYHЪXЪЙКK™›Ь‘XXЪ
-ЏO‹Ы\ЬУ\ЭќЩЩЫJ	ШXЭ]™IЛЩ][™ЬЛљ[ЫYU\\Лљ[ЫY\К‹™]\Щ]ќ\JJJNУШљ™XЭ™[ќљY\КЩ][™ЬЛќЫЬљЫЭ]
-K™›Ь‘XXЪ
-
-ЪY[YWJOOћШЫЫњЭ[I
-	ИЙКЪY
-NЪYЉY[
-\™]\›ЋЪYЉ[Ы\ЬУ\ЭЫЫќZ[њК	Э[YKZ[њ]	КJ^Щ[™]\Щ]њЩXЫЫ™П][YNЩ[ќ[YOY›]
-[YJ_Y[ЩH[ќ[YO][Y_JNЭ[YO][
-	Ь›Э[™[YIКNВ€ЦЙЬЪЬќЭ]X™[ЙЛЩ][™ЬЛњЪЬќЭ]X™[ЧKЙЬЪYX\”ЪЬќЭ]ЩЩЫIЛЩ][™ЬЛњЪYX\”ЪЬќЭ]ЧKЙЭ›ЪXЩIЛЩ][™ЬЛќ›ЪXЩWKЙШЫ\\‘[X›Y	ЛЩ][™ЬЛЫ\\‘[X›YKЙЬЪЭХ[YSYќ	ЛЩ][™ЬЛњЪЭХ[YSYќKЙЬЩXЫЫ™\ћIЛЩ][™ЬЛњЩXЫЫ™\ћWWK™›Ь‘XXЪ
-
-ЪYЫ—JOOћЙ
-	ИЙКЪY
-KЫ\ЬУ\ЭќЩЩЫJ	ЫЫ‰ЛH[ЫЉNЙ
-	ИЙКЪY
-KњЩ]]љXќ]J	Ш\љXK\™\ЬЩY	ЛЭљ[™КH[ЫЉJ_JNЙ
-	ИЬЪYX\”ЪЬќЭ]ЙКKЫ\ЬУ\ЭќЩЩЫJ	ЪY[‰Л\Щ][™ЬЛњЪYX\”ЪЬќЭ]КNВ€ќ[Э[Ы€\Q\Ь^TЪ^™\К
-^ЩШЭ[Y[ќ™ШЭ[Y[ќ[[Y[ќњЭ[KњЩ]›Ь\ќJ	ЛKXЫШЪЛ\ШШ[IЛЩ][™ЬЛЫШЪФЪ^™KМL
-NЩШЭ[Y[ќ™ШЭ[Y[ќ[[Y[ќњЭ[KњЩ]›Ь\ќJ	ЛKXШ[Э]\ШШ[IЛЩ][™ЬЛШ[Э]Ъ^™KМL
-NЙ
-	ИШЫШЪФЪ^™IКKќ[YO\Щ][™ЬЛЫШЪФЪ^™NЙ
-	ИШЫШЪФЪ^™U[YIКKќ^ЫЫќ[ќ\Щ][™ЬЛЫШЪФЪ^™JЙЙIОЙ
-	ИШШ[Э]Ъ^™IКKќ[YO\Щ][™ЬЛШ[Э]Ъ^™NЙ
-	ИШШ[Э]Ъ^™U[YIКKќ^ЫЫќ[ќ\Щ][™ЬЛШ[Э]Ъ^™JЙЙIЯB€ќ[Э[Ы€Ю[ФЫЭ[™ЫЫќ›ЫК™Yљ^
-^ШЫЫњЭXШ^RЩ^O\™Yљ^
-ЙСXШ^IОЦЬ™Yљ^
-ЙФЫЭ[™	Л™Yљ^
-ЙХ›Ы[YIЛ™Yљ^
-ЙТ]ЙЛ™Yљ^
-ЙФЬXЪ[™ЙЛ™Yљ^
-ЙФ]Ъ	ЧKЫЫШ]
-XШ^RЩ^H[€Щ][™ЬПЦЩXШ^RЩ^WN–ЧJK™›Ь‘XXЪ
-YOћШЫЫњЭ[I
-	ИЙКЪY
-NЪYЉ[
-Y[ќ[YO\Щ][™ЬЦЪY_JNЙ
-	ИЙКЬ™Yљ^
-ЙХ›Ы[YU[YIКKќ^ЫЫќ[ќ\Щ][™ЬЦЬ™Yљ^
-ЙХ›Ы[YIЧJЙЙIОЙ
-	ИЙКЬ™Yљ^
-ЙТ]Х[YIКKќ^ЫЫќ[ќ\Щ][™ЬЦЬ™Yљ^
-ЙТ]ЙЧNЙ
-	ИЙКЬ™Yљ^
-ЙФЬXЪ[™Х[YIКKќ^ЫЫќ[ќ\Щ][™ЬЦЬ™Yљ^
-ЙФЬXЪ[™ЙЧJЙИ\ЙОЙ
-	ИЙКЬ™Yљ^
-ЙФ]Ъ[YIКKќ^ЫЫќ[ќ\Щ][™ЬЦЬ™Yљ^
-ЙФ]Ъ	ЧJЙЙIОЪYЉXШ^RЩ^H[€Щ][™ЬКI
-	ИЙКЬ™Yљ^
-ЙСXШ^U[YIКKќ^ЫЫќ[ќJЩ][™ЬЦЩXШ^RЩ^WKМL
-KќСљ^Y
-JJЙИЩXЙЯB€	
-	ИЬЬYXЪ]IКKќ[YO\Щ][™ЬЛњЬYXЪ]NЙ
-	ИЬЬYXЪ]U[YIКKќ^ЫЫќ[ќ\Щ][™ЬЛњЬYXЪ]NЙ
-	ИЭ›Ы[YIКKќ[YO\Щ][™ЬЛќ›Ы[YNЙ
-	ИЭ›Ы[YU[YIКKќ^ЫЫќ[ќ\Щ][™ЬЛќ›Ы[YJЙЙIОЙ
-	ИЭ›Ы[YRXЫЫ‰КKќ^ЫЫќ[ќ\Щ][™ЬЛќ›Ы[YOOOLЙь'е!ЙОњЩ][™ЬЛќ›Ы[YOLЙь'е"IО‰ь'е"‰ОШ\Q\Ь^TЪ^™\К
-NЬЮ[ФЫЭ[™ЫЫќ›ЫК	ЭШ\›љ[™ЙКNЬЮ[ФЫЭ[™ЫЫќ›ЫК	Ь›Э[™Э\ќ	КNЬЮ[ФЫЭ[™ЫЫќ›ЫК	Ь›Э[™[™	КNЙ
-	ИЭШ\›љ[™УЬ[ЫњЙКKЫ\ЬУ\ЭќЩЩЫJ	ЪY[‰Л\Щ][™ЬЛЫ\\‘[X›Y
-NВ€	
-	ИЩ›ШЭ\РЪЪXЩ\ЙКKЫ\ЬУ\ЭќЩЩЫJ	ЬЪЭЙЛЩ][™ЬЛ™›ШЭ\С[X›YOOIЮY\ЙКNЙ
-	ИЬЭќXЭ\™YЬ[ЫњЙКKЫ\ЬУ\ЭќЩЩЫJ	ЬЪЭЙЛЩ][™ЬЛ™›ШЭ\С[X›YOOIЮY\ЙКNЙ	
-	ИЩ›ШЭ\РЪЪXЩ\ИЪXЪЙКK™›Ь‘XXЪ
-ЏO‹Ы\ЬУ\ЭќЩЩЫJ	ШXЭ]™IЛЩ][™ЬЛ™›ШЭ\Щ\Лљ[ЫY\К‹™]\Щ]™›ШЭ\КJJNВ€		
-	ЛњЩYЫY[ќY	КK™›Ь‘XXЪ
-Ь›Э\OћШЫЫњЭЩ[XЭYYЬ›Э\њ]Y\ћTЩ[XЭЬЉ	ЦЩ]K][YOH‰КЬЩ][™ЬЦЩЬ›Э\™]\Щ]њЩ][™ЧJЙИ—IКNЪYЉЩ[XЭY
-^ЩЬ›Э\њ]Y\ћTЩ[XЭЬђ[
-	Шќ]Ы‰КK™›Ь‘XXЪ
-OћЫ\ЬУ\Эњ™[[Э™J	ШXЭ]™IКJNЬЩ[XЭYЫ\ЬУ\ЭY
-	ШXЭ]™IК_YЬ›Э\њ]Y\ћTЩ[XЭЬђ[
-	Шќ]Ы‰КK™›Ь‘XXЪ
-ЏO‹›ЫЫXЪПJ
-OOћШЫЫњЭЫЬљЫЭ]ЫЫќ›ЫHHYЬ›Э\ЫЬЩ\Э
-	ИЬЩ]\	КNЪYЉЫЬљЫЭ]ЫЫќ›Ы	‰€VЙЬ™XYIЛ	ШЫЫ\]IЧKљ[ЫY\К\ЩJJ\™]\›ЋЩЬ›Э\њ]Y\ћTЩ[XЭЬђ[
-	Шќ]Ы‰КK™›Ь‘XXЪ
-OћЫ\ЬУ\Эњ™[[Э™J	ШXЭ]™IКJNШ‹Ы\ЬУ\ЭY
-	ШXЭ]™IКNЬЩ][™ЬЦЩЬ›Э\™]\Щ]њЩ][™ЧOX‹™]\Щ]ќ[YNЪYЉЬ›Э\™]\Щ]њЩ][™ПOOIЩ›ШЭ\С[X›Y	К^ШЫЫњЭЪЭПX‹™]\Щ]ќ[YOOOIЮY\ЙОЙ
-	ИЩ›ШЭ\РЪЪXЩ\ЙКKЫ\ЬУ\ЭќЩЩЫJ	ЬЪЭЙЛЪЭКNЙ
-	ИЬЭќXЭ\™YЬ[ЫњЙКKЫ\ЬУ\ЭќЩЩЫJ	ЬЪЭЙЛЪЭК_ZYЉЫЬљЫЭ]ЫЫќ›Ы
-^Щ›ШЭ\Ф[Џ^ЯNШ›ШЪФ[Џ^ЯNЬ™\X]YќLЫ™]РЫЫX›К[ЩJ_]ћ^ЫШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛ\Щ][™ЬЙЛ”УУ‹њЭљ[™ЪYћJЩ][™ЬКJ_XШ]Ъ
-J^Я\™[™\ђЫЫX›У\Э
-
-NЬ™[™\ђЫЫX›К
-NЬ™[™\Љ
-_J_JNВ€		
-	ИЪ[ЫYHЪXЪЙКK™›Ь‘XXЪ
-ЏO‹›ЫЫXЪПJ
-OOћЪYЉ‹Ы\ЬУ\ЭЫЫќZ[њК	ШXЭ]™IКI‰‰	
-	ИЪ[ЫYHXЭ]™IКK›[™ЭOOLJ\™]\›ЋШ‹Ы\ЬУ\ЭќЩЩЫJ	ШXЭ]™IКNЬЩ][™ЬЛљ[ЫYU\\ПI	
-	ИЪ[ЫYHXЭ]™IКK›X\
-Oћ™]\Щ]ќ\JNЬШ]™TЩ][™ЬК
-NЩ›ШЭ\Ф[Џ^ЯNШ›ШЪФ[Џ^ЯNЬ™\X]YќLЫ™]РЫЫX›К[ЩJNЬ™[™\ђЫЫX›У\Э
-
-NЬ™[™\Љ
-_JNВ€		
-	ИЩ›ШЭ\РЪЪXЩ\ИЪXЪЙКK™›Ь‘XXЪ
-ЏO‹›ЫЫXЪПJ
-OOћШ‹Ы\ЬУ\ЭќЩЩЫJ	ШXЭ]™IКNЬЩ][™ЬЛ™›ШЭ\Щ\ПI	
-	ИЩ›ШЭ\РЪЪXЩ\ИXЭ]™IКK›X\
-Oћ™]\Щ]™›ШЭ\КNЪYЉ\Щ][™ЬЛ™›ШЭ\Щ\Л›[™Э
-^Ш‹Ы\ЬУ\ЭY
-	ШXЭ]™IКNЬЩ][™ЬЛ™›ШЭ\Щ\ПVШ‹™]\Щ]™›ШЭ\Ч_]ћ^ЫШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛ\Щ][™ЬЙЛ”УУ‹њЭљ[™ЪYћJЩ][™ЬКJ_XШ]Ъ
-J^ЯY›ШЭ\Ф[Џ^ЯNШ›ШЪФ[Џ^ЯNЬ™[™\Љ
-_JNВ€	
-	ИЬ›Э[™ЙКK›ЫЪ[™ЩOJ
-OOћШЫЫњЭ[I
-	ИЬ›Э[™ЙКNЩ[ќ[YOSX]›Z[Љ
-Щ[›X^X]›X^
-
-Щ[›Z[‹X]њ›Э[™
-
-Щ[ќ[Y_Щ][™ЬЛќЫЬљЫЭ]њ›Э[™КJJNЬЩ][™ЬЛќЫЬљЫЭ]њ›Э[™ПJЩ[ќ[YNЬШ]™TЩ][™ЬК
-NЩ›ШЭ\Ф[Џ^ЯNШ›ШЪФ[Џ^ЯNЬ™[™\Љ
-_NВ€ЙЭШ\›]\[YIЛ	Ь›Э[™[YIЛ	Ь™\Э[YIЛ	ЬXЩIЧK™›Ь‘XXЪ
-YOћШЫЫњЭ[I
-	ИЙКЪY
-NЩ[›Ы™›ШЭ\ПJ
-OO™[њЩ[XЭ
-
-NЩ[›ЫЪ[™ЩOJ
-OOћШЫЫњЭ\њЩY\\њЩU[YJ[ќ[YJKЩXЫЫ™ПSX]›Z[Љ
-Щ[™]\Щ]›X^X]›X^
-
-Щ[™]\Щ]›Z[‹\њЩYOO[ќ[КЩ[™]\Щ]њЩXЫЫ™Оњ\њЩY
-JNЩ[™]\Щ]њЩXЫЫ™П\ЩXЫЫ™ОЩ[ќ[YOY›]
-ЩXЫЫ™КNЬЩ][™ЬЛќЫЬљЫЭ]ЪYO\ЩXЫЫ™ОЬШ]™TЩ][™ЬК
-NЩ›ШЭ\Ф[Џ^ЯNШ›ШЪФ[Џ^ЯNЪYЉYOOIЬ›Э[™[YIЙ‰€\ќ[›љ[™Й‰њ\ЩOOOIЬ™XYIК][YO\ЩXЫЫ™ОЪYЉYOOIЬXЩIЙ‰њќ[›љ[™Й‰њ\ЩOOOIЭЫЬљЙК^ШЫX\’[ќ\ќ[
-ЫЫX›ХXЪКNШЫЫX›ХXЪП\Щ][ќ\ќ[
-
-
-OO›™]РЫЫX›КќYJKШY[ЩJ
-JЊL
-_\™[™\Љ
-__JNВ€		
-	ЛњЭ\Xќ‰КK™›Ь‘XXЪ
-ЏO‹›ЫЫXЪПJ
-OOћШЫЫњЭ[I
-	ИЙКШ‹™]\Щ]™›ЬЉNЪYЉ[Ы\ЬУ\ЭЫЫќZ[њК	Э[YKZ[њ]	КJ^ШЫЫњЭ\ЏX‹™]\Щ]™\ЏOOIЭ\	ПМN‹LKЩXЫЫ™ПSX]›Z[Љ
-Щ[™]\Щ]›X^X]›X^
-
-Щ[™]\Щ]›Z[‹[
-[љY
-JЩ\ЉЉЩ[™]\Щ]њЭ\
-JNЩ[™]\Щ]њЩXЫЫ™П\ЩXЫЫ™ОЩ[ќ[YOY›]
-ЩXЫЫ™КNЩ[™\Ь]Ъ]™[ќ
-™]И]™[ќ
-	ШЪ[™ЩIКJ_Y[Щ^Ш‹™]\Щ]™\ЏOOIЭ\	ПЩ[њЭ\\
-
-N™[њЭ\ЭЫЉ
-NЩ[™\Ь]Ъ]™[ќ
-™]И]™[ќ
-	ШЪ[™ЩIКJ__JNВ€		
-	ЛњЭЪ]Ъ	КK™›Ь‘XXЪ
-ЏO‹›ЫЫXЪПJ
-OOћШ‹Ы\ЬУ\ЭќЩЩЫJ	ЫЫ‰КNШЫЫњЭЫЏX‹Ы\ЬУ\ЭЫЫќZ[њК	ЫЫ‰КNШ‹њЩ]]љXќ]J	Ш\љXK\™\ЬЩY	ЛЫЉNЪYЉ‹љYOOIЬЩXЫЫ™\ћIК^ЬЩ][™ЬЛњЩXЫЫ™\ћO[ЫЋЬ™[™\ђЫЫX›К
-NЬ™[™\ђЫЫX›У\Э
-
-_ZYЉ‹љYOOIЭ›ЪXЩIК^ЬЩ][™ЬЛќ›ЪXЩO[ЫЋЪYЉ[ЫЉ^ШШ[Щ[ЬYXЪ
-
-NЪYЉ›Э[™[››Э[Щ[Y[ќXЭ]™JYљ[љ\Ъ›Э[™[››Э[Щ[Y[ќ
-
-__ZYЉ‹љYOOIШЫ\\‘[X›Y	К^ЬЩ][™ЬЛЫ\\‘[X›Y[ЫЋЙ
-	ИЭШ\›љ[™УЬ[ЫњЙКKЫ\ЬУ\ЭќЩЩЫJ	ЪY[‰Л[ЫЉ_ZYЉ‹љYOOIЬЪЭХ[YSYќ	К\Щ][™ЬЛњЪЭХ[YSYќ[ЫЋЪYЉ‹љYOOIЬЪЬќЭ]X™[ЙК\Щ][™ЬЛњЪЬќЭ]X™[П[ЫЋЪYЉ‹љYOOIЬЪYX\”ЪЬќЭ]ЩЩЫIК^ЬЩ][™ЬЛњЪYX\”ЪЬќЭ]П[ЫЋЙ
-	ИЬЪYX\”ЪЬќЭ]ЙКKЫ\ЬУ\ЭќЩЩЫJ	ЪY[‰Л[ЫЉ_\™[™\Љ
-NЬШ]™TЩ][™ЬК
-_JNВ€	
-	ИЬЬYXЪ]IКK›Ыљ[њ]J
-OOћЬЩ][™ЬЛњЬYXЪ]OJЙ
-	ИЬЬYXЪ]IКKќ[YNЙ
-	ИЬЬYXЪ]U[YIКKќ^ЫЫќ[ќ\Щ][™ЬЛњЬYXЪ]NЬШ]™TЩ][™ЬК
-_NВ€ЙШЫШЪФЪ^™IЛ	ШШ[Э]Ъ^™IЧK™›Ь‘XXЪ
-YOћЙ
-	ИЙКЪY
-K›Ыљ[њ]J
-OOћЬЩ][™ЬЦЪYOJЙ
-	ИЙКЪY
-Kќ[YNШ\Q\Ь^TЪ^™\К
-NЬШ]™TЩ][™ЬК
-__JNВ€ЙЭШ\›љ[™ЙЛ	Ь›Э[™Э\ќ	Л	Ь›Э[™[™	ЧK™›Ь‘XXЪ
-™Yљ^OћЙ
-	ИЙКЬ™Yљ^
-ЙФЫЭ[™	КK›ЫЪ[™ЩOJ
-OOћЬЩ][™ЬЦЬ™Yљ^
-ЙФЫЭ[™	ЧOI
-	ИЙКЬ™Yљ^
-ЙФЫЭ[™	КKќ[YNЬШ]™TЩ][™ЬК
-_NЦЙХ›Ы[YIЛ	Т]ЙЛ	ФЬXЪ[™ЙЛ	Ф]Ъ	ЧKЫЫШ]
-™Yљ^OOIЭШ\›љ[™ЙПЦЧN–ЙСXШ^IЧJK™›Ь‘XXЪ
-\ќOћШЫЫњЭY\™Yљ^
-Ь\ќЙ
-	ИЙКЪY
-K›Ыљ[њ]J
-OOћЬЩ][™ЬЦЪYOJЙ
-	ИЙКЪY
-Kќ[YNЬЮ[ФЫЭ[™ЫЫќ›ЫК™Yљ^
-NЬШ]™TЩ][™ЬК
-__J_JNВ€ќ[Э[Ы€ЩЩЫQљ[™Jќ]Ы’Y[™[Y
-^ШЫЫњЭЏI
-	ИЙКШќ]Ы’Y
-KI
-	ИЙКЬ[™[Y
-NШ‹›ЫЫXЪПJ
-OOћШЫЫњЭЬ[Џ\Ы\ЬУ\ЭќЩЩЫJ	ЫЬ[‰КNШ‹Ы\ЬУ\ЭќЩЩЫJ	ШXЭ]™IЛЬ[ЉNШ‹њЩ]]љXќ]J	Ш\љXKY^[™Y	ЛЭљ[™КЬ[ЉJ__B€ЩЩЫQљ[™J	ЭШ\›љ[™СЩX\‰Л	ЭШ\›љ[™Сљ[™IКNЭЩЩЫQљ[™J	Ь›Э[™Э\ќЩX\‰Л	Ь›Э[™Э\ќљ[™IКNЭЩЩЫQљ[™J	Ь›Э[™[™ЩX\‰Л	Ь›Э[™[™љ[™IКNВ€ќ[Э[Ы€™\Щ]ЫЭ[™
-™Yљ^Y][К^УШљ™XЭ\ЬЪYЫЉЩ][™ЬЛY][КNЬЮ[ФЫЭ[™ЫЫќ›ЫК™Yљ^
-NЬШ]™TЩ][™ЬК
-_B€	
-	ИЬ™\Щ]Ш\›љ[™ФЫЭ[™	КK›ЫЫXЪПJ
-OOњ™\Щ]ЫЭ[™
-	ЭШ\›љ[™ЙЛЫЭ[™Y][ЛќШ\›љ[™КNЙ
-	ИЬ™\Щ]›Э[™Э\ќЫЭ[™	КK›ЫЫXЪПJ
-OOњ™\Щ]ЫЭ[™
-	Ь›Э[™Э\ќ	ЛЫЭ[™Y][ЛњЭ\ќ
-NЙ
-	ИЬ™\Щ]›Э[™[™ЫЭ[™	КK›ЫЫXЪПJ
-OOњ™\Щ]ЫЭ[™
-	Ь›Э[™[™	ЛЫЭ[™Y][Л™[™
-NВ€	
-	ИЭ\ЭШ\›љ[™ЙКK›ЫЫXЪП\^UШ\›љ[™ОЙ
-	ИЭ\Э›Э[™Э\ќ	КK›ЫЫXЪПJ
-OOњЭ\ќ[™К
-NЙ
-	ИЭ\Э›Э[™[™	КK›ЫЫXЪПJ
-OOњ^T›Э[™[™Щ\]Y[ЩJ
-NВ€	
-	ИЭ›Ы[YIКK›Ыљ[њ]J
-OOћЬЩ][™ЬЛќ›Ы[YOJЙ
-	ИЭ›Ы[YIКKќ[YNЙ
-	ИЭ›Ы[YU[YIКKќ^ЫЫќ[ќ\Щ][™ЬЛќ›Ы[YJЙЙIОЙ
-	ИЭ›Ы[YRXЫЫ‰КKќ^ЫЫќ[ќ\Щ][™ЬЛќ›Ы[YOOOLЙь'е!ЙОњЩ][™ЬЛќ›Ы[YOLЙь'е"IО‰ь'е"‰ОЬШ]™TЩ][™ЬК
-_NВ€	
-	ИЭ›Ы[YUЩЩЫIКK›ЫЫXЪПYOOћЩKњЭЬ›ЬYШ][ЫЉ
-NШЫЫњЭЬ[ЏI
-	ИЭ›Ы[YPЫЫќ›Ы	КKЫ\ЬУ\ЭќЩЩЫJ	ЫЬ[‰КNЙ
-	ИЭ›Ы[YUЩЩЫIКKњЩ]]љXќ]J	Ш\љXKY^[™Y	ЛЭљ[™КЬ[ЉJNЙ
-	ИЭ›Ы[YUЩЩЫIКKњЩ]]љXќ]J	Ш\љXK[X™[	ЛЬ[ЏЙРЫЬЩH›Ы[YHЫЫќ›Ы	О‰УЬ[€›Ы[YHЫЫќ›Ы	КNЪYЉ[Ь[ЉI
-	ИЭ›Ы[YUЩЩЫIКK›\Љ
-_NВ€	
-	ИЭ›Ы[YPЫЫќ›Ы	КK›ЫЫXЪПYOO™KњЭЬ›ЬYШ][ЫЉ
-NВ€ЫЫњЭљ[X\ћPЫЫќ›ЫI
-	ИЬЭ\ќ	КNЬљ[X\ћPЫЫќ›Ы›ЫЫXЪПYOOћЪYЉљ[X\ћRЫљYЩЩ\™Y
-^Ьљ[X\ћRЫљYЩЩ\™YY[ЩNЩKњ™]™[ќY][
-
-NЬ™]\›џ\Э\ќ
-
-_NЬљ[X\ћPЫЫќ›Ы›ЫњЪ[ќ\™ЭЫЏ\Э\ќљ[X\ћRЫЬљ[X\ћPЫЫќ›Ы›ЫњЪ[ќ\ќ\XШ[Щ[љ[X\ћRЫЬљ[X\ћPЫЫќ›Ы›ЫњЪ[ќ\Ш[Щ[XШ[Щ[љ[X\ћRЫЬљ[X\ћPЫЫќ›Ы›ЫњЪ[ќ\›X]™OYOOћЪYЉKњЪ[ќ\•\OOOIЫ[Э\ЩIКXШ[Щ[љ[X\ћRЫ
-
-_NЬљ[X\ћPЫЫќ›Ы›ЫЫЫќ^Y[ќOYOOћЪYЉљ[X\ћRЫ[Y\ЉYKњ™]™[ќY][
-
-_NЙ
-	ИЬ™\Э\ќ	КK›ЫЫXЪП\™\Э\ќЙ
-	ИЬЪЪ\	КK›ЫЫXЪП[™^XЭ[ЫЋВ€ќ[Э[Ы€™[™\ђЫЫX›У\Э
-
-^В€ЫЫњЭЪЭЫЏ]љ\ЪX›PЫЫX›ЬК
-NЙ
-	ИШЫЫX›У\Э	КKљ[›™\’S\ЪЭЫ‹›X\
-ПOћШЫЫњЭќ[\ПXЛ›K›X\
-ќ[X™\™Y
-Kљ›Ъ[Љ	ЛIКKЫЬ™ПXЛ›K›X\
-\ЩJKљ›Ъ[Љ	И0­И	КKX™[\Щ][™ЬЛ™›Ь›X]OOIЫќ[X™\њЙПК\УЫЉ	ЬЩXЫЫ™\ћIКOЫќ[\КЙИ	КЭЫЬ™О›ќ[\КNЉ\УЫЉ	ЬЩXЫЫ™\ћIКOЭЫЬ™КЙИ	КЫќ[\ОќЫЬ™КNЬ™]\›€	ПX™[Ы\ЬПHЫЫX›ЛXЪЪXЩHЏЏ[њ]\OHЪXЪШ›Ю€]KXЫЫX›ПH‰КШЛљY
-ЙИ€	ККШЪЩYљ\КЛљY
-OЙШЪXЪЩY	О‰ЙКJЙПЏЬ[Џ‰КЫX™[
-ЙПЬЬ[ЏЏЫX™[‰ЯJKљ›Ъ[Љ	ЙКNВ€	
-	ИШЫЫX›У\Э	КKњ]Y\ћTЩ[XЭЬђ[
-	Ъ[њ]	КK™›Ь‘XXЪ
-OOљK›ЫЪ[™ЩOJ
-OOћЪYЉKЪXЪЩY
-[ШЪЩYY
-K™]\Щ]ЫЫX›КNЩ[ЩHШЪЩY™[]JK™]\Щ]ЫЫX›КNЬЩ][™ЬЛ[ЭЩYЫЫX›ЬПVЛ‹‹›ШЪЩYNЬШ]™TЩ][™ЬК
-NЬ™\X]YќLЫ™]РЫЫX›К[ЩJNЬ™[™\ђЫЫX›У\Э
-
-NЬ™[™\Љ
-_JNВ€ЫЫњЭ[X›Y\ЪЭЫ‹™љ[\ЉПO›ШЪЩYљ\КЛљY
-JK›[™Э]™[\Щ][™ЬЛњЪЪ[МKќХ\\ђШ\ЩJ
-JЬЩ][™ЬЛњЪЪ[њЫXЩJJNЙ
-	ИШЫЫX›РЫЭ[ќ	КKќ^ЫЫќ[ќY[X›YOO\ЪЭЫ‹›[™ЭЙР[	КЬЪЭЫ‹›[™Э
-ЙИ	КЫ]™[
-ЙИЫЫX›ЬИ\™H[X›Y‰О™[X›Y
-ЙИЩ€	КЬЪЭЫ‹›[™Э
-ЙИ	КЫ]™[
-ЙИЫЫX›ЬИ[X›Y‰ОВ€B€ќ[Э[Ы€™Yњ™\ЪЪЬќЭ][њ]К
-^Й	
-	ЛњЪЬќЭ]Z[њ]	КK™›Ь‘XXЪ
-OOљKќ[YOY\Ь^RЩ^JЩ][™ЬЛњЪЬќЭ]ЦЪK™]\Щ]XЭ[Ы—JJNШЫЫњЭЩ^\ПVЙЬЭ\ќ	Л	Ы™^	Л	Ь™\Э\ќ	Л	Ы]]IЧNЙ	
-	ИЬЪYX\”ЪЬќЭ]ИШ™	КK™›Ь‘XXЪ
-
-Ш™JOOљШ™ќ^ЫЫќ[ќY\Ь^RЩ^JЩ][™ЬЛњЪЬќЭ]ЦЪЩ^\ЦЪWWJJ_B€ќ[Э[Ы€›Ь›X[^™YЩ^JJ^ЪYЉЙФЪYќ	Л	РЫЫќ›Ы	Л	Р[	Л	УY]IЛ	РШ\УШЪЙЛ	ХX‰ЧKљ[ЫY\КKљЩ^JJ\™]\›€ќ[ЪYЉKљЩ^OOOIИ	К\™]\›€	ФЬXЩIОЬ™]\›€KљЩ^K›[™ЭOOLOЩKљЩ^KќХ\\ђШ\ЩJ
-N™KљЩ^_B€		
-	ЛњЪЬќЭ]Z[њ]	КK™›Ь‘XXЪ
-OOљKY]™[ќ\Э[™\Љ	ЪЩ^YЭЫ‰ЛOOћЩKњ™]™[ќY][
-
-NШЫЫњЭЩ^O[›Ь›X[^™YЩ^JJNЪYЉZЩ^J\™]\›ЋШЫЫњЭXЭ[ЫЏZK™]\Щ]XЭ[Ы‹Ы\Щ][™ЬЛњЪЬќЭ]ЦШXЭ[Ы—KZЩ[ЏSШљ™XЭљЩ^\КЩ][™ЬЛњЪЬќЭ]КK™љ[™
-OOHOOXXЭ[Ы‰‰њЩ][™ЬЛњЪЬќЭ]ЦШWOOOZЩ^JNЪYЉZЩ[Љ\Щ][™ЬЛњЪЬќЭ]ЦЭZЩ[—O[ЫЬЩ][™ЬЛњЪЬќЭ]ЦШXЭ[Ы—OZЩ^NЭћ^ЫШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛ\Щ][™ЬЙЛ”УУ‹њЭљ[™ЪYћJЩ][™ЬКJ_XШ]Ъ
-\њЉ^Я\™Yњ™\ЪЪЬќЭ][њ]К
-NЬ™[™\Љ
-_JJNВ€	
-	ИШЭ\ЭЫZ^™IКK›ЫЫXЪПJ
-OOћШЫЫњЭЬ[ЏI
-	ИШЫЫX›У\Э	КKЫ\ЬУ\ЭќЩЩЫJ	ЫЬ[‰КNЙ
-	ИШЫЫX›Рќ[ЙКKЫ\ЬУ\ЭќЩЩЫJ	ЫЬ[‰ЛЬ[ЉNЙ
-	ИШЭ\ЭЫZ^™IКKќ^ЫЫќ[ќ[Ь[ЏЙСЫ™IО‰РЭ\ЭЫZ^™IЯNВ€	
-	ИЬЩ[XЭ[ЫЫX›ЬЙКK›ЫЫXЪПJ
-OOћЭљ\ЪX›PЫЫX›ЬК
-K™›Ь‘XXЪ
-ПO›ШЪЩYY
-ЛљY
-JNЬЩ][™ЬЛ[ЭЩYЫЫX›ЬПVЛ‹‹›ШЪЩYNЬШ]™TЩ][™ЬК
-NЬ™[™\ђЫЫX›У\Э
-
-NЫ™]РЫЫX›К[ЩJ_NВ€	
-	ИШЫX\ђ[ЫЫX›ЬЙКK›ЫЫXЪПJ
-OOћЭљ\ЪX›PЫЫX›ЬК
-K™›Ь‘XXЪ
-ПO›ШЪЩY™[]JЛљY
-JNЬЩ][™ЬЛ[ЭЩYЫЫX›ЬПVЛ‹‹›ШЪЩYNЬШ]™TЩ][™ЬК
-NЬ™[™\ђЫЫX›У\Э
-
-NЫ™]РЫЫX›К[ЩJ_NВ€ќ[Э[Ы€Ь[”™\Щ][Щ[
-Y
-^ЬЪЭХЫЬљЫЭ][™[
-[ЩJNЬЪЭФ™Y™\™[Щ\К[ЩJNШЫЫњЭ[Щ[I
-	ИЙКЪY
-NЪYЉ[[Щ[›Ь[Љ[[Щ[њЪЭУ[Щ[
-
-_B€	
-	ИЫЬ[”Ш]™T™\Щ]	КK›ЫЫXЪПJ
-OOћЫЬ[”™\Щ][Щ[
-	ЬШ]™T™\Щ][Щ[	КNЬЩ][Y[Э]
-
-
-OO‰
-	ИЬ™\Щ][YIКK™›ШЭ\К
-K
-_NЙ
-	ИЫЬ[“ШY™\Щ]	КK›ЫЫXЪПJ
-OOћЬ™[™\”™\Щ]К
-NЫЬ[”™\Щ][Щ[
-	ЫШY™\Щ][Щ[	К_NЙ	
-	ЦЩ]KXЫЬЩK[[Щ[IКK™›Ь‘XXЪ
-ќ]ЫЏOќ]Ы‹›ЫЫXЪПJ
-OO‰
-	ИЙКШќ]Ы‹™]\Щ]ЫЬЩS[Щ[
-KЫЬЩJ
-JNЙ	
-	Лњ™\Щ][[Щ[	КK™›Ь‘XXЪ
-[Щ[O›[Щ[›ЫЫXЪПYOOћЪYЉKќ\™Щ]OO[[Щ[
-[[Щ[ЫЬЩJ
-_JNВ€	
-	ИЬШ]™T™\Щ]	КK›ЫЫXЪПJ
-OOћШЫЫњЭ[њ]I
-	ИЬ™\Щ][YIКK[YOZ[њ]ќ[YKќљ[J
-_	У^HЫЬљЫЭ]	Л›ЭOI
-	ИЬ™\Щ]›ЭIКOЛќ[YKќљ[J
-_	ЙЛ™\Щ]^ЪY‘]K››ЭК
-KќФЭљ[™КНЉK[YN›[YKњЫXЩJНЉK›ЭN››ЭKњЫXЩJMЊ
-K]›Ьљ]N™[ЩKЫЫ™љYОќЫЬљЫЭ]Ы\ЪЭ
-
-K\]Y]‘]K››ЭК
-_NЬ™\Щ]Лќ[њЪYќ
-™\Щ]
-NЬШ]™T™\Щ]К
-NЬШ]™T™\Щ]РЫЭY
-™\Щ]
-NЪ[њ]ќ[YOIЙОЪYЉ	
-	ИЬ™\Щ]›ЭIКJI
-	ИЬ™\Щ]›ЭIКKќ[YOIЙОЬ™[™\”™\Щ]К
-NЙ
-	ИЬШ]™T™\Щ][Щ[	КKЫЬЩJ
-NЬ™[™\Љ
-_NЙ
-	ИЬ™\Щ][YIКK›ЫљЩ^YЭЫЏYOOћЪYЉKљЩ^OOOIС[ќ\‰К^Й
-	ИЬШ]™T™\Щ]	КKЫXЪК
-NЩKњ™]™[ќY][
-
-__NВ€ќ[Э[Ы€ЪЭХЫЬљЫЭ][™[
-ЪЭК^ШЫЫњЭПI
-	ИЬЩ]\	КKќ]ЫЏI
-	ИЫЬ[”Щ][™ЬЙКNЬЛЫ\ЬУ\ЭќЩЩЫJ	Щ]Щ\‰ЛЪЭКNШќ]Ы‹њЩ]]љXќ]J	Ш\љXKY^[™Y	ЛЭљ[™КЪЭКJNЫ]П\Лњ]Y\ћTЩ[XЭЬЉ	ЛЫЬЩIКNЪYЉЪЭК^ЬЪЭФ™Y™\™[Щ\К[ЩJNЪYЉXК^ШПYШЭ[Y[ќЬ™X]Q[[Y[ќ
-	Шќ]Ы‰КNШЛќ\OIШќ]Ы‰ОШЛЫ\ЬУ[YOIШЫЬЩHЪ\ЫIОШЛќ^ЫЫќ[ќIреЙОШЛњЩ]]љXќ]J	Ш\љXK[X™[	Л	РЫЬЩHЫЬљЫЭ]Щ][™ЬЙКNШЛ›ЫЫXЪПJ
-OOњЪЭХЫЬљЫЭ][™[
-[ЩJNЬЛ\[™Ъ[
-К_\ЛњШЬ›ЫЬLY[ЩHYЉКXЛњ™[[Э™J
-_B€	
-	ИЫЬ[”Щ][™ЬЙКK›ЫЫXЪПJ
-OOњЪЭХЫЬљЫЭ][™[
-I
-	ИЬЩ]\	КKЫ\ЬУ\ЭЫЫќZ[њК	Щ]Щ\‰КJNВ€ќ[Э[Ы€ЪЭФ™Y™\™[Щ\КЪЭК^ЪYЉЪЭК\ЪЭХЫЬљЫЭ][™[
-[ЩJNЙ
-	ИЬЩ][™ЬФYЩIКKЫ\ЬУ\ЭќЩЩЫJ	ЫЬ[‰ЛЪЭКNЙ
-	ИЬЩ][™ЬФYЩIКKњЩ]]љXќ]J	Ш\љXKZY[‰ЛЭљ[™К\ЪЭКJNЙ
-	ИЬ™Y™\™[Щ\ЙКKњЩ]]љXќ]J	Ш\љXKY^[™Y	ЛЭљ[™КЪЭКJ_B€	
-	ИЬ™Y™\™[Щ\ЙКK›ЫЫXЪПJ
-OOњЪЭФ™Y™\™[Щ\КI
-	ИЬЩ][™ЬФYЩIКKЫ\ЬУ\ЭЫЫќZ[њК	ЫЬ[‰КJNЙ
-	ИШЫЬЩT™Y™\™[Щ\ЙКK›ЫЫXЪПJ
-OOњЪЭФ™Y™\™[Щ\К[ЩJNВ€	
-	ИЬ™\Щ][	КK›ЫЫXЪПJ
-OO‰
-	ИЬ™\Щ]ЫЫ™љ\›IКKЫ\ЬУ\ЭY
-	ЬЪЭЙКNЙ
-	ИШШ[Щ[™\Щ]	КK›ЫЫXЪПJ
-OO‰
-	ИЬ™\Щ]ЫЫ™љ\›IКKЫ\ЬУ\Эњ™[[Э™J	ЬЪЭЙКNЙ
-	ИШЫЫ™љ\›T™\Щ]	КK›ЫЫXЪПJ
-OOћЫШШ[ЭЬYЩKњ™[[Э™R][J	ШЫЬ›™\ќЫЬљЛ\Щ][™ЬЙКNЫШШ][Ы‹њ™[ШY
-
-_NВ€	
-	ИЩЫЫЩЫTЪYЫ“Э]	КK›ЫЫXЪПX\Ю[К
-OOћЭћ^ЪYЉЪ[™ЭЛ™ЫЫЩЫOЛXШЫЭ[ќПЛљY
-YЫЫЩЫKXШЫЭ[ќЛљY™\ШX›P]]ФЩ[XЭ
-
-NШ]ШZ]ЪYЫ“Э]
-]]
-_XШ]Ъ
-J^ШЫЭYЭ]\К	РЫЭ[›ЭЪYЫ€Э]	Л	ФX\ЩHћHYШZ[‰ЛќYJ__NВ€		
-	Лљ[	КK™›Ь‘XXЪ
-ЏO‹›ЫЫXЪПYOOћЩKњЭЬ›ЬYШ][ЫЉ
-NЙ	
-	Лљ[	КK™љ[\ЉOћOOXЉK™›Ь‘XXЪ
-OћЫ\ЬУ\Эњ™[[Э™J	ЫЬ[‰КJNШ‹Ы\ЬУ\ЭќЩЩЫJ	ЫЬ[‰К_JNВ€ШЭ[Y[ќY]™[ќ\Э[™\Љ	ШЫXЪЙЛOOћЪYЉYKќ\™Щ]ЫЬЩ\Э
-	Лљ[	КJI	
-	Лљ[	КK™›Ь‘XXЪ
-OћЫ\ЬУ\Эњ™[[Э™J	ЫЬ[‰КJNЪYЉ	
-	ИЭ›Ы[YPЫЫќ›Ы	КKЫ\ЬУ\ЭЫЫќZ[њК	ЫЬ[‰КJ^Й
-	ИЭ›Ы[YPЫЫќ›Ы	КKЫ\ЬУ\Эњ™[[Э™J	ЫЬ[‰КNЙ
-	ИЭ›Ы[YUЩЩЫIКKњЩ]]љXќ]J	Ш\љXKY^[™Y	Л	Щ[ЩIКNЙ
-	ИЭ›Ы[YUЩЩЫIКKњЩ]]љXќ]J	Ш\љXK[X™[	Л	УЬ[€›Ы[YHЫЫќ›Ы	КNЙ
-	ИЭ›Ы[YUЩЩЫIКK›\Љ
-_ZYЉ	
-	ИЬЩ][™ЬФYЩIКKЫ\ЬУ\ЭЫЫќZ[њК	ЫЬ[‰КI‰€I
-	ИЬЩ][™ЬФYЩIКKЫЫќZ[њКKќ\™Щ]
-I‰€I
-	ИЬ™Y™\™[Щ\ЙКKЫЫќZ[њКKќ\™Щ]
-J\ЪЭФ™Y™\™[Щ\К[ЩJ_JNВ€ШЭ[Y[ќY]™[ќ\Э[™\Љ	Эљ\ЪXљ[]XЪ[™ЩIЛЮ[ХШZЩSШЪКNВ€ШЭ[Y[ќY]™[ќ\Э[™\Љ	ЪЩ^YЭЫ‰ЛOOћЪYЉ		
-	Лњ™\Щ][[Щ[	КKњЫЫYJ[Щ[O›[Щ[›Ь[ЉJ\™]\›ЋЪYЉ	
-	ИЬЩ][™ЬФYЩIКKЫ\ЬУ\ЭЫЫќZ[њК	ЫЬ[‰КJ^ЪYЉKљЩ^OOOIС\ШШ\IК\ЪЭФ™Y™\™[Щ\К[ЩJNЬ™]\›џZYЉЙФСSPХ	Л	ТS”U	ЧKљ[ЫY\КШЭ[Y[ќXЭ]™Q[[Y[ќќYУ[YJJ\™]\›ЋШЫЫњЭЩ^O[›Ь›X[^™YЩ^JJNЪYЉЩ^OOO\Щ][™ЬЛњЪЬќЭ]ЛњЭ\ќ
-^ЩKњ™]™[ќY][
-
-NЬЭ\ќ
-
-_Y[ЩHYЉЩ^OOO\Щ][™ЬЛњЪЬќЭ]Л›™^
-[™^XЭ[ЫЉ
-NЩ[ЩHYЉЩ^OOO\Щ][™ЬЛњЪЬќЭ]Лњ™\Э\ќ
-\™\Э\ќ
-
-NЩ[ЩHYЉЩ^OOO\Щ][™ЬЛњЪЬќЭ]Л›]]JI
-	ИЭ›ЪXЩIКKЫXЪК
-_JNВ€Ъ[™ЭЛђЫЬ›™\ќЫЬљР\^В€Щ]Щ][™ЬК
-^Ь™]\›€Щ][™ЬЯKЩ]\ЩJ
-^Ь™]\›€\Щ_KЩ]™\Щ]К
-^Ь™]\›€™\Щ]Л›X\
-OЉЛ‹‹њJJ_KЫ\ЪЭќЫЬљЫЭ]Ы\ЪЭ€\PЫЫ™љYКЫЫ™љYК^ЪYЉ\UЫЬљЫЭ]
-ЫЫ™љYКJ[ШШ][Ы‹њ™[ШY
-
-_KЭ\ќЫЬљЫЭ]њЭ\ќ€\Щ\ќ™\Щ]
-™\Щ]
-^ШЫЫњЭЫX[Џ^Л‹‹њ™\Щ]Yњ™\Щ]љY]K››ЭК
-KќФЭљ[™КНЉK\]Y]‘]K››ЭК
-_NШЫЫњЭ[™^\™\Щ]Л™љ[™[™^
-OњљYOOXЫX[‹љY
-NЪYЉ[™^ЏL
-\™\Щ]ЦЪ[™^OXЫX[ЋЩ[ЩH™\Щ]Лќ[њЪYќ
-ЫX[ЉNЬ™\Щ]ЛњЫЬќ
-
-KЉOOЉ‹™]›Ьљ]OМNЊ
-KJK™]›Ьљ]OМNЊ
-_
-‹ќ\]Y]
-KJKќ\]Y]
-JNЬШ]™T™\Щ]К
-NЬШ]™T™\Щ]РЫЭY
-ЫX[ЉNЬ™[™\”™\Щ]К
-NЬ™]\›€ЫX[џK€YЭ\ЭЫPЫЫX›КЫЫX›К^ШЫЫњЭЫX[Џ^ЪY‰ШЭ\ЭЫKIКС]K››ЭК
-KќФЭљ[™КНЉKЋ”Эљ[™КЫЫX›Л›џ	РЭ\ЭЫHЫЫX›ЙКKњЫXЩJЊ
-KNЫЫX›Л›KњЫXЩJLЉK\\О–Л‹‹›™]ИЩ]
-ЫЫX›Лќ\\КWK]™[“X]›Z[ЉЛX]›X^
-K
-ШЫЫX›Л›]™[JJKЭ\ЭЫNќќY_NШЭ\ЭЫPЫЫX›ЬЛњ\Ъ
-ЫX[ЉNЫШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛXЭ\ЭЫKXЫЫX›ЬЙЛ”УУ‹њЭљ[™ЪYћJЭ\ЭЫPЫЫX›ЬКJNЪYЉ\њ^Kљ\Р\њ^JЩ][™ЬЛ[ЭЩYЫЫX›ЬКI‰€\Щ][™ЬЛ[ЭЩYЫЫX›ЬЛљ[ЫY\КЫX[‹љY
-J^ЬЩ][™ЬЛ[ЭЩYЫЫX›ЬЛњ\Ъ
-ЫX[‹љY
-NЬШ]™TЩ][™ЬК
-_[ШШ][Ы‹њ™[ШY
-
-_K€™[[Э™PЭ\ЭЫPЫЫX›КY
-^ШЭ\ЭЫPЫЫX›ЬПXЭ\ЭЫPЫЫX›ЬЛ™љ[\ЉПOЛљYOOZY
-NЫШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛXЭ\ЭЫKXЫЫX›ЬЙЛ”УУ‹њЭљ[™ЪYћJЭ\ЭЫPЫЫX›ЬКJNЫШШ][Ы‹њ™[ШY
-
-_K€^Ьќ]J
-^Ь™]\›€Э™\њЪ[ЫЋЊKЩ][™ЬЛЫЬљЫЭ]Оњ™\Щ]ЛЭ\ЭЫPЫЫX›ЬЛ\ЭЬћN’”УУ‹њ\њЩJШШ[ЭЬYЩK™Щ]][J	ШЫЬ›™\ќЫЬљЛZ\ЭЬћIК_	ЦЧIК__K€[\Ьќ]J]J^ЪYЉ]KњЩ][™ЬК[ШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛ\Щ][™ЬЙЛ”УУ‹њЭљ[™ЪYћJ]KњЩ][™ЬКJNЪYЉ\њ^Kљ\Р\њ^J]KќЫЬљЫЭ]КJ[ШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛ\™\Щ]ЙЛ”УУ‹њЭљ[™ЪYћJ]KќЫЬљЫЭ]КJNЪYЉ\њ^Kљ\Р\њ^J]KЭ\ЭЫPЫЫX›ЬКJ[ШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛXЭ\ЭЫKXЫЫX›ЬЙЛ”УУ‹њЭљ[™ЪYћJ]KЭ\ЭЫPЫЫX›ЬКJNЪYЉ\њ^Kљ\Р\њ^J]Kљ\ЭЬћJJ[ШШ[ЭЬYЩKњЩ]][J	ШЫЬ›™\ќЫЬљЛZ\ЭЬћIЛ”УУ‹њЭљ[™ЪYћJ]Kљ\ЭЬћJJNЫШШ][Ы‹њ™[ШY
-
-_B€NВ€™Yњ™\ЪЪЬќЭ][њ]К
-NЬ™[™\”™\Щ]К
-NЬ™[™\ђЫЫX›У\Э
-
-NЫ™]РЫЫX›К[ЩJNЬ™[™\Љ
-NЪ[љ]ЫЭY
-
-NЭЪ[™ЭЛ™\Ь]Ъ]™[ќ
-™]И]™[ќ
-	ШЫЬ›™\ќЫЬљЛ\™XYIКJNВџJJ
-NВЏЬШЬљ\‚ЏШЬљ\ЬПHљО‹ЛШЩ‹љњЩ[]њ‹›™]ЫњKЬ\ЫЩPKЌKЌШќZ[Ь\ЫЩK›Z[‹љњИ€Y™\ЏЏЬШЬљ\‚ЏШЬљ\ЬПH™™X]\™\ЛљњПЭЏMЊИ€Y™\ЏЏЬШЬљ\‚ЏШ›ЩO‚ЏЪ[‚
