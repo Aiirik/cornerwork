@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="features.css?v=67">
+  <link rel="stylesheet" href="features.css?v=68">
   <meta name="apple-mobile-web-app-title" content="Cornerwork">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -160,8 +160,8 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
     return pool;
   }
   function activeFocuses(){if(settings.structured!=='off'&&phase==='work')return blockPlan[round]?.[blockIndex]||[];return focusPlan[round]||[]}
-  function matchesFocus(c,f){if(f==='jabs')return c.m.filter(x=>x===1||x==='body 1').length>=2;if(f==='short'||f==='speed')return c.m.length<=3;if(f==='mixed')return c.types.length>1||c.m.length>=3;if(f==='explosive')return c.m.length>=2&&c.m.length<=3&&c.types.includes('punch');if(f==='high')return c.m.length>=3;if(f==='power')return c.m.some(x=>[2,3,4,'body 3','body 4','rear kick'].includes(x));if(f==='defense')return c.types.includes('defense');if(f==='footwork'||f==='movement')return c.types.includes('footwork');if(f==='body')return c.m.some(x=>typeof x==='string'&&x.startsWith('body '));if(f==='uppercuts')return c.m.some(x=>x===5||x===6);if(f==='inside')return c.m.some(x=>[3,4,5,6,'body 3','body 4','lead knee','rear knee','lead elbow','rear elbow'].includes(x));if(f==='freestyle')return true;return false}
-  function focusName(f){return {jabs:'Focus jabs',short:'Short combos',mixed:'Mix up combos',explosive:'Explosive bursts',high:'High intensity',speed:'Speed',power:'Power',defense:'Defense & counters',footwork:'Footwork & angles',movement:'Movement',body:'Body work',uppercuts:'Uppercuts',inside:'Inside fighting',freestyle:'Freestyle'}[f]||f}
+  function matchesFocus(c,f){if(f==='jabs')return c.m.filter(x=>x===1||x==='body 1').length>=2;if(f==='short'||f==='speed')return c.m.length<=3;if(f==='mixed')return c.types.length>1||c.m.length>=3;if(f==='explosive')return c.m.length>=2&&c.m.length<=3&&c.types.includes('punch');if(f==='high')return c.m.length>=3;if(f==='power')return c.m.some(x=>[2,3,4,'body 3','body 4','rear kick'].includes(x));if(f==='defense')return c.types.includes('defense');if(f==='footwork'||f==='movement')return c.types.includes('footwork');if(f==='body')return c.m.some(x=>typeof x==='string'&&x.startsWith('body '));if(f==='uppercuts')return c.m.some(x=>x===5||x===6);if(f==='inside')return c.m.some(x=>[3,4,5,6,'body 3','body 4','lead knee','rear knee','lead elbow','rear elbow'].includes(x));if(f==='kicks')return c.types.includes('kick');if(f==='kickmix')return c.types.includes('kick')&&c.types.includes('punch');if(f==='knees')return c.types.includes('knee');if(f==='kickflow')return c.types.includes('kick')&&c.m.length>=3;if(f==='freestyle')return true;return false}
+  function focusName(f){return {jabs:'Focus jabs',short:'Short combos',mixed:'Mix up combos',explosive:'Explosive bursts',high:'High intensity',speed:'Speed',power:'Power',defense:'Defense & counters',footwork:'Footwork & angles',movement:'Movement',body:'Body work',uppercuts:'Uppercuts',inside:'Inside fighting',kicks:'Kicks',kickmix:'Punch-to-kick',knees:'Knees and elbows',kickflow:'Kickboxing flow',freestyle:'Freestyle'}[f]||f}
   function callCombo(combo,options){comboTotal++;moveTotal+=combo.length;$('#comboTotal').textContent=comboTotal;$('#moveTotal').textContent=moveTotal;sayCombo(combo,options)}
   const standardCues=['Hands back to guard','Move after the combination','Change levels','Relax your shoulders','Breathe with every punch','Finish with an angle'],beginnerCues=['Keep your chin tucked','Return every punch to guard','Stay balanced','Exhale on each punch','Keep your hands relaxed'];
   function deliverCombo(combo,options){combosSinceCue++;const frequency=Math.max(2,+settings.cueFrequency||5),cuePool=settings.guidedBeginner?beginnerCues:standardCues;if(settings.coachCues&&combosSinceCue>=frequency&&isOn('voice')){combosSinceCue=0;say(cuePool[Math.floor(Math.random()*cuePool.length)],()=>callCombo(combo,{cancel:false}))}else callCombo(combo,options)}
@@ -206,6 +206,7 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   function roundEndBell(onend){playRoundEndSequence(onend)}
   function render(){
     syncWakeLock();
+    document.body.dataset.phase=phase;
     document.body.classList.toggle('high-contrast',!!settings.highContrast);document.body.classList.toggle('color-blind',!!settings.colorBlind);document.body.classList.toggle('left-controls',!!settings.leftControls);
     const workoutLocked=!['ready','complete'].includes(phase);$('#setup').classList.toggle('workout-locked',workoutLocked);$$('#setup button:not(.close),#setup input,#setup select').forEach(el=>el.disabled=workoutLocked||!!el.closest('.config-locked'));
     const clock=fmt(time).split(':');$('#timer').innerHTML=clock[0].split('').map(n=>'<span class="timer-digit">'+n+'</span>').join('')+'<span class="timer-colon">:</span>'+clock[1].split('').map(n=>'<span class="timer-digit">'+n+'</span>').join('');$('#comboTotal').textContent=comboTotal;$('#moveTotal').textContent=moveTotal;$('#workoutLeft').textContent='Workout time left: '+totalFmt(workoutRemaining());$('#workoutLeft').style.display=settings.showTimeLeft?'block':'none';
@@ -327,6 +328,6 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-<script src="features.js?v=67" defer></script>
+<script src="features.js?v=68" defer></script>
 </body>
 </html>
