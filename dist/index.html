@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="features.css?v=79">
+  <link rel="stylesheet" href="features.css?v=80">
   <meta name="apple-mobile-web-app-title" content="Cornerwork">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -201,7 +201,7 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   function sayCombo(combo,{cancel=true}={}){
     if(cancel)cancelSpeech();
     const sequence=speechSequence,segments=comboSpeechSegments(combo),numberRate=1.485+(settings.speechRate-5)*.14,wordRate=.9+(settings.wordSpeechRate-1)*.1;
-    const speakNext=index=>{if(sequence!==speechSequence||index>=segments.length)return;const segment=segments[index];speakUtterance(segment.text,()=>{if(sequence!==speechSequence)return;const delay=segment.kind==='number'?Math.max(20,180-settings.speechRate*16):Math.max(20,150-settings.wordSpeechRate*13);speechTimers.push(setTimeout(()=>speakNext(index+1),delay))},segment.kind==='number'?numberRate:wordRate)};
+    const speakNext=index=>{if(sequence!==speechSequence||index>=segments.length)return;const segment=segments[index];speakUtterance(segment.text,()=>{if(sequence!==speechSequence)return;const delay=segment.kind==='number'?Math.max(0,70-settings.speechRate*14):Math.max(0,55-settings.wordSpeechRate*11);if(delay)speechTimers.push(setTimeout(()=>speakNext(index+1),delay));else speakNext(index+1)},segment.kind==='number'?numberRate:wordRate)};
     speakNext(0);
   }
   function beginComboCadence(){clearInterval(comboTick);comboTick=setInterval(()=>newCombo(true),cadence()*1000)}
