@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="features.css?v=80">
+  <link rel="stylesheet" href="features.css?v=81">
   <meta name="apple-mobile-web-app-title" content="Cornerwork">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -201,6 +201,7 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   function sayCombo(combo,{cancel=true}={}){
     if(cancel)cancelSpeech();
     const sequence=speechSequence,segments=comboSpeechSegments(combo),numberRate=1.485+(settings.speechRate-5)*.14,wordRate=.9+(settings.wordSpeechRate-1)*.1;
+    if(segments.length>1&&Math.abs(numberRate-wordRate)<=.08){speakUtterance(combo.map(numbered).join(' '),null,(numberRate+wordRate)/2);return}
     const speakNext=index=>{if(sequence!==speechSequence||index>=segments.length)return;const segment=segments[index];speakUtterance(segment.text,()=>{if(sequence!==speechSequence)return;const delay=segment.kind==='number'?Math.max(0,70-settings.speechRate*14):Math.max(0,55-settings.wordSpeechRate*11);if(delay)speechTimers.push(setTimeout(()=>speakNext(index+1),delay));else speakNext(index+1)},segment.kind==='number'?numberRate:wordRate)};
     speakNext(0);
   }
