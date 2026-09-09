@@ -125,6 +125,8 @@ These rules are easy to break and should be deliberately verified after related 
 
 ### Mobile layout
 
+- The complete workout display scales down as one unit when the available window cannot contain the selected clock and callout sizes.
+- Resizing, rotating the device, or changing display-size settings must not introduce page scrollbars or push workout controls offscreen.
 - The main workout must fit inside the visible mobile viewport without the top being pushed offscreen.
 - Normal page scrolling and overscroll are suppressed during the workout interface.
 - The Workout drawer and Settings popup must scroll internally when their content exceeds the viewport.
