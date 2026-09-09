@@ -56,7 +56,7 @@ Use these labels consistently in the interface and documentation:
 ### Workout setup
 
 - Workout type: Custom workout, Quick Start, Programs, and Modes
-- Quick Start generates a varied setup from the chosen duration, goal, skill level, and equipment, then leaves that setup editable
+- Quick Start generates a varied setup from duration, goal, main focus, skill level, equipment, round style, technique mix, and coaching preference, then leaves that setup editable
 - Timing: rounds, warmup, round length, rest, and combo frequency
 - Training modes: Bag, Shadowboxing, and General
 - Skill levels: Basic, Intermediate, and Advanced
