@@ -58,6 +58,7 @@ Use these labels consistently in the interface and documentation:
 - Workout type: Custom workout, Quick Start, Programs, and Modes
 - Quick Start generates a varied setup from duration, goal, main focus, skill level, equipment, round style, technique mix, and coaching preference, then leaves that setup editable
 - Timing: rounds, warmup, round length, rest, and combo frequency
+- Final-seconds warning timing is part of the core Workout timing grid; detailed warning sound controls remain under Audio
 - Training modes: Bag, Shadowboxing, and General
 - Skill levels: Basic, Intermediate, and Advanced
 - Included techniques: punches, body shots, defense, footwork, kicks, knees, and elbows
