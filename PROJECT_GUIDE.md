@@ -58,7 +58,7 @@ Use these labels consistently in the interface and documentation:
 - Workout type: Custom workout, Quick Start, Programs, and Modes
 - Quick Start generates a varied setup from duration, goal, main focus, skill level, equipment, round style, technique mix, and coaching preference, then leaves that setup editable
 - Timing: rounds, warmup, round length, rest, and combo frequency
-- Final-seconds warning timing is part of the core Workout timing grid; detailed warning sound controls remain under Audio
+- The Workout timing grid includes an Edit coaching button that opens workout-specific coaching controls
 - Training modes: Bag, Shadowboxing, and General
 - Skill levels: Basic, Intermediate, and Advanced
 - Included techniques: punches, body shots, defense, footwork, kicks, knees, and elbows
@@ -84,6 +84,7 @@ Use these labels consistently in the interface and documentation:
 
 - Browser-local settings, custom combos, presets, history, program progress, and panel state
 - Optional Google sign-in and Firebase syncing for saved workout presets only
+- Coaching reminders, cue frequency, recovery instructions, and guided-beginner choices are included in saved and shared workouts
 - Saved-workout notes, favourites, duplication, search, links, and QR sharing
 - Backup and restore for local settings, workouts, custom combos, and history
 - Share links import a workout only after the user chooses Save or Use
