@@ -75,6 +75,7 @@ Use these labels consistently in the interface and documentation:
 - Punch-out intervals, round focus labels, progress markers, and completion statistics
 - Start/pause, previous phase, next phase, and hold-to-restart controls
 - Remappable keyboard shortcuts and screen Wake Lock while running
+- Standard and compact main-page layouts with the same workout information and controls
 
 ### Saving and continuity
 
@@ -126,6 +127,7 @@ These rules are easy to break and should be deliberately verified after related 
 ### Mobile layout
 
 - The complete workout display scales down as one unit when the available window cannot contain the selected clock and callout sizes.
+- Compact layout reorganizes the same phase, timer, callout, statistics, timeline, and controls without removing workout functions.
 - Resizing, rotating the device, or changing display-size settings must not introduce page scrollbars or push workout controls offscreen.
 - The main workout must fit inside the visible mobile viewport without the top being pushed offscreen.
 - Normal page scrolling and overscroll are suppressed during the workout interface.
