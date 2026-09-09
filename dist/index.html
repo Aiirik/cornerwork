@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="features.css?v=107">
+  <link rel="stylesheet" href="features.css?v=109">
   <meta name="apple-mobile-web-app-title" content="Cornerwork">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -338,7 +338,7 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   function openPresetModal(id){showWorkoutPanel(false);showPreferences(false);const modal=$('#'+id);if(!modal.open)modal.showModal()}
   $('#openSavePreset').onclick=()=>{openPresetModal('savePresetModal');setTimeout(()=>$('#presetName').focus(),0)};$('#openLoadPreset').onclick=()=>{renderPresets();openPresetModal('loadPresetModal')};$$('[data-close-modal]').forEach(button=>button.onclick=()=>$('#'+button.dataset.closeModal).close());$$('.preset-modal').forEach(modal=>modal.onclick=e=>{if(e.target===modal)modal.close()});
   $('#savePreset').onclick=()=>{const input=$('#presetName'),name=input.value.trim()||'My workout',note=$('#presetNote')?.value.trim()||'',preset={id:Date.now().toString(36),name:name.slice(0,36),note:note.slice(0,160),favorite:false,config:workoutSnapshot(),updatedAt:Date.now()};presets.unshift(preset);savePresets();savePresetToCloud(preset);input.value='';if($('#presetNote'))$('#presetNote').value='';renderPresets();$('#savePresetModal').close();render()};$('#presetName').onkeydown=e=>{if(e.key==='Enter'){$('#savePreset').click();e.preventDefault()}};
-  function showWorkoutPanel(show){const s=$('#setup'),button=$('#openSettings');s.classList.toggle('drawer',show);button.classList.toggle('active',show);button.setAttribute('aria-expanded',String(show));let c=s.querySelector('.close');if(show){showPreferences(false);if(!c){c=document.createElement('button');c.type='button';c.className='close circle';c.textContent='×';c.setAttribute('aria-label','Close workout settings');c.onclick=()=>showWorkoutPanel(false);s.appendChild(c)}s.scrollTop=0}else if(c)c.remove()}
+  function showWorkoutPanel(show){const s=$('#setup'),button=$('#openSettings'),oldClose=s.querySelector('.close');if(oldClose)oldClose.remove();s.classList.toggle('drawer',show);button.classList.toggle('active',show);button.setAttribute('aria-expanded',String(show));if(show){showPreferences(false);s.scrollTop=0}}
   $('#openSettings').onclick=()=>showWorkoutPanel(!$('#setup').classList.contains('drawer'));
   function showPreferences(show){if(show)showWorkoutPanel(false);$('#settingsPage').classList.toggle('open',show);$('#settingsPage').setAttribute('aria-hidden',String(!show));$('#preferences').classList.toggle('active',show);$('#preferences').setAttribute('aria-expanded',String(show))}
   $('#preferences').onclick=()=>showPreferences(!$('#settingsPage').classList.contains('open'));$('#closePreferences').onclick=()=>showPreferences(false);
@@ -362,6 +362,6 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-<script src="features.js?v=108" defer></script>
+<script src="features.js?v=109" defer></script>
 </body>
 </html>
