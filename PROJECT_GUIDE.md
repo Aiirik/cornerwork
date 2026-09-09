@@ -29,9 +29,10 @@ Cornerwork is not intended to become a social network, competitive leaderboard, 
 3. **Audio should reduce screen dependence.** Spoken combinations and phase announcements must be understandable at realistic training volume and pace.
 4. **Controls must be glove-friendly.** Primary workout actions need generous targets and must remain reachable on small screens.
 5. **Advanced options should not overwhelm setup.** Keep common choices visible and place detailed controls in clearly labelled collapsible groups.
-6. **Mobile and desktop share behavior.** Layout may adapt, but workout rules and settings must remain consistent.
-7. **Local-first is the default.** An account is optional. Only saved workout presets sync through Firebase; general preferences remain browser-specific.
-8. **Preserve user choices.** Existing local storage data and older saved workouts should continue to load when settings evolve.
+6. **Help controls are quiet and consistent.** Use the shared subtle help icon beside labels, with clear hover, focus, and touch behavior.
+7. **Mobile and desktop share behavior.** Layout may adapt, but workout rules and settings must remain consistent.
+8. **Local-first is the default.** An account is optional. Only saved workout presets sync through Firebase; general preferences remain browser-specific.
+9. **Preserve user choices.** Existing local storage data and older saved workouts should continue to load when settings evolve.
 
 ## Product terminology
 
