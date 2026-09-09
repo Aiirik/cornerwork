@@ -56,6 +56,7 @@ Use these labels consistently in the interface and documentation:
 ### Workout setup
 
 - Workout type: Custom workout, Quick Start, Programs, and Modes
+- Quick Start generates a varied setup from the chosen duration, goal, skill level, and equipment, then leaves that setup editable
 - Timing: rounds, warmup, round length, rest, and combo frequency
 - Training modes: Bag, Shadowboxing, and General
 - Skill levels: Basic, Intermediate, and Advanced
@@ -119,6 +120,7 @@ These rules are easy to break and should be deliberately verified after related 
 
 - Voice volume follows the main workout volume.
 - Number speed and word speed are independent.
+- Normal combo frequency begins after the complete spoken combination and any attached coaching cue finishes.
 - iPhone and iPad speech rate is compensated so it better matches desktop playback.
 - Round announcements use normal announcement timing, not combo readout speed.
 - Warning audio interrupts the current callout near the end of the round and then restores cadence.
