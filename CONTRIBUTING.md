@@ -20,10 +20,11 @@ Open an issue describing the training problem the change would solve. For new co
 
 ## Pull requests
 
-1. Fork the repository and create a focused branch.
+1. Read `PROJECT_GUIDE.md`, then fork the repository and create a focused branch.
 2. Make the smallest change needed to solve the issue.
 3. Test the timer on both desktop and mobile when the change affects layout or controls.
 4. Confirm that keyboard controls, saved settings, and workout timing still work.
-5. Open a pull request explaining the change and how you tested it.
+5. Run the checks documented in `PROJECT_GUIDE.md`.
+6. Open a pull request explaining the change and how you tested it.
 
 By contributing, you agree that your contribution will be licensed under the project's MIT License.

@@ -45,6 +45,18 @@ Cornerwork is a static web application. The published files are inside the `dist
 
 To run it locally, serve the repository with any static HTTP server and open `dist/index.html`. Some browser features, including authentication and wake lock, may require HTTPS or an approved local origin.
 
+### Project structure
+
+The complete deployable application lives in `dist`:
+
+- `dist/index.html` contains the page structure and controls.
+- `dist/assets/css` contains the core and enhanced interface styles.
+- `dist/assets/js` contains the core application, bootstrap behavior, and enhanced tools.
+- `dist/assets/icons` contains browser and installable-app icons.
+- `dist/manifest.webmanifest` and `dist/sw.js` provide installation, offline caching, and update handling.
+
+Read [PROJECT_GUIDE.md](PROJECT_GUIDE.md) for the product direction, behavioral invariants, architecture, persistence map, and change checklist.
+
 ## Deployment
 
 Changes to the `dist` directory on the `main` branch are automatically deployed to GitHub Pages by the repository's GitHub Actions workflow.
