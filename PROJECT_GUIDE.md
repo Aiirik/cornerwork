@@ -140,6 +140,7 @@ These rules are easy to break and should be deliberately verified after related 
 - iPhone and iPad speech rate is compensated so it better matches desktop playback.
 - Round announcements use normal announcement timing, not combo readout speed.
 - Warning audio interrupts the current callout near the end of the round and then restores cadence.
+- Custom workouts, Quick Start, Presets, and Programs all use the same configured round-start, final-warning, and round-end sound sequence. Starting a workout unlocks one reusable audio engine so delayed program instructions cannot prevent later bells on mobile.
 - Sound tests must use the currently selected fine-tuning values.
 
 ### Mobile layout
