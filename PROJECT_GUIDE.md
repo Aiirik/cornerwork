@@ -87,7 +87,7 @@ Use these labels consistently in the interface and documentation:
 - Optional coaching cues and compatible between-combo movement
 - Final-seconds warning and configurable round bells
 - Punch-out intervals, round focus labels, progress markers, and completion statistics
-- The workout display behaves like application UI rather than selectable document text. Keep its numbers as normal tabular text. Render the visual separator as two equal-size circular elements in one vertically centered component because heavy system-font colon shapes vary by browser. Preserve a standard-colon time label for accessibility.
+- The workout display behaves like application UI rather than selectable document text. Render the clock as one normal time string such as `3:00`, using the bundled clock font selected under Settings > Display. League Spartan is the default because its colon uses two round, centered dots. Montserrat and Barlow Condensed are bundled alternatives. Do not reconstruct or transform the colon separately.
 - Start/pause, previous phase, next phase, and hold-to-restart controls
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
