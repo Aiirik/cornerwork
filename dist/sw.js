@@ -1,4 +1,4 @@
-const CACHE='cornerwork-v153';
+const CACHE='cornerwork-v154';
 const CORE=['./','./index.html','./assets/css/app.css','./assets/css/features.css','./assets/js/app.js','./assets/js/bootstrap.js','./assets/js/enhancements.js','./manifest.webmanifest','./assets/icons/icon.svg','./assets/icons/apple-touch-icon.png','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()).then(()=>self.clients.matchAll({type:'window'})).then(clients=>clients.forEach(client=>client.postMessage({type:'CORNERWORK_UPDATE',version:CACHE})))));
