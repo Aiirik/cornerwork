@@ -57,6 +57,7 @@ Use these labels consistently in the interface and documentation:
 ### Workout setup
 
 - Workout type: Custom workout, Quick Start, Programs, and Modes
+- Focused bag programs can assign one sustained technique for a randomized block. Explain the drill once, then announce only each new assignment and avoid immediate repeats.
 - Quick Start generates a varied setup from duration, goal, main focus, skill level, equipment, round style, technique mix, and coaching preference, then leaves that setup editable
 - Timing: rounds, warmup, round length, rest, and combo frequency
 - The Workout timing grid includes an Edit coaching button that opens workout-specific coaching controls

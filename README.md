@@ -14,6 +14,7 @@ Cornerwork builds varied workouts from practical combinations instead of repeati
 - Adjustable rounds, warmup, rest, and combo frequency
 - Punches, body shots, defense, footwork, kicks, knees, and elbows
 - Optional round focuses and structured training blocks
+- Sustained focused bag drills with randomized coach callouts
 - Customizable allowed combinations
 - Numbers or full punch-name callouts
 - Adjustable voice timing, warning sounds, and boxing bells
