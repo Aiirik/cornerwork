@@ -2,7 +2,7 @@
 
 A glove-friendly boxing combo coach and configurable round timer for bag work, shadowboxing, kickboxing, and other striking workouts.
 
-[Open Cornerwork](https:cornerwork.ca) | [Report a problem](https://github.com/Aiirik/cornerwork/issues) | [MIT License](LICENSE)
+[Open Cornerwork](https://cornerwork.ca/) | [Report a problem](https://github.com/Aiirik/cornerwork/issues)
 
 ## What it does
 
