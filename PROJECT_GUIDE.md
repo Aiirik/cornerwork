@@ -43,7 +43,7 @@ Use these labels consistently in the interface and documentation:
 | User-created configuration | Custom workout |
 | Guided one-time generator | Quick Start |
 | Multi-session progression | Training Program |
-| Specialized preset | Training Mode |
+| Editable starting configuration | Workout Preset |
 | Main configuration drawer | Workout |
 | Global preferences popup | Settings |
 | Active work period | Round |
@@ -56,12 +56,14 @@ Use these labels consistently in the interface and documentation:
 
 ### Workout setup
 
-- Workout type: Custom workout, Quick Start, Modes, and Programs
+- Workout type: Custom workout, Quick Start, Presets, and Programs
 - Programs are grouped into Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse by training purpose and equipment.
 - Selecting a program opens its details before loading a workout. Show every session, its teaching goal, individually completed sessions, the next suggested session, and allow the user to select any session.
 - Keep program details compact: shared drill instructions belong in the program header, each selectable card contains only its own session details, and the selected card is the summary above the Start button.
 - Program progress records exact completed sessions. Selecting or skipping ahead does not complete earlier sessions; completion is recorded only after the chosen workout finishes.
-- Programs are fixed presets. After loading one, lock its workout, combo, coaching, and focus controls while leaving the Workout Type section available so the user can switch away. Quick Start and Modes remain editable after loading.
+- Programs are authored, focused workouts with a deliberate training method, progression, interval protocol, or fight structure. After loading one, lock its workout, combo, coaching, and focus controls while leaving the Workout Type section available so the user can switch away.
+- Progressive Combinations, Technical Round Themes, Tabata Boxing, Punch-Out Intervals, and Fight Simulation belong in Programs rather than Presets.
+- Presets are generic editable starting configurations built from the normal Cornerwork controls and combo library. Selecting one always reloads its complete default configuration; users must save the workout to keep their edits. Quick Start and Presets remain editable after loading.
 - Focused bag programs can assign one sustained technique for a randomized block. Explain the drill once, then announce only each new assignment. Shuffle every available assignment before repeating one, avoid immediate repeats across shuffle cycles, and rebuild the order for every workout.
 - Every focus drill offers separately tracked 10, 15, and 20-minute versions. The 10-minute version preserves the original two-round class format. Longer versions use two-round work blocks with short rests inside a block and a longer recovery between blocks.
 - Focused programs currently cover jab variations, high-low straights, hooks, inside fighting, speed and power changes, defense and counters, and footwork entries. Their short on-screen directions must state what the boxer repeats.
