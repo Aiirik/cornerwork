@@ -87,7 +87,7 @@ Use these labels consistently in the interface and documentation:
 - Optional coaching cues and compatible between-combo movement
 - Final-seconds warning and configurable round bells
 - Punch-out intervals, round focus labels, progress markers, and completion statistics
-- The workout display behaves like application UI rather than selectable document text. Its timer uses a centered, symmetrical font glyph for the visual colon, preserves a standard-colon time label for accessibility, and does not replace punctuation with drawn shapes.
+- The workout display behaves like application UI rather than selectable document text. Its timer uses a centered font glyph for the visual colon with a small horizontal correction so its dots remain circular, preserves a standard-colon time label for accessibility, and does not replace punctuation with drawn shapes.
 - Start/pause, previous phase, next phase, and hold-to-restart controls
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
