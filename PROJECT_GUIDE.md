@@ -60,7 +60,8 @@ Use these labels consistently in the interface and documentation:
 - Programs are grouped into Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse by training purpose and equipment.
 - Selecting a program opens its details before loading a workout. Show every session, its teaching goal, individually completed sessions, the next suggested session, and allow the user to select any session.
 - Program progress records exact completed sessions. Selecting or skipping ahead does not complete earlier sessions; completion is recorded only after the chosen workout finishes.
-- Focused bag programs can assign one sustained technique for a randomized block. Explain the drill once, then announce only each new assignment and avoid immediate repeats.
+- Focused bag programs can assign one sustained technique for a randomized block. Explain the drill once, then announce only each new assignment. Shuffle every available assignment before repeating one, avoid immediate repeats across shuffle cycles, and rebuild the order for every workout.
+- Every focus drill offers separately tracked 10, 15, and 20-minute versions. The 10-minute version preserves the original two-round class format. Longer versions use two-round work blocks with short rests inside a block and a longer recovery between blocks.
 - Focused programs currently cover jab variations, high-low straights, hooks, inside fighting, speed and power changes, defense and counters, and footwork entries. Their short on-screen directions must state what the boxer repeats.
 - Quick Start generates a varied setup from duration, goal, main focus, skill level, equipment, round style, technique mix, and coaching preference, then leaves that setup editable
 - Timing: rounds, warmup, round length, rest, and combo frequency
@@ -112,6 +113,7 @@ These rules are easy to break and should be deliberately verified after related 
 
 - Phase order is Ready, optional Warmup, Round, optional Rest, next Round, then Complete.
 - Previous and Next move one phase at a time.
+- Workouts may define a per-round rest schedule. Time remaining, total duration, phase navigation, history, saving, and sharing must use that schedule rather than assuming every rest is the same length.
 - Pausing stops timers, combo cadence, and active speech.
 - Holding the paused primary button for 1.2 seconds resets the entire workout.
 - Workout time remaining includes the current phase and all remaining work and rest periods.
