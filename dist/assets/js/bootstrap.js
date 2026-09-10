@@ -34,7 +34,7 @@
   observer.observe(document.documentElement,{childList:true,subtree:true});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addAccessibilitySetting,{once:true});else addAccessibilitySetting();
   const core=document.createElement('script');
-  core.src='assets/js/enhancements.js?v=170';
+  core.src='assets/js/enhancements.js?v=171';
   core.defer=true;
   document.head.appendChild(core);
 })();
