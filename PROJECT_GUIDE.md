@@ -58,6 +58,8 @@ Use these labels consistently in the interface and documentation:
 
 - Workout type: Custom workout, Quick Start, Programs, and Modes
 - Programs are grouped into Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse by training purpose and equipment.
+- Selecting a program opens its details before loading a workout. Show every session, its teaching goal, individually completed sessions, the next suggested session, and allow the user to select any session.
+- Program progress records exact completed sessions. Selecting or skipping ahead does not complete earlier sessions; completion is recorded only after the chosen workout finishes.
 - Focused bag programs can assign one sustained technique for a randomized block. Explain the drill once, then announce only each new assignment and avoid immediate repeats.
 - Focused programs currently cover jab variations, high-low straights, hooks, inside fighting, speed and power changes, defense and counters, and footwork entries. Their short on-screen directions must state what the boxer repeats.
 - Quick Start generates a varied setup from duration, goal, main focus, skill level, equipment, round style, technique mix, and coaching preference, then leaves that setup editable
