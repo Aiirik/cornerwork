@@ -67,6 +67,7 @@ Use these labels consistently in the interface and documentation:
 - Focused bag programs can assign one sustained technique for a randomized block. Explain the drill once, then announce only each new assignment. Shuffle every available assignment before repeating one, avoid immediate repeats across shuffle cycles, and rebuild the order for every workout.
 - Every focus drill offers separately tracked 10, 15, and 20-minute versions. The 10-minute version preserves the original two-round class format. Longer versions use two-round work blocks with short rests inside a block and a longer recovery between blocks.
 - Focused programs currently cover jab variations, high-low straights, hooks, inside fighting, speed and power changes, defense and counters, and footwork entries. Their short on-screen directions must state what the boxer repeats.
+- Dedicated focus drills do not use the normal random round-focus planner. Their assignment system governs every round, so their timeline pips remain unlabeled unless a future drill defines a genuine round-specific change.
 - Quick Start generates a varied setup from duration, goal, main focus, skill level, equipment, round style, technique mix, and coaching preference, then leaves that setup editable
 - Timing: rounds, warmup, round length, rest, and combo frequency
 - The Workout timing grid includes an Edit coaching button that opens workout-specific coaching controls
