@@ -96,7 +96,7 @@ import {collection,deleteDoc,doc,getFirestore,onSnapshot,setDoc} from 'https://w
   }
   function renderCombo(){
     if(!comboVisible){$('#combo').textContent='';$('#comboNumbers').textContent='';$('#comboNumbers').style.display='none';return}
-    if(activeFocusedDrill()&&focusedAssignment){$('#combo').textContent=focusedAssignment.display;$('#comboNumbers').textContent='Keep going until the next callout';$('#comboNumbers').style.display='block';return}
+    if(activeFocusedDrill()&&focusedAssignment){$('#combo').textContent=focusedAssignment.display;$('#comboNumbers').textContent=activeFocusedDrill().shortInstruction||'Keep going until the next callout';$('#comboNumbers').style.display='block';return}
     if(betweenCue){$('#combo').textContent=betweenCue;$('#comboNumbers').style.display='none';return}
     const primary=settings.format==='numbers'?current.map(numbered):current.map(phrase),secondary=settings.format==='numbers'?current.map(phrase):current.map(numbered);
     $('#combo').textContent=primary.join(' · ');$('#comboNumbers').textContent=secondary.join(' · ');$('#comboNumbers').style.display=isOn('secondary')?'block':'none';
