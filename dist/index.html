@@ -9,11 +9,11 @@
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/css/features.css?v=167">
+  <link rel="stylesheet" href="assets/css/features.css?v=168">
   <meta name="apple-mobile-web-app-title" content="Cornerwork">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="stylesheet" href="assets/css/app.css?v=167">
+  <link rel="stylesheet" href="assets/css/app.css?v=168">
 </head>
 <body>
 <main class="app">
@@ -43,7 +43,7 @@
   <section class="stage" id="stage">
     <header class="topbar"><div class="brand"><span class="mark"><img src="assets/icons/icon.svg" alt="" draggable="false"></span> Cornerwork</div><div class="top-actions"><div class="volume-control" id="volumeControl"><button class="volume-toggle" id="volumeToggle" type="button" aria-label="Open volume control" aria-expanded="false" aria-controls="volumePanel"><span id="volumeIcon" aria-hidden="true">🔊</span></button><div class="volume-panel" id="volumePanel"><input id="volume" type="range" min="0" max="100" step="5" value="80" aria-label="Workout volume"><output class="volume-value" id="volumeValue" for="volume">80%</output></div></div><button class="settings-btn" id="preferences" aria-label="Open settings" aria-expanded="false" aria-controls="settingsPage">⚙</button><div class="mobile-settings"><button id="openSettings" aria-expanded="false" aria-controls="setup">Workout</button></div></div></header>
     <div class="workout"><div class="center"><div class="workout-display">
-      <div class="phase" id="phase">Round 1 of 6</div><div class="timer" id="timer">3:00</div><div class="workout-stats"><span>Combos: <b id="comboTotal">0</b></span><i></i><span>Moves: <b id="moveTotal">0</b></span></div><div class="workout-left" id="workoutLeft">Workout time left: 18:15</div>
+      <div class="phase" id="phase">Round 1 of 6</div><div class="timer" id="timer" aria-label="3:00">3<span class="timer-separator" aria-hidden="true"><i></i><i></i></span>00</div><div class="workout-stats"><span>Combos: <b id="comboTotal">0</b></span><i></i><span>Moves: <b id="moveTotal">0</b></span></div><div class="workout-left" id="workoutLeft">Workout time left: 18:15</div>
       <div class="combo-wrap"><div class="combo" id="combo">Jab · Cross</div><div class="combo-numbers" id="comboNumbers">1 · 2</div></div></div><div class="workout-summary" id="summary"></div>
       <div class="timeline" id="timeline"></div>
       <div class="controls"><button class="circle" id="restart" aria-label="Previous phase">←</button><button class="primary" id="start">Start round</button><button class="circle" id="skip" aria-label="Next phase">→</button></div>
@@ -73,8 +73,8 @@
   <div class="danger-zone"><button class="reset-btn" id="resetAll">Reset all settings</button><div class="reset-confirm" id="resetConfirm"><strong>Reset everything?</strong><div class="mini-note">Your workout, combo, display, and shortcut preferences will return to their defaults.</div><div class="confirm-actions"><button id="cancelReset">Cancel</button><button class="confirm-reset" id="confirmReset">Yes, reset all</button></div></div></div>
 </div></section>
 <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-<script type="module" src="assets/js/app.js?v=167"></script>
+<script type="module" src="assets/js/app.js?v=168"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-<script src="assets/js/bootstrap.js?v=167" defer></script>
+<script src="assets/js/bootstrap.js?v=168" defer></script>
 </body>
 </html>
