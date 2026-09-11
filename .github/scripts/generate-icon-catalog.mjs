@@ -6,23 +6,39 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const distRoot = path.join(repositoryRoot, 'dist');
 const iconsRoot = path.join(distRoot, 'assets/icons');
 const requiredFiles = ['icon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
+const validFolderName = /^[A-Za-z0-9][A-Za-z0-9 _-]*$/;
+const naturalSort = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+
+const manifestName = (folder) =>
+  `manifest-${folder.toLowerCase().replace(/[_ ]+/g, '-').replace(/-+/g, '-')}.webmanifest`;
 
 const entries = await readdir(iconsRoot, { withFileTypes: true });
-const alternateNumbers = entries
-  .filter((entry) => entry.isDirectory() && /^alt[1-9]\d*$/.test(entry.name))
-  .map((entry) => Number(entry.name.slice(3)))
-  .sort((a, b) => a - b);
+const iconFolders = entries
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort(naturalSort.compare);
 
-alternateNumbers.forEach((number, index) => {
-  const expected = index + 1;
-  if (number !== expected) {
+for (const folder of iconFolders) {
+  if (folder.toLowerCase() === 'default') {
     throw new Error(
-      `Icon folders must be consecutive. Expected alt${expected}, found alt${number}.`,
+      'The folder name "default" is reserved for the icons directly in assets/icons.',
     );
   }
-});
+  if (!validFolderName.test(folder)) {
+    throw new Error(
+      `Invalid icon folder "${folder}". Use only letters, numbers, spaces, hyphens, or underscores.`,
+    );
+  }
+}
 
-const themes = ['default', ...alternateNumbers.map((number) => `alt${number}`)];
+const manifestNames = iconFolders.map(manifestName);
+if (new Set(manifestNames).size !== manifestNames.length) {
+  throw new Error(
+    'Icon folder names must produce unique names after spaces are converted to hyphens.',
+  );
+}
+
+const themes = ['default', ...iconFolders];
 
 for (const theme of themes) {
   const folder = theme === 'default' ? iconsRoot : path.join(iconsRoot, theme);
@@ -36,7 +52,7 @@ for (const theme of themes) {
 }
 
 const manifestFor = (theme) => {
-  const folder = theme === 'default' ? 'assets/icons' : `assets/icons/${theme}`;
+  const folder = theme === 'default' ? 'assets/icons' : `assets/icons/${encodeURIComponent(theme)}`;
   return {
     name: 'Cornerwork Boxing Coach',
     short_name: 'Cornerwork',
@@ -75,7 +91,7 @@ await writeFile(
 );
 
 for (const theme of themes) {
-  const filename = theme === 'default' ? 'manifest.webmanifest' : `manifest-${theme}.webmanifest`;
+  const filename = theme === 'default' ? 'manifest.webmanifest' : manifestName(theme);
   await writeFile(
     path.join(distRoot, filename),
     JSON.stringify(manifestFor(theme), null, 2) + '\n',

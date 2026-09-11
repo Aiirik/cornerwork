@@ -1,11 +1,33 @@
 // App icon gallery helpers.
 //
-// Icon folders are registered automatically during deployment. To add another
-// choice, create the next consecutive folder in assets/icons (for example,
-// alt4) and include the four files listed in assets/icons/README.md.
+// Icon folders are registered automatically during deployment. The folder name
+// becomes the label shown in the gallery. See assets/icons/README.md.
 
 const CATALOG_URL = 'assets/icons/catalog.json';
-const ICON_ID_PATTERN = /^(default|alt[1-9]\d*)$/;
+const ICON_ID_PATTERN = /^(default|[A-Za-z0-9][A-Za-z0-9 _-]*)$/;
+
+function labelFromFolder(folder) {
+  if (folder === 'default') return 'Default';
+  return folder
+    .replace(/([A-Za-z])(\d)/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function manifestFromFolder(folder) {
+  const slug = folder.toLowerCase().replace(/[_ ]+/g, '-').replace(/-+/g, '-');
+  return `manifest-${slug}.webmanifest`;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    (character) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character],
+  );
+}
 
 export function isIconThemeId(value) {
   return ICON_ID_PATTERN.test(String(value || ''));
@@ -14,13 +36,12 @@ export function isIconThemeId(value) {
 export function createIconTheme(id) {
   const safeId = isIconThemeId(id) ? id : 'default';
   const isDefault = safeId === 'default';
-  const number = isDefault ? '' : safeId.slice(3);
 
   return {
     id: safeId,
-    label: isDefault ? 'Default' : 'Alt ' + number,
-    root: 'assets/icons' + (isDefault ? '' : '/' + safeId),
-    manifest: isDefault ? 'manifest.webmanifest' : 'manifest-' + safeId + '.webmanifest',
+    label: labelFromFolder(safeId),
+    root: 'assets/icons' + (isDefault ? '' : '/' + encodeURIComponent(safeId)),
+    manifest: isDefault ? 'manifest.webmanifest' : manifestFromFolder(safeId),
   };
 }
 
@@ -43,17 +64,21 @@ export async function loadIconThemes(preferredId = 'default') {
 
 export function renderIconThemeOptions(container, themes) {
   container.innerHTML = themes
-    .map(
-      (theme) =>
+    .map((theme) => {
+      const id = escapeHtml(theme.id);
+      const label = escapeHtml(theme.label);
+      const root = escapeHtml(theme.root);
+      return (
         '<button class="icon-picker-option" type="button" data-icon-theme="' +
-        theme.id +
+        id +
         '" role="radio" aria-checked="false"><span class="icon-picker-preview"><img src="' +
-        theme.root +
+        root +
         '/icon.png" alt="' +
-        theme.label +
+        label +
         ' Cornerwork icon"></span><strong>' +
-        theme.label +
-        '</strong><span class="icon-picker-check" aria-hidden="true"><svg class="ui-icon"><use href="assets/icons/ui-icons.svg#icon-check"></use></svg></span></button>',
-    )
+        label +
+        '</strong><span class="icon-picker-check" aria-hidden="true"><svg class="ui-icon"><use href="assets/icons/ui-icons.svg#icon-check"></use></svg></span></button>'
+      );
+    })
     .join('');
 }
