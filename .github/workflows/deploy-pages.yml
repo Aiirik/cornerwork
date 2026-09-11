@@ -15,7 +15,8 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  # A new publish supersedes any older deployment still waiting in the Pages queue.
+  cancel-in-progress: true
 
 jobs:
   deploy:
