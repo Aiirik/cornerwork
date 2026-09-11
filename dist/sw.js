@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v185';
+const CACHE = 'cornerwork-v186';
 const CORE = [
   './',
   './index.html',
@@ -73,7 +73,8 @@ self.addEventListener('fetch', (event) => {
       sameOrigin &&
       (event.request.mode === 'navigate' ||
         event.request.destination === 'script' ||
-        event.request.destination === 'style'),
+        event.request.destination === 'style' ||
+        url.pathname.endsWith('/assets/icons/catalog.json')),
     cacheable =
       sameOrigin ||
       ['www.gstatic.com', 'cdn.jsdelivr.net', 'accounts.google.com'].includes(url.hostname);

@@ -3,7 +3,7 @@
 // Icon folders are registered automatically during deployment. The folder name
 // becomes the label shown in the gallery. See assets/icons/README.md.
 
-const CATALOG_URL = 'assets/icons/catalog.json';
+const CATALOG_URL = 'assets/icons/catalog.json?v=186';
 
 function escapeHtml(value) {
   return String(value).replace(
