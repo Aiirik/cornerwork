@@ -6,11 +6,9 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const distRoot = path.join(repositoryRoot, 'dist');
 const iconsRoot = path.join(distRoot, 'assets/icons');
 const requiredFiles = ['icon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
-const validFolderName = /^[A-Za-z0-9][A-Za-z0-9 _-]*$/;
 const naturalSort = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
 
-const manifestName = (folder) =>
-  `manifest-${folder.toLowerCase().replace(/[_ ]+/g, '-').replace(/-+/g, '-')}.webmanifest`;
+const manifestName = (folder) => `manifest-${folder}.webmanifest`;
 
 const entries = await readdir(iconsRoot, { withFileTypes: true });
 const iconFolders = entries
@@ -24,18 +22,6 @@ for (const folder of iconFolders) {
       'The folder name "default" is reserved for the icons directly in assets/icons.',
     );
   }
-  if (!validFolderName.test(folder)) {
-    throw new Error(
-      `Invalid icon folder "${folder}". Use only letters, numbers, spaces, hyphens, or underscores.`,
-    );
-  }
-}
-
-const manifestNames = iconFolders.map(manifestName);
-if (new Set(manifestNames).size !== manifestNames.length) {
-  throw new Error(
-    'Icon folder names must produce unique names after spaces are converted to hyphens.',
-  );
 }
 
 const themes = ['default', ...iconFolders];

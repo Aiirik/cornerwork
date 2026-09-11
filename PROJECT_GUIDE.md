@@ -110,7 +110,7 @@ Use these labels consistently in the interface and documentation:
 - Workout history and streak statistics
 - PWA installation and offline support
 - Appearance, accessibility, audio, and display preferences
-- Display preferences include a gear-opened icon gallery generated from the default artwork and every valid folder inside `assets/icons`. Folder names are converted into readable gallery labels, such as `alt1` becoming “Alt 1” and `heavy-bag` becoming “Heavy Bag.” The selection updates the in-app header, browser icon, Apple touch link, and active manifest. Phones may require removing and reinstalling an existing Home Screen app before its operating-system-cached icon changes.
+- Display preferences include a gear-opened icon gallery generated from the default artwork and every valid folder inside `assets/icons`. Each folder name is used unchanged as its gallery label. The selection updates the in-app header, browser icon, Apple touch link, and active manifest. Phones may require removing and reinstalling an existing Home Screen app before its operating-system-cached icon changes.
 - The default Cornerwork branding uses a 44-pixel icon with Corner and Work stacked. Compact keeps the same icon and text sizes but places the name on one line.
 - Interface controls use the shared `assets/icons/ui-icons.svg` sprite so volume, settings, navigation, fullscreen, favourite, completion, selection, and delete icons render consistently across browsers and devices. Do not replace these with Unicode symbols or emoji.
 - The Settings footer identifies the creator and shows the short Git commit for the deployed build. The Pages workflow stamps this identifier automatically so it never requires a manual source edit.

@@ -1,10 +1,11 @@
 # Adding a Cornerwork app icon
 
-No HTML or JavaScript changes are required. The folder name becomes the label shown in the app.
+No HTML or JavaScript changes are required. The folder name becomes the label shown in the app exactly as written.
 
-1. Create a folder inside `assets/icons`. Use letters, numbers, spaces, hyphens, or underscores.
-   - `alt4` displays as **Alt 4**.
-   - `heavy bag`, `heavy-bag`, or `heavy_bag` displays as **Heavy Bag**.
+1. Create a folder inside `assets/icons`. Its name is used unchanged in the app.
+   - `alt4` displays as **alt4**.
+   - `heavy bag` displays as **heavy bag**.
+   - `Heavy-Bag` displays as **Heavy-Bag**.
 2. Add all four PNG files below to that folder:
    - `icon.png`, the full-size gallery and header artwork
    - `icon-192.png`, exactly 192 by 192 pixels

@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v182';
+const CACHE = 'cornerwork-v183';
 const CORE = [
   './',
   './index.html',
@@ -29,8 +29,10 @@ async function cacheIconThemes(cache) {
   const catalogue = await response.json();
   const iconAssets = catalogue.themes.flatMap(({ id }) => {
     const root = id === 'default' ? './assets/icons' : `./assets/icons/${encodeURIComponent(id)}`;
-    const slug = id.toLowerCase().replace(/[_ ]+/g, '-').replace(/-+/g, '-');
-    const manifest = id === 'default' ? './manifest.webmanifest' : `./manifest-${slug}.webmanifest`;
+    const manifest =
+      id === 'default'
+        ? './manifest.webmanifest'
+        : `./manifest-${encodeURIComponent(id)}.webmanifest`;
     return [manifest, ...ICON_FILES.map((filename) => `${root}/${filename}`)];
   });
   await cache.addAll(iconAssets);

@@ -4,22 +4,6 @@
 // becomes the label shown in the gallery. See assets/icons/README.md.
 
 const CATALOG_URL = 'assets/icons/catalog.json';
-const ICON_ID_PATTERN = /^(default|[A-Za-z0-9][A-Za-z0-9 _-]*)$/;
-
-function labelFromFolder(folder) {
-  if (folder === 'default') return 'Default';
-  return folder
-    .replace(/([A-Za-z])(\d)/g, '$1 $2')
-    .replace(/[_-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function manifestFromFolder(folder) {
-  const slug = folder.toLowerCase().replace(/[_ ]+/g, '-').replace(/-+/g, '-');
-  return `manifest-${slug}.webmanifest`;
-}
 
 function escapeHtml(value) {
   return String(value).replace(
@@ -30,7 +14,7 @@ function escapeHtml(value) {
 }
 
 export function isIconThemeId(value) {
-  return ICON_ID_PATTERN.test(String(value || ''));
+  return typeof value === 'string' && value.length > 0;
 }
 
 export function createIconTheme(id) {
@@ -39,9 +23,11 @@ export function createIconTheme(id) {
 
   return {
     id: safeId,
-    label: labelFromFolder(safeId),
+    label: isDefault ? 'Default' : safeId,
     root: 'assets/icons' + (isDefault ? '' : '/' + encodeURIComponent(safeId)),
-    manifest: isDefault ? 'manifest.webmanifest' : manifestFromFolder(safeId),
+    manifest: isDefault
+      ? 'manifest.webmanifest'
+      : `manifest-${encodeURIComponent(safeId)}.webmanifest`,
   };
 }
 
