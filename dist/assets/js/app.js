@@ -19,7 +19,7 @@ import {
   isIconThemeId,
   loadIconThemes,
   renderIconThemeOptions,
-} from './icon-themes.js?v=183';
+} from './icon-themes.js?v=186';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
