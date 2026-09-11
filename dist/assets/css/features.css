@@ -377,6 +377,10 @@
   color: var(--green);
   font-size: 30px;
 }
+.completion-mark .ui-icon {
+  width: 34px;
+  height: 34px;
+}
 .completion-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -469,6 +473,10 @@
   display: none;
   place-items: center;
   font-size: 16px;
+}
+.top-feature-button .ui-icon {
+  width: 18px;
+  height: 18px;
 }
 .show-fullscreen-button .top-feature-button {
   display: grid;
@@ -1469,6 +1477,10 @@ select {
 }
 .custom-select-option {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 8px 9px;
   border: 1px solid transparent;
   border-radius: 7px;
@@ -1489,10 +1501,19 @@ select {
   color: #fff;
   font-weight: 800;
 }
-.custom-select-option.active::after {
-  content: '✓';
-  float: right;
+.custom-select-check {
+  display: none;
+  width: 15px;
+  height: 15px;
   color: var(--red-text);
+}
+.custom-select-option.active .custom-select-check {
+  display: block;
+}
+.preset-favorite .ui-icon {
+  width: 18px;
+  height: 18px;
+  margin: auto;
 }
 .custom-select-trigger:disabled {
   cursor: not-allowed;
@@ -1926,6 +1947,9 @@ select {
 }
 .program-back {
   justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: 0;
   background: transparent;
   padding: 3px 2px;
@@ -1936,10 +1960,9 @@ select {
 .program-back:hover {
   color: var(--red-text);
 }
-.program-back span {
-  display: inline-block;
-  margin-right: 4px;
-  font-size: 16px;
+.program-back .ui-icon {
+  width: 16px;
+  height: 16px;
 }
 .program-detail-head {
   display: flex;
@@ -2043,6 +2066,10 @@ select {
   border-color: #66e08d77;
   background: #66e08d20;
   color: var(--green);
+}
+.program-session-state .program-check {
+  width: 16px;
+  height: 16px;
 }
 .program-session > span:last-child {
   min-width: 0;

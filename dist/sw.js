@@ -1,9 +1,10 @@
-const CACHE = 'cornerwork-v177';
+const CACHE = 'cornerwork-v178';
 const CORE = [
   './',
   './index.html',
   './assets/css/app.css',
   './assets/css/features.css',
+  './assets/icons/ui-icons.svg',
   './assets/js/app.js',
   './assets/js/bootstrap.js',
   './assets/js/enhancements.js',

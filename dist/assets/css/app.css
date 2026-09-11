@@ -138,6 +138,14 @@ select {
 button {
   cursor: pointer;
 }
+.ui-icon {
+  width: 1.25em;
+  height: 1.25em;
+  display: block;
+  flex: 0 0 auto;
+  overflow: visible;
+  pointer-events: none;
+}
 .app {
   min-height: 100vh;
   display: grid;
@@ -580,6 +588,11 @@ button {
   place-items: center;
   font-size: 18px;
 }
+.settings-btn .ui-icon,
+.icon-picker-trigger .ui-icon {
+  width: 18px;
+  height: 18px;
+}
 .settings-page {
   display: none;
   position: fixed;
@@ -849,6 +862,10 @@ button {
   margin: 0;
   font-size: 10px;
 }
+.controls .control-icon {
+  width: 28px;
+  height: 28px;
+}
 .controls .circle,
 .controls .primary {
   padding: 0 14px;
@@ -1025,6 +1042,10 @@ button {
   place-items: center;
   font-size: 16px;
   flex: 0 0 36px;
+}
+.volume-toggle .ui-icon {
+  width: 18px;
+  height: 18px;
 }
 .volume-panel {
   width: 0;
@@ -1695,6 +1716,11 @@ button *,
 .preset-actions .delete-preset {
   color: var(--red-text);
 }
+.delete-preset .small-icon {
+  width: 15px;
+  height: 15px;
+  margin: auto;
+}
 .preset-empty {
   color: var(--muted);
   font-size: 12px;
@@ -1810,8 +1836,8 @@ button *,
   color: #fff;
   box-shadow: 0 0 0 2px var(--red-glow);
 }
-.icon-picker-option.active::after {
-  content: '✓';
+.icon-picker-check {
+  display: none;
   position: absolute;
   top: 7px;
   right: 7px;
@@ -1822,8 +1848,13 @@ button *,
   border-radius: 50%;
   background: var(--red);
   color: #fff;
-  font-size: 12px;
-  font-weight: 900;
+}
+.icon-picker-option.active .icon-picker-check {
+  display: grid;
+}
+.icon-picker-check .ui-icon {
+  width: 14px;
+  height: 14px;
 }
 .icon-picker-preview {
   width: 82px;
@@ -1899,6 +1930,11 @@ button *,
   background: var(--panel2);
   border-radius: 9px;
   font-size: 14px;
+}
+.sound-gear .ui-icon {
+  width: 15px;
+  height: 15px;
+  margin: auto;
 }
 .sound-gear.active {
   border-color: var(--red-border);

@@ -7,6 +7,12 @@
       /[&<>"']/g,
       (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
     );
+  const uiIcon = (name, className = '') =>
+    '<svg class="ui-icon' +
+    (className ? ' ' + className : '') +
+    '" aria-hidden="true" focusable="false"><use href="assets/icons/ui-icons.svg#icon-' +
+    name +
+    '"></use></svg>';
   const fmt = (s) => {
     s = Math.max(0, Math.round(s || 0));
     const h = Math.floor(s / 3600),
@@ -704,7 +710,7 @@
     el.innerHTML =
       '<div class="feature-shell"><div class="feature-head"><h2>' +
       title +
-      '</h2><button class="feature-close" data-feature-close aria-label="Close">×</button></div>' +
+      '</h2><button class="feature-close" data-feature-close aria-label="Close"></button></div>' +
       content +
       '</div>';
     document.body.appendChild(el);
@@ -1139,7 +1145,9 @@
           progressLabel = focused ? 'versions' : 'sessions';
         const overview = focused ? focused.drill.instructions : program.detail;
         detail.innerHTML =
-          '<button class="program-back" type="button"><span aria-hidden="true">←</span> All programs</button><div class="program-detail-head"><div>' +
+          '<button class="program-back" type="button">' +
+          uiIcon('arrow-left') +
+          'All programs</button><div class="program-detail-head"><div>' +
           (focused ? '<span class="equipment-badge focus-badge">Focus drill</span>' : '') +
           '<span class="equipment-badge">' +
           equipmentLabel(program.equipment) +
@@ -1165,7 +1173,7 @@
                 '" data-program-session="' +
                 index +
                 '"><span class="program-session-state">' +
-                (completed.has(index) ? '✓' : index + 1) +
+                (completed.has(index) ? uiIcon('check', 'program-check') : index + 1) +
                 '</span><span><strong>' +
                 itemLabel(session, index) +
                 '</strong><small>' +
@@ -1566,7 +1574,9 @@
     return modal(
       'completionDialog',
       'Workout Complete',
-      '<div class="completion-hero"><div class="completion-mark">✓</div><p class="feature-note">Session complete. Your workout has been added to your history.</p></div><div class="completion-stats" id="completionStats"></div><div class="feature-actions"><button class="feature-secondary" id="completionHistory">View history</button><button class="feature-secondary" id="completionSave">Save setup</button><button class="feature-primary" id="completionRepeat">Repeat workout</button></div>',
+      '<div class="completion-hero"><div class="completion-mark">' +
+        uiIcon('check') +
+        '</div><p class="feature-note">Session complete. Your workout has been added to your history.</p></div><div class="completion-stats" id="completionStats"></div><div class="feature-actions"><button class="feature-secondary" id="completionHistory">View history</button><button class="feature-secondary" id="completionSave">Save setup</button><button class="feature-primary" id="completionRepeat">Repeat workout</button></div>',
     );
   }
   // Camera, backup, coaching, sharing, and saved workout tools.
@@ -1716,7 +1726,7 @@
         const actions = item.querySelector('.preset-actions'),
           star = document.createElement('button');
         star.className = 'preset-favorite';
-        star.textContent = p.favorite ? '★' : '☆';
+        star.innerHTML = uiIcon(p.favorite ? 'star-filled' : 'star');
         star.title = p.favorite ? 'Remove from favourites' : 'Add to favourites';
         star.setAttribute('aria-label', star.title);
         star.onclick = () => {
@@ -1960,7 +1970,9 @@
       'beforeend',
       '<div class="setting-row workout-memory-row"><span>Use saved tab layout</span><span class="workout-memory-actions"><button class="sound-gear ' +
         (enabled ? '' : 'hidden-feature') +
-        '" id="workoutTabsGear" aria-label="Choose saved workout tab layout" aria-expanded="false">⚙</button><button class="enhanced-switch ' +
+        '" id="workoutTabsGear" aria-label="Choose saved workout tab layout" aria-expanded="false">' +
+        uiIcon('settings') +
+        '</button><button class="enhanced-switch ' +
         (enabled ? 'on' : '') +
         '" id="rememberWorkoutTabs" aria-label="Use saved workout tab layout" aria-pressed="' +
         enabled +
@@ -2100,7 +2112,8 @@
         choice.type = 'button';
         choice.className = 'custom-select-option';
         choice.dataset.value = option.value;
-        choice.textContent = option.textContent;
+        choice.innerHTML =
+          '<span>' + safe(option.textContent) + '</span>' + uiIcon('check', 'custom-select-check');
         choice.disabled = option.disabled;
         choice.setAttribute('role', 'option');
         choice.onclick = (event) => {
@@ -2467,7 +2480,7 @@
     fullscreen.className = 'top-feature-button';
     fullscreen.title = 'Full screen';
     fullscreen.setAttribute('aria-label', 'Toggle full screen');
-    fullscreen.textContent = '⛶';
+    fullscreen.innerHTML = uiIcon('fullscreen');
     fullscreen.onclick = () =>
       document.fullscreenElement
         ? document.exitFullscreen()

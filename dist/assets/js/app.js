@@ -877,6 +877,21 @@ import {
       (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
     );
   }
+  function uiIcon(name, className = '') {
+    const classes = className ? 'ui-icon ' + className : 'ui-icon';
+    return (
+      '<svg class="' +
+      classes +
+      '" aria-hidden="true" focusable="false"><use href="assets/icons/ui-icons.svg#icon-' +
+      name +
+      '"></use></svg>'
+    );
+  }
+  function renderVolumeIcon() {
+    const name =
+      settings.volume === 0 ? 'volume-off' : settings.volume < 50 ? 'volume-low' : 'volume-high';
+    $('#volumeIcon').innerHTML = uiIcon(name);
+  }
   function renderPresets() {
     const list = $('#presetList');
     if (!presets.length) {
@@ -898,7 +913,9 @@ import {
           p.id +
           '" aria-label="Delete ' +
           safeText(p.name) +
-          '">×</button></span></div>',
+          '">' +
+          uiIcon('trash', 'small-icon') +
+          '</button></span></div>',
       )
       .join('');
     list.querySelectorAll('[data-load]').forEach(
@@ -2066,11 +2083,11 @@ import {
       canHoldRestart ? 'Resume workout. Hold to restart workout' : action,
     );
     $('#restart').innerHTML =
-      '<span aria-hidden="true">←</span>' +
+      uiIcon('arrow-left', 'control-icon') +
       (showKeys ? '<span class="keycap">' + displayKey(sc.restart) + '</span>' : '');
     $('#skip').innerHTML =
       (showKeys ? '<span class="keycap">' + displayKey(sc.next) + '</span>' : '') +
-      '<span aria-hidden="true">→</span>';
+      uiIcon('arrow-right', 'control-icon');
     $('.keys').innerHTML =
       '<kbd>' +
       displayKey(sc.start) +
@@ -2711,7 +2728,7 @@ import {
   $('#wordMoveGapValue').textContent = settings.wordMoveGap + ' ms';
   $('#volume').value = settings.volume;
   $('#volumeValue').textContent = settings.volume + '%';
-  $('#volumeIcon').textContent = settings.volume === 0 ? '🔇' : settings.volume < 50 ? '🔉' : '🔊';
+  renderVolumeIcon();
   applyDisplaySizes();
   syncSoundControls('warning');
   syncSoundControls('roundStart');
@@ -2952,8 +2969,7 @@ import {
   $('#volume').oninput = () => {
     settings.volume = +$('#volume').value;
     $('#volumeValue').textContent = settings.volume + '%';
-    $('#volumeIcon').textContent =
-      settings.volume === 0 ? '🔇' : settings.volume < 50 ? '🔉' : '🔊';
+    renderVolumeIcon();
     saveSettings();
   };
   $('#volumeToggle').onclick = (e) => {

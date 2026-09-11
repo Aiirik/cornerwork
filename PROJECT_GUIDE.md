@@ -112,6 +112,7 @@ Use these labels consistently in the interface and documentation:
 - Appearance, accessibility, audio, and display preferences
 - Display preferences include a gear-opened icon gallery for the default, Alt 1, Alt 2, and Alt 3 artwork. The selection updates the in-app header, browser icon, Apple touch link, and active manifest. Phones may require removing and reinstalling an existing Home Screen app before its operating-system-cached icon changes.
 - The default Cornerwork branding uses a 44-pixel icon with Corner and Work stacked. Compact keeps the same icon and text sizes but places the name on one line.
+- Interface controls use the shared `assets/icons/ui-icons.svg` sprite so volume, settings, navigation, fullscreen, favourite, completion, selection, and delete icons render consistently across browsers and devices. Do not replace these with Unicode symbols or emoji.
 - The Settings footer identifies the creator and shows the short Git commit for the deployed build. The Pages workflow stamps this identifier automatically so it never requires a manual source edit.
 
 ## Behavioral invariants

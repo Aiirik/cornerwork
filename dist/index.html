@@ -20,7 +20,7 @@
       href="assets/icons/apple-touch-icon.png"
     />
     <link id="appManifest" rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="assets/css/features.css?v=168" />
+    <link rel="stylesheet" href="assets/css/features.css?v=169" />
     <meta name="apple-mobile-web-app-title" content="Cornerwork" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -31,7 +31,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=177" />
+    <link rel="stylesheet" href="assets/css/app.css?v=178" />
   </head>
   <body>
     <main class="app">
@@ -439,7 +439,10 @@
                 aria-expanded="false"
                 aria-controls="volumePanel"
               >
-                <span id="volumeIcon" aria-hidden="true">🔊</span>
+                <span id="volumeIcon" aria-hidden="true"
+                  ><svg class="ui-icon">
+                    <use href="assets/icons/ui-icons.svg#icon-volume-high"></use></svg
+                ></span>
               </button>
               <div class="volume-panel" id="volumePanel">
                 <input
@@ -460,7 +463,9 @@
               aria-expanded="false"
               aria-controls="settingsPage"
             >
-              ⚙
+              <svg class="ui-icon" aria-hidden="true">
+                <use href="assets/icons/ui-icons.svg#icon-settings"></use>
+              </svg>
             </button>
             <div class="mobile-settings">
               <button id="openSettings" aria-expanded="false" aria-controls="setup">Workout</button>
@@ -485,9 +490,16 @@
             <div class="workout-summary" id="summary"></div>
             <div class="timeline" id="timeline"></div>
             <div class="controls">
-              <button class="circle" id="restart" aria-label="Previous phase">←</button
+              <button class="circle" id="restart" aria-label="Previous phase">
+                <svg class="ui-icon control-icon" aria-hidden="true">
+                  <use href="assets/icons/ui-icons.svg#icon-arrow-left"></use>
+                </svg></button
               ><button class="primary" id="start">Start round</button
-              ><button class="circle" id="skip" aria-label="Next phase">→</button>
+              ><button class="circle" id="skip" aria-label="Next phase">
+                <svg class="ui-icon control-icon" aria-hidden="true">
+                  <use href="assets/icons/ui-icons.svg#icon-arrow-right"></use>
+                </svg>
+              </button>
             </div>
             <div class="mobile-audio-note">No voice? Turn off Silent Mode for callouts.</div>
           </div>
@@ -502,9 +514,7 @@
             class="preset-modal-close"
             data-close-modal="savePresetModal"
             aria-label="Close save workout window"
-          >
-            ×
-          </button>
+          ></button>
         </div>
         <p class="preset-modal-note">
           This saves the current workout setup, allowed combos, focus choices, sounds, and display
@@ -528,9 +538,7 @@
             class="preset-modal-close"
             data-close-modal="loadPresetModal"
             aria-label="Close saved workouts window"
-          >
-            ×
-          </button>
+          ></button>
         </div>
         <p class="preset-modal-note" id="presetModalNote">
           Load a workout, copy its share link, or remove it from this device.
@@ -546,9 +554,7 @@
             class="preset-modal-close"
             data-close-modal="iconPickerModal"
             aria-label="Close app icon gallery"
-          >
-            ×
-          </button>
+          ></button>
         </div>
         <p class="preset-modal-note">
           Select the icon used throughout Cornerwork. Your header and browser icon update
@@ -566,6 +572,9 @@
               ><img src="assets/icons/icon.png" alt="Default Cornerwork icon"
             /></span>
             <strong>Default</strong>
+            <span class="icon-picker-check" aria-hidden="true"
+              ><svg class="ui-icon"><use href="assets/icons/ui-icons.svg#icon-check"></use></svg
+            ></span>
           </button>
           <button
             class="icon-picker-option"
@@ -578,6 +587,9 @@
               ><img src="assets/icons/alt1/icon.png" alt="Alternative Cornerwork icon 1"
             /></span>
             <strong>Alt 1</strong>
+            <span class="icon-picker-check" aria-hidden="true"
+              ><svg class="ui-icon"><use href="assets/icons/ui-icons.svg#icon-check"></use></svg
+            ></span>
           </button>
           <button
             class="icon-picker-option"
@@ -590,6 +602,9 @@
               ><img src="assets/icons/alt2/icon.png" alt="Alternative Cornerwork icon 2"
             /></span>
             <strong>Alt 2</strong>
+            <span class="icon-picker-check" aria-hidden="true"
+              ><svg class="ui-icon"><use href="assets/icons/ui-icons.svg#icon-check"></use></svg
+            ></span>
           </button>
           <button
             class="icon-picker-option"
@@ -602,6 +617,9 @@
               ><img src="assets/icons/alt3/icon.png" alt="Alternative Cornerwork icon 3"
             /></span>
             <strong>Alt 3</strong>
+            <span class="icon-picker-check" aria-hidden="true"
+              ><svg class="ui-icon"><use href="assets/icons/ui-icons.svg#icon-check"></use></svg
+            ></span>
           </button>
         </div>
         <p class="icon-picker-install-note">
@@ -712,7 +730,9 @@
               aria-haspopup="dialog"
               aria-controls="iconPickerModal"
             >
-              <span aria-hidden="true">⚙</span>
+              <svg class="ui-icon" aria-hidden="true">
+                <use href="assets/icons/ui-icons.svg#icon-settings"></use>
+              </svg>
             </button>
           </div>
           <div class="setting-row">
@@ -960,9 +980,10 @@
                     aria-label="Fine tune warning sound"
                     aria-expanded="false"
                   >
-                    ⚙
-                  </button></span
-                >
+                    <svg class="ui-icon" aria-hidden="true">
+                      <use href="assets/icons/ui-icons.svg#icon-settings"></use>
+                    </svg></button
+                ></span>
               </div>
               <div class="sound-grid">
                 <select id="warningSound" aria-label="Final seconds warning sound">
@@ -1028,9 +1049,10 @@
                   aria-label="Fine tune round start sound"
                   aria-expanded="false"
                 >
-                  ⚙
-                </button></span
-              >
+                  <svg class="ui-icon" aria-hidden="true">
+                    <use href="assets/icons/ui-icons.svg#icon-settings"></use>
+                  </svg></button
+              ></span>
             </div>
             <div class="sound-grid">
               <select id="roundStartSound" aria-label="Round start sound">
@@ -1107,9 +1129,10 @@
                   aria-label="Fine tune round end sound"
                   aria-expanded="false"
                 >
-                  ⚙
-                </button></span
-              >
+                  <svg class="ui-icon" aria-hidden="true">
+                    <use href="assets/icons/ui-icons.svg#icon-settings"></use>
+                  </svg></button
+              ></span>
             </div>
             <div class="sound-grid">
               <select id="roundEndSound" aria-label="Round end sound">
@@ -1254,8 +1277,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=177"></script>
+    <script type="module" src="assets/js/app.js?v=178"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=177" defer></script>
+    <script src="assets/js/bootstrap.js?v=178" defer></script>
   </body>
 </html>
