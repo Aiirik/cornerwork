@@ -390,6 +390,7 @@ import {
     default: { root: 'assets/icons', manifest: 'manifest.webmanifest' },
     alt1: { root: 'assets/icons/alt1', manifest: 'manifest-alt1.webmanifest' },
     alt2: { root: 'assets/icons/alt2', manifest: 'manifest-alt2.webmanifest' },
+    alt3: { root: 'assets/icons/alt3', manifest: 'manifest-alt3.webmanifest' },
   };
   const displayDefaults = { clockSize: 100, calloutSize: 100, clockFont: 'league' };
   const soundDefaults = {
@@ -2640,18 +2641,17 @@ import {
         content = $('.center');
       if (!viewport || !content) return;
       content.style.setProperty('--workout-fit', '1');
+      content.style.setProperty('--workout-shift-x', '0px');
+      content.style.setProperty('--workout-shift-y', '0px');
       const style = getComputedStyle(viewport),
-        availableWidth = Math.max(
-          1,
-          viewport.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 8,
-        ),
-        availableHeight = Math.max(
-          1,
-          viewport.clientHeight -
-            parseFloat(style.paddingTop) -
-            parseFloat(style.paddingBottom) -
-            8,
-        ),
+        viewportRect = viewport.getBoundingClientRect(),
+        inset = 4,
+        visibleLeft = viewportRect.left + parseFloat(style.paddingLeft) + inset,
+        visibleRight = viewportRect.right - parseFloat(style.paddingRight) - inset,
+        visibleTop = viewportRect.top + parseFloat(style.paddingTop) + inset,
+        visibleBottom = viewportRect.bottom - parseFloat(style.paddingBottom) - inset,
+        availableWidth = Math.max(1, visibleRight - visibleLeft),
+        availableHeight = Math.max(1, visibleBottom - visibleTop),
         contentRect = content.getBoundingClientRect();
       let left = contentRect.left,
         right = contentRect.right,
@@ -2665,10 +2665,21 @@ import {
         top = Math.min(top, rect.top);
         bottom = Math.max(bottom, rect.bottom);
       });
-      const contentWidth = Math.max(1, content.scrollWidth, right - left),
-        contentHeight = Math.max(1, content.scrollHeight, bottom - top),
-        scale = Math.min(1, availableWidth / contentWidth, availableHeight / contentHeight);
-      content.style.setProperty('--workout-fit', String(Math.max(0.1, scale)));
+      const contentWidth = Math.max(1, right - left),
+        contentHeight = Math.max(1, bottom - top),
+        scale = Math.max(
+          0.1,
+          Math.min(1, availableWidth / contentWidth, availableHeight / contentHeight),
+        ),
+        transformOriginX = contentRect.left + contentRect.width / 2,
+        transformOriginY = contentRect.top + contentRect.height / 2,
+        scaledCenterX = transformOriginX + ((left + right) / 2 - transformOriginX) * scale,
+        scaledCenterY = transformOriginY + ((top + bottom) / 2 - transformOriginY) * scale,
+        shiftX = (visibleLeft + visibleRight) / 2 - scaledCenterX,
+        shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY;
+      content.style.setProperty('--workout-fit', String(scale));
+      content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
+      content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
     });
   }
   function syncSoundControls(prefix) {

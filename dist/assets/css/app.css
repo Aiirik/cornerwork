@@ -64,7 +64,8 @@ body {
   overflow: hidden;
 }
 .center {
-  transform: scale(var(--workout-fit, 1));
+  transform: translate3d(var(--workout-shift-x, 0px), var(--workout-shift-y, 0px), 0)
+    scale(var(--workout-fit, 1));
   transform-origin: center center;
 }
 .app > .setup {
@@ -1785,7 +1786,7 @@ button *,
 }
 .icon-picker-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
 .icon-picker-option {
