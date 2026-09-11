@@ -727,6 +727,28 @@ button {
   text-align: center;
   padding: 8px 0 2px;
 }
+.settings-about {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 16px;
+  padding: 15px 2px 1px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+.settings-about strong {
+  color: #d6dbe2;
+  font-weight: 750;
+}
+.settings-about code {
+  color: #aeb6c2;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.035em;
+}
 .reset-btn {
   border: 1px solid var(--red-border);
   background: var(--red-soft);

@@ -27,6 +27,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Stamp build identifier
+        shell: bash
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          sed -i "s/__CORNERWORK_BUILD__/${short_sha}/g" dist/index.html
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
