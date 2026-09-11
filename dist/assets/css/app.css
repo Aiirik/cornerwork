@@ -1090,17 +1090,24 @@ button {
 }
 .mark {
   --mark-frame: #25272b;
-  border-radius: 9px;
+  width: 52px;
+  height: 52px;
+  padding: 5px;
+  box-sizing: border-box;
+  border: 1px solid #343840;
+  border-radius: 13px;
+  overflow: hidden;
   background: var(--mark-frame);
   box-shadow:
-    0 0 0 4px var(--mark-frame),
+    inset 0 1px 0 #ffffff12,
     0 0 18px #ffffff14;
 }
 .mark img {
-  width: 44px;
-  height: 44px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
+  border-radius: 9px;
   pointer-events: none;
   -webkit-user-drag: none;
 }
