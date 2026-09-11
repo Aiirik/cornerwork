@@ -110,6 +110,7 @@ Use these labels consistently in the interface and documentation:
 - Workout history and streak statistics
 - PWA installation and offline support
 - Appearance, accessibility, audio, and display preferences
+- Display preferences can independently switch the in-app header icon between its bold and inset artwork, and change the Cornerwork branding between a compact one-line layout and a larger stacked layout. These choices do not replace the installed PWA icon.
 - The Settings footer identifies the creator and shows the short Git commit for the deployed build. The Pages workflow stamps this identifier automatically so it never requires a manual source edit.
 
 ## Behavioral invariants

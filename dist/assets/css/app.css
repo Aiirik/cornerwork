@@ -160,6 +160,11 @@ button {
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+.brand-name {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+}
 .mark {
   width: 34px;
   height: 34px;
@@ -1069,9 +1074,29 @@ button {
 .mark img {
   width: 34px;
   height: 34px;
+  object-fit: contain;
   display: block;
   pointer-events: none;
   -webkit-user-drag: none;
+}
+body.large-brand .brand {
+  gap: 14px;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+}
+body.large-brand .brand-name {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 0.8;
+}
+body.large-brand .mark,
+body.large-brand .mark img {
+  width: 44px;
+  height: 44px;
+}
+body.large-brand .mark {
+  border-radius: 11px;
 }
 @media (max-width: 820px) {
   .app {

@@ -26,7 +26,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=174" />
+    <link rel="stylesheet" href="assets/css/app.css?v=175" />
   </head>
   <body>
     <main class="app">
@@ -420,8 +420,9 @@
       <section class="stage" id="stage">
         <header class="topbar">
           <div class="brand">
-            <span class="mark"><img src="assets/icons/icon.png" alt="" draggable="false" /></span>
-            Cornerwork
+            <span class="mark"
+              ><img id="brandIcon" src="assets/icons/icon.png" alt="" draggable="false" /></span
+            ><span class="brand-name"><span>Corner</span><span>work</span></span>
           </div>
           <div class="top-actions">
             <div class="volume-control" id="volumeControl">
@@ -608,6 +609,12 @@
               ><span
                 ><strong>Show full-screen button:</strong> Shows the full-screen control in the
                 desktop header. It stays hidden on mobile.</span
+              ><span
+                ><strong>Header icon:</strong> Switches between the bold and inset versions of the
+                Cornerwork icon shown inside the app.</span
+              ><span
+                ><strong>Logo layout:</strong> Compact keeps the current one-line logo. Large uses a
+                larger icon and stacks Corner above Work.</span
               >
             </div>
           </div>
@@ -616,6 +623,20 @@
             <div class="segmented" data-setting="displayMode">
               <button class="active" data-value="standard">Standard</button
               ><button data-value="compact">Compact</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span>Header icon</span>
+            <div class="segmented" data-setting="headerIconStyle">
+              <button class="active" data-value="bold">Bold</button
+              ><button data-value="inset">Inset</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span>Logo layout</span>
+            <div class="segmented" data-setting="brandLayout">
+              <button class="active" data-value="compact">Compact</button
+              ><button data-value="large">Large</button>
             </div>
           </div>
           <div class="setting-row clock-font-row">
@@ -1150,8 +1171,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=174"></script>
+    <script type="module" src="assets/js/app.js?v=175"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=174" defer></script>
+    <script src="assets/js/bootstrap.js?v=175" defer></script>
   </body>
 </html>

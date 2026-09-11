@@ -386,6 +386,10 @@ import {
     allerta: '"Allerta Stencil"',
     keania: '"Keania One"',
   };
+  const headerIcons = {
+    bold: 'assets/icons/icon.png',
+    inset: 'assets/icons/apple-touch-icon.png',
+  };
   const displayDefaults = { clockSize: 100, calloutSize: 100, clockFont: 'league' };
   const soundDefaults = {
     warning: {
@@ -432,6 +436,8 @@ import {
     stance: 'orthodox',
     format: 'numbers',
     displayMode: 'standard',
+    headerIconStyle: 'bold',
+    brandLayout: 'compact',
     compactRoundLabels: false,
     shortcutLabels: true,
     sidebarShortcuts: false,
@@ -1950,7 +1956,11 @@ import {
     document.body.classList.toggle('white-outline-text', !!settings.whiteOutlineText);
     document.body.classList.toggle('show-fullscreen-button', !!settings.showFullscreen);
     document.body.classList.toggle('compact-workout', settings.displayMode === 'compact');
+    document.body.classList.toggle('large-brand', settings.brandLayout === 'large');
     document.body.classList.toggle('compact-round-labels', !!settings.compactRoundLabels);
+    const brandIcon = $('#brandIcon'),
+      brandIconSource = headerIcons[settings.headerIconStyle] || headerIcons.bold;
+    if (brandIcon.getAttribute('src') !== brandIconSource) brandIcon.src = brandIconSource;
     document.documentElement.style.setProperty(
       '--button-text',
       'rgb(255 255 255 / ' +
@@ -2479,6 +2489,14 @@ import {
     delete settings.colorBlind;
     saveSettings();
   }
+  if (!headerIcons[settings.headerIconStyle]) {
+    settings.headerIconStyle = 'bold';
+    saveSettings();
+  }
+  if (!['compact', 'large'].includes(settings.brandLayout)) {
+    settings.brandLayout = 'compact';
+    saveSettings();
+  }
   if (!['wood', 'sharp', 'deep'].includes(settings.warningSound)) {
     settings.warningSound = 'wood';
     settings.warningHits = 2;
@@ -2673,7 +2691,8 @@ import {
           renderComboList();
           renderCombo();
           render();
-          if (group.dataset.setting === 'displayMode') fitWorkoutToViewport();
+          if (['displayMode', 'brandLayout'].includes(group.dataset.setting))
+            fitWorkoutToViewport();
         }),
     );
   });
