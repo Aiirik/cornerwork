@@ -110,7 +110,8 @@ Use these labels consistently in the interface and documentation:
 - Workout history and streak statistics
 - PWA installation and offline support
 - Appearance, accessibility, audio, and display preferences
-- Display preferences can independently switch the in-app header icon between its bold and inset artwork, and change the Cornerwork branding between a compact one-line layout and a larger stacked layout. These choices do not replace the installed PWA icon.
+- Display preferences include a gear-opened icon gallery for the default, Alt 1, and Alt 2 artwork. The selection updates the in-app header, browser icon, Apple touch link, and active manifest. Phones may require removing and reinstalling an existing Home Screen app before its operating-system-cached icon changes.
+- The default Cornerwork branding uses a 44-pixel icon with Corner and Work stacked. Compact keeps the same icon and text sizes but places the name on one line.
 - The Settings footer identifies the creator and shows the short Git commit for the deployed build. The Pages workflow stamps this identifier automatically so it never requires a manual source edit.
 
 ## Behavioral invariants

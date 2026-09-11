@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v175';
+const CACHE = 'cornerwork-v176';
 const CORE = [
   './',
   './index.html',
@@ -13,10 +13,20 @@ const CORE = [
   './assets/fonts/allerta-stencil-clock.ttf',
   './assets/fonts/keania-one-clock.ttf',
   './manifest.webmanifest',
+  './manifest-alt1.webmanifest',
+  './manifest-alt2.webmanifest',
   './assets/icons/icon.png',
   './assets/icons/apple-touch-icon.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
+  './assets/icons/alt1/icon.png',
+  './assets/icons/alt1/apple-touch-icon.png',
+  './assets/icons/alt1/icon-192.png',
+  './assets/icons/alt1/icon-512.png',
+  './assets/icons/alt2/icon.png',
+  './assets/icons/alt2/apple-touch-icon.png',
+  './assets/icons/alt2/icon-192.png',
+  './assets/icons/alt2/icon-512.png',
 ];
 self.addEventListener('install', (event) =>
   event.waitUntil(

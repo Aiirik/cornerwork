@@ -386,9 +386,10 @@ import {
     allerta: '"Allerta Stencil"',
     keania: '"Keania One"',
   };
-  const headerIcons = {
-    bold: 'assets/icons/icon.png',
-    inset: 'assets/icons/apple-touch-icon.png',
+  const iconThemes = {
+    default: { root: 'assets/icons', manifest: 'manifest.webmanifest' },
+    alt1: { root: 'assets/icons/alt1', manifest: 'manifest-alt1.webmanifest' },
+    alt2: { root: 'assets/icons/alt2', manifest: 'manifest-alt2.webmanifest' },
   };
   const displayDefaults = { clockSize: 100, calloutSize: 100, clockFont: 'league' };
   const soundDefaults = {
@@ -419,6 +420,7 @@ import {
   let settings = {
     comboCatalogVersion: 3,
     roundStartDefaultV2: true,
+    brandLayoutDefaultV2: true,
     wordSpeechRateScaleV2: true,
     speechGapControlsV2: true,
     trainingMode: 'bag',
@@ -436,8 +438,8 @@ import {
     stance: 'orthodox',
     format: 'numbers',
     displayMode: 'standard',
-    headerIconStyle: 'bold',
-    brandLayout: 'compact',
+    appIconTheme: 'default',
+    brandLayout: 'default',
     compactRoundLabels: false,
     shortcutLabels: true,
     sidebarShortcuts: false,
@@ -1956,11 +1958,20 @@ import {
     document.body.classList.toggle('white-outline-text', !!settings.whiteOutlineText);
     document.body.classList.toggle('show-fullscreen-button', !!settings.showFullscreen);
     document.body.classList.toggle('compact-workout', settings.displayMode === 'compact');
-    document.body.classList.toggle('large-brand', settings.brandLayout === 'large');
+    document.body.classList.toggle('compact-brand', settings.brandLayout === 'compact');
     document.body.classList.toggle('compact-round-labels', !!settings.compactRoundLabels);
-    const brandIcon = $('#brandIcon'),
-      brandIconSource = headerIcons[settings.headerIconStyle] || headerIcons.bold;
+    const iconTheme = iconThemes[settings.appIconTheme] || iconThemes.default,
+      brandIcon = $('#brandIcon'),
+      brandIconSource = iconTheme.root + '/icon.png',
+      browserIconSource = iconTheme.root + '/icon-192.png',
+      appleTouchIconSource = iconTheme.root + '/apple-touch-icon.png';
     if (brandIcon.getAttribute('src') !== brandIconSource) brandIcon.src = brandIconSource;
+    if ($('#browserIcon').getAttribute('href') !== browserIconSource)
+      $('#browserIcon').href = browserIconSource;
+    if ($('#appleTouchIcon').getAttribute('href') !== appleTouchIconSource)
+      $('#appleTouchIcon').href = appleTouchIconSource;
+    if ($('#appManifest').getAttribute('href') !== iconTheme.manifest)
+      $('#appManifest').href = iconTheme.manifest;
     document.documentElement.style.setProperty(
       '--button-text',
       'rgb(255 255 255 / ' +
@@ -2439,6 +2450,11 @@ import {
         shortcuts: { ...settings.shortcuts, ...(saved.shortcuts || {}) },
         workout: { ...settings.workout, ...(saved.workout || {}) },
       };
+      if (!saved.brandLayoutDefaultV2) {
+        settings.brandLayout = 'default';
+        settings.brandLayoutDefaultV2 = true;
+        saveSettings();
+      }
       if (!saved.speechGapControlsV2) {
         settings.numberWordGap = 0;
         settings.wordMoveGap = 90;
@@ -2489,12 +2505,20 @@ import {
     delete settings.colorBlind;
     saveSettings();
   }
-  if (!headerIcons[settings.headerIconStyle]) {
-    settings.headerIconStyle = 'bold';
+  if ('headerIconStyle' in settings) {
+    delete settings.headerIconStyle;
     saveSettings();
   }
-  if (!['compact', 'large'].includes(settings.brandLayout)) {
-    settings.brandLayout = 'compact';
+  if (!iconThemes[settings.appIconTheme]) {
+    settings.appIconTheme = 'default';
+    saveSettings();
+  }
+  if (settings.brandLayout === 'large') {
+    settings.brandLayout = 'default';
+    saveSettings();
+  }
+  if (!['default', 'compact'].includes(settings.brandLayout)) {
+    settings.brandLayout = 'default';
     saveSettings();
   }
   if (!['wood', 'sharp', 'deep'].includes(settings.warningSound)) {
@@ -2568,6 +2592,33 @@ import {
     $('#' + id).setAttribute('aria-pressed', String(!!on));
   });
   $('#sidebarShortcuts').classList.toggle('hidden', !settings.sidebarShortcuts);
+  function syncIconPicker() {
+    $$('.icon-picker-option').forEach((option) => {
+      const selected = option.dataset.iconTheme === settings.appIconTheme;
+      option.classList.toggle('active', selected);
+      option.setAttribute('aria-checked', String(selected));
+    });
+  }
+  syncIconPicker();
+  $('#openIconPicker').onclick = () => {
+    syncIconPicker();
+    const modal = $('#iconPickerModal');
+    modal.tabIndex = -1;
+    if (!modal.open) {
+      modal.showModal();
+      modal.focus({ preventScroll: true });
+    }
+  };
+  $$('.icon-picker-option').forEach(
+    (option) =>
+      (option.onclick = () => {
+        settings.appIconTheme = option.dataset.iconTheme;
+        syncIconPicker();
+        saveSettings();
+        render();
+        $('#iconPickerModal').close();
+      }),
+  );
   function applyDisplaySizes() {
     if (!clockFonts[settings.clockFont]) settings.clockFont = displayDefaults.clockFont;
     document.documentElement.style.setProperty('--clock-font', clockFonts[settings.clockFont]);
@@ -3170,7 +3221,8 @@ import {
     if (
       $('#settingsPage').classList.contains('open') &&
       !$('#settingsPage').contains(e.target) &&
-      !$('#preferences').contains(e.target)
+      !$('#preferences').contains(e.target) &&
+      !e.target.closest('.preset-modal')
     )
       showPreferences(false);
   });
