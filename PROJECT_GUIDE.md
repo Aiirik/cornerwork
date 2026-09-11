@@ -110,7 +110,7 @@ Use these labels consistently in the interface and documentation:
 - Workout history and streak statistics
 - PWA installation and offline support
 - Appearance, accessibility, audio, and display preferences
-- Display preferences include a gear-opened icon gallery for the default, Alt 1, Alt 2, and Alt 3 artwork. The selection updates the in-app header, browser icon, Apple touch link, and active manifest. Phones may require removing and reinstalling an existing Home Screen app before its operating-system-cached icon changes.
+- Display preferences include a gear-opened icon gallery generated from the default artwork and consecutively numbered `alt1`, `alt2`, and later folders. The selection updates the in-app header, browser icon, Apple touch link, and active manifest. Phones may require removing and reinstalling an existing Home Screen app before its operating-system-cached icon changes.
 - The default Cornerwork branding uses a 44-pixel icon with Corner and Work stacked. Compact keeps the same icon and text sizes but places the name on one line.
 - Interface controls use the shared `assets/icons/ui-icons.svg` sprite so volume, settings, navigation, fullscreen, favourite, completion, selection, and delete icons render consistently across browsers and devices. Do not replace these with Unicode symbols or emoji.
 - The Settings footer identifies the creator and shows the short Git commit for the deployed build. The Pages workflow stamps this identifier automatically so it never requires a manual source edit.
@@ -183,8 +183,9 @@ cornerwork/
         ├── js/
         │   ├── app.js        Timer, combos, audio, settings, persistence, and sync
         │   ├── bootstrap.js  Early mobile behavior and enhancement loader
-        │   └── enhancements.js Additional workout types, tools, history, and UI
-        └── icons/            Browser and installable-app icons
+        │   ├── enhancements.js Additional workout types, tools, history, and UI
+        │   └── icon-themes.js App icon discovery and gallery rendering
+        └── icons/            Browser and installable-app icons plus addition guide
 ```
 
 ### Script responsibilities
@@ -194,6 +195,8 @@ cornerwork/
 `bootstrap.js` installs behavior that must exist early, including the mobile zoom lock, then loads `enhancements.js`.
 
 `enhancements.js` consumes `window.CornerworkApp`. It initializes immediately when the API is available or waits for `cornerwork-ready`.
+
+`icon-themes.js` owns app icon paths and gallery markup. The Pages workflow generates `assets/icons/catalog.json` and each alternate manifest by scanning consecutive `alt1`, `alt2`, and later folders. See `dist/assets/icons/README.md` when adding artwork. No page or application code should be edited for a new icon.
 
 Keep this boundary stable until a deliberate module migration is planned and tested. Do not casually duplicate core state inside the enhancement layer.
 
@@ -226,16 +229,19 @@ Before changing code:
 Before publishing:
 
 1. Run `npx --yes prettier@3.6.2 --check .`.
-2. Run `node --check dist/assets/js/app.js`.
-3. Run `node --check dist/assets/js/bootstrap.js`.
-4. Run `node --check dist/assets/js/enhancements.js`.
-5. Run `node --check dist/sw.js`.
-6. Run `git diff --check`.
-7. Verify every local asset referenced by HTML, CSS, the manifest, and the service worker exists.
-8. Test setup, start, pause, resume, previous, next, reset, and workout completion.
-9. Test the affected flow at desktop width and iPhone-sized width.
-10. When page scripts or styles change, update their query-string versions in `index.html`, update the enhancement version in `bootstrap.js`, and increment the cache name in `sw.js`.
-11. After pushing, confirm the GitHub Pages workflow succeeds and the deployed app serves the new cache version.
+2. Run `node .github/scripts/generate-icon-catalog.mjs` after adding or changing app icon folders.
+3. Run `node --check dist/assets/js/app.js`.
+4. Run `node --check dist/assets/js/bootstrap.js`.
+5. Run `node --check dist/assets/js/enhancements.js`.
+6. Run `node --check dist/assets/js/icon-themes.js`.
+7. Run `node --check dist/sw.js`.
+8. Run `node --check .github/scripts/generate-icon-catalog.mjs`.
+9. Run `git diff --check`.
+10. Verify every local asset referenced by HTML, CSS, the manifest, and the service worker exists.
+11. Test setup, start, pause, resume, previous, next, reset, and workout completion.
+12. Test the affected flow at desktop width and iPhone-sized width.
+13. When page scripts or styles change, update their query-string versions in `index.html`, update the enhancement version in `bootstrap.js`, and increment the cache name in `sw.js`.
+14. After pushing, confirm the GitHub Pages workflow succeeds and the deployed app serves the new cache version.
 
 ## Decision test for new ideas
 

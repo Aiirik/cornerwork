@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'dist/**'
+      - '.github/scripts/generate-icon-catalog.mjs'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -27,6 +28,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Generate app icon catalogue
+        run: node .github/scripts/generate-icon-catalog.mjs
 
       - name: Stamp build identifier
         shell: bash

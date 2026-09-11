@@ -14,6 +14,12 @@ import {
   onSnapshot,
   setDoc,
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {
+  createIconTheme,
+  isIconThemeId,
+  loadIconThemes,
+  renderIconThemeOptions,
+} from './icon-themes.js?v=181';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
@@ -386,12 +392,7 @@ import {
     allerta: '"Allerta Stencil"',
     keania: '"Keania One"',
   };
-  const iconThemes = {
-    default: { root: 'assets/icons', manifest: 'manifest.webmanifest' },
-    alt1: { root: 'assets/icons/alt1', manifest: 'manifest-alt1.webmanifest' },
-    alt2: { root: 'assets/icons/alt2', manifest: 'manifest-alt2.webmanifest' },
-    alt3: { root: 'assets/icons/alt3', manifest: 'manifest-alt3.webmanifest' },
-  };
+  let iconThemes = new Map([['default', createIconTheme('default')]]);
   const displayDefaults = { clockSize: 100, calloutSize: 100, clockFont: 'league' };
   const soundDefaults = {
     warning: {
@@ -1978,7 +1979,8 @@ import {
     document.body.classList.toggle('compact-workout', settings.displayMode === 'compact');
     document.body.classList.toggle('compact-brand', settings.brandLayout === 'compact');
     document.body.classList.toggle('compact-round-labels', !!settings.compactRoundLabels);
-    const iconTheme = iconThemes[settings.appIconTheme] || iconThemes.default,
+    const iconTheme =
+        iconThemes.get(settings.appIconTheme) || createIconTheme(settings.appIconTheme),
       brandIcon = $('#brandIcon'),
       brandIconSource = iconTheme.root + '/icon.png',
       browserIconSource = iconTheme.root + '/icon-192.png',
@@ -2527,7 +2529,7 @@ import {
     delete settings.headerIconStyle;
     saveSettings();
   }
-  if (!iconThemes[settings.appIconTheme]) {
+  if (!isIconThemeId(settings.appIconTheme)) {
     settings.appIconTheme = 'default';
     saveSettings();
   }
@@ -2617,7 +2619,18 @@ import {
       option.setAttribute('aria-checked', String(selected));
     });
   }
-  syncIconPicker();
+  async function initializeIconPicker() {
+    const themes = await loadIconThemes(settings.appIconTheme);
+    iconThemes = new Map(themes.map((theme) => [theme.id, theme]));
+    renderIconThemeOptions($('#iconPickerGrid'), themes);
+    if (!iconThemes.has(settings.appIconTheme)) {
+      settings.appIconTheme = 'default';
+      saveSettings();
+      render();
+    }
+    syncIconPicker();
+  }
+  initializeIconPicker();
   $('#openIconPicker').onclick = () => {
     syncIconPicker();
     const modal = $('#iconPickerModal');
@@ -2627,16 +2640,14 @@ import {
       modal.focus({ preventScroll: true });
     }
   };
-  $$('.icon-picker-option').forEach(
-    (option) =>
-      (option.onclick = () => {
-        settings.appIconTheme = option.dataset.iconTheme;
-        syncIconPicker();
-        saveSettings();
-        render();
-        $('#iconPickerModal').close();
-      }),
-  );
+  $('#iconPickerGrid').onclick = (event) => {
+    const option = event.target.closest('.icon-picker-option');
+    if (!option) return;
+    settings.appIconTheme = option.dataset.iconTheme;
+    syncIconPicker();
+    saveSettings();
+    render();
+  };
   function applyDisplaySizes() {
     if (!clockFonts[settings.clockFont]) settings.clockFont = displayDefaults.clockFont;
     document.documentElement.style.setProperty('--clock-font', clockFonts[settings.clockFont]);

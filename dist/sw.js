@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v180';
+const CACHE = 'cornerwork-v181';
 const CORE = [
   './',
   './index.html',
@@ -8,37 +8,41 @@ const CORE = [
   './assets/js/app.js',
   './assets/js/bootstrap.js',
   './assets/js/enhancements.js',
+  './assets/js/icon-themes.js',
+  './assets/icons/catalog.json',
   './assets/fonts/league-spartan-clock.woff',
   './assets/fonts/montserrat-clock.woff',
   './assets/fonts/barlow-condensed-clock.woff',
   './assets/fonts/allerta-stencil-clock.ttf',
   './assets/fonts/keania-one-clock.ttf',
   './manifest.webmanifest',
-  './manifest-alt1.webmanifest',
-  './manifest-alt2.webmanifest',
-  './manifest-alt3.webmanifest',
   './assets/icons/icon.png',
   './assets/icons/apple-touch-icon.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
-  './assets/icons/alt1/icon.png',
-  './assets/icons/alt1/apple-touch-icon.png',
-  './assets/icons/alt1/icon-192.png',
-  './assets/icons/alt1/icon-512.png',
-  './assets/icons/alt2/icon.png',
-  './assets/icons/alt2/apple-touch-icon.png',
-  './assets/icons/alt2/icon-192.png',
-  './assets/icons/alt2/icon-512.png',
-  './assets/icons/alt3/icon.png',
-  './assets/icons/alt3/apple-touch-icon.png',
-  './assets/icons/alt3/icon-192.png',
-  './assets/icons/alt3/icon-512.png',
 ];
+const ICON_FILES = ['icon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
+
+async function cacheIconThemes(cache) {
+  const response = await fetch('./assets/icons/catalog.json');
+  if (!response.ok) return;
+  const catalogue = await response.json();
+  const iconAssets = catalogue.themes.flatMap(({ id }) => {
+    const root = id === 'default' ? './assets/icons' : `./assets/icons/${id}`;
+    const manifest = id === 'default' ? './manifest.webmanifest' : `./manifest-${id}.webmanifest`;
+    return [manifest, ...ICON_FILES.map((filename) => `${root}/${filename}`)];
+  });
+  await cache.addAll(iconAssets);
+}
+
 self.addEventListener('install', (event) =>
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(CORE))
+      .then(async (cache) => {
+        await cache.addAll(CORE);
+        await cacheIconThemes(cache);
+      })
       .then(() => self.skipWaiting()),
   ),
 );

@@ -53,7 +53,7 @@ The complete deployable application lives in `dist`:
 - `dist/index.html` contains the page structure and controls.
 - `dist/assets/css` contains the core and enhanced interface styles.
 - `dist/assets/js` contains the core application, bootstrap behavior, and enhanced tools.
-- `dist/assets/icons` contains browser and installable-app icons.
+- `dist/assets/icons` contains browser and installable-app icons. Its README explains how to add another gallery choice without changing application code.
 - `dist/manifest.webmanifest` and `dist/sw.js` provide installation, offline caching, and update handling.
 
 Read [PROJECT_GUIDE.md](PROJECT_GUIDE.md) for the product direction, behavioral invariants, architecture, persistence map, and change checklist.
