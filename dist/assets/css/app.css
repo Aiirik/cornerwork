@@ -1884,10 +1884,30 @@ button *,
 }
 .icon-picker-install-note {
   margin: 14px 0 0;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel2);
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
-  text-align: center;
+  text-align: left;
+}
+.icon-picker-install-note strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+  font-size: 11px;
+}
+.icon-picker-install-note p {
+  margin: 0;
+}
+.icon-picker-install-note ol {
+  margin: 7px 0 0;
+  padding-left: 19px;
+}
+.icon-picker-install-note li + li {
+  margin-top: 2px;
 }
 @media (max-width: 390px) {
   .icon-picker-grid {
