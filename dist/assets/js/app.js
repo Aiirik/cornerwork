@@ -2658,6 +2658,7 @@ import {
         content = $('.center');
       if (!viewport || !content) return;
       content.style.setProperty('--workout-fit', '1');
+      content.style.setProperty('--workout-fit-inverse', '1');
       content.style.setProperty('--workout-shift-x', '0px');
       content.style.setProperty('--workout-shift-y', '0px');
       const style = getComputedStyle(viewport),
@@ -2695,6 +2696,7 @@ import {
         shiftX = (visibleLeft + visibleRight) / 2 - scaledCenterX,
         shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY;
       content.style.setProperty('--workout-fit', String(scale));
+      content.style.setProperty('--workout-fit-inverse', String(1 / scale));
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
       content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
     });

@@ -1261,6 +1261,13 @@ body.compact-brand .brand-name {
   align-items: center;
   gap: 7px;
 }
+@media (min-width: 821px) {
+  .timeline {
+    width: calc(100% - 16px);
+    transform: scaleX(var(--workout-fit-inverse, 1));
+    transform-origin: center;
+  }
+}
 .round-marker {
   position: relative;
   min-width: 0;
