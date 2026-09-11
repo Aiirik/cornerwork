@@ -1657,6 +1657,22 @@
     };
     return el;
   }
+  function buildAbout() {
+    return modal(
+      'aboutDialog',
+      'About Cornerwork',
+      '<div class="info-copy"><p class="info-summary">Cornerwork is a free, customizable boxing timer and training coach built for workouts at home.</p><h3>Why I built it</h3><p>I wanted a training app that worked the way I wanted, but I could not find a free option with enough control. The free apps I tried often limited workouts, combinations, or customization, so I decided to build my own.</p><h3>What I want it to be</h3><p>My goal is to make boxing practice easier to start and more useful to repeat. You can build your own workout, start from a preset, or follow a focused program while adjusting the coaching, timing, combinations, and display to suit how you train.</p><p>Cornerwork is an independent project created by <strong>Aiirik</strong>. It will continue to improve as I use it, learn, and find better ways to train.</p></div>',
+      'info-dialog',
+    );
+  }
+  function buildPrivacy() {
+    return modal(
+      'privacyDialog',
+      'Privacy Policy',
+      '<div class="info-copy"><p class="info-summary"><strong>The short version:</strong> Most Cornerwork data stays in your browser. If you sign in with Google, only your saved workouts and program progress are synced so they can appear on your other devices. Cornerwork does not sell your data or use advertising or analytics trackers.</p><h3>Data saved on this device</h3><p>Your settings, custom combinations, workout history, saved workouts, and program progress are stored in your browser. This information stays on that browser unless you sign in, export a backup, or share a workout.</p><p>Clearing Cornerwork\'s browser data can remove this local information. Data stored in another browser or device does not automatically appear unless it was synced through your account or restored from a backup.</p><h3>When you sign in with Google</h3><p>Google verifies your identity and Firebase keeps you signed in. Cornerwork uses your Google account identifier and email address to connect your account. Your saved workouts and program progress are stored in Firebase Cloud Firestore so they can sync between devices. Your other settings, custom combinations, and workout history remain local to each browser.</p><p>Cornerwork never receives your Google password. Google and Firebase may process normal technical information, such as your IP address and browser details, under their own privacy policies.</p><h3>Backups and shared workouts</h3><p>An exported backup is downloaded directly to your device. Cornerwork only reads a backup when you choose a file to import. Shared workouts place the workout setup inside the share link, so anyone who receives that link can view and import that workout.</p><h3>Camera and recordings</h3><p>The Mirror and Record feature only uses the camera after you give permission. Camera video is handled on your device. Recordings are downloaded to your device and are not uploaded by Cornerwork.</p><h3>Removing your data</h3><p>You can remove local information by clearing the site data for Cornerwork in your browser. If you are signed in, delete synced saved workouts inside Cornerwork before signing out. Clearing only the browser data does not remove information already synced to Firebase.</p><p class="info-updated">Last updated September 11, 2026.</p></div>',
+      'info-dialog',
+    );
+  }
   function buildCoaching() {
     const el = modal(
       'coachingDialog',
@@ -2021,7 +2037,7 @@
       gear.setAttribute('aria-expanded', String(open));
     };
   }
-  function injectUtilities(techniquesEl, backup) {
+  function injectUtilities(techniquesEl, backup, about, privacy) {
     const shell = $('#settingsPage .settings-shell'),
       keyboard = [...document.querySelectorAll('.settings-group')].find(
         (x) => x.querySelector('h2')?.textContent === 'Keyboard shortcuts',
@@ -2038,7 +2054,7 @@
     const utilities = document.createElement('div');
     utilities.className = 'settings-utilities';
     utilities.innerHTML =
-      '<button id="settingsBackup">Backup / export</button><i></i><button id="settingsInstall">Install for offline use</button>';
+      '<button id="settingsBackup">Backup / export</button><i></i><button id="settingsInstall">Install for offline use</button><span class="settings-utility-break"></span><button id="settingsAbout">About us</button><i></i><button id="settingsPrivacy">Privacy policy</button>';
     shell.append(utilities);
     utilities.querySelector('#settingsBackup').onclick = () => {
       $('#closePreferences').click();
@@ -2054,6 +2070,14 @@
           ? 'Use Share, then Add to Home Screen'
           : 'Use your browser menu to install Cornerwork',
       );
+    };
+    utilities.querySelector('#settingsAbout').onclick = () => {
+      $('#closePreferences').click();
+      open(about);
+    };
+    utilities.querySelector('#settingsPrivacy').onclick = () => {
+      $('#closePreferences').click();
+      open(privacy);
     };
   }
   let customSelectId = 0;
@@ -2342,6 +2366,8 @@
       history = buildHistory(),
       completion = buildCompletion(),
       backup = buildBackup(),
+      about = buildAbout(),
+      privacy = buildPrivacy(),
       coaching = buildCoaching(),
       qr = buildQr();
     window.addEventListener('cornerwork-program-progress-sync', () => program.refresh());
@@ -2490,7 +2516,7 @@
     injectAppearanceSettings();
     injectButtonBrightnessSetting();
     injectWorkoutTabMemorySettings();
-    injectUtilities(techniquesEl, backup);
+    injectUtilities(techniquesEl, backup, about, privacy);
     installPanelAccordions();
     installTitleHelp();
     installCustomSelects();
