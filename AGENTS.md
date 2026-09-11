@@ -13,6 +13,7 @@ Cornerwork is a static web application hosted exclusively on GitHub Pages.
 ## Required checks
 
 - Read `PROJECT_GUIDE.md` before planning or implementing product changes.
+- Run `npx --yes prettier@3.6.2 --check .` after editing text files.
 - Run `node --check dist/assets/js/app.js`, `node --check dist/assets/js/bootstrap.js`, `node --check dist/assets/js/enhancements.js`, and `node --check dist/sw.js` after JavaScript changes.
 - Run `git diff --check` before committing.
 - When changing page scripts or styles, increment their query-string versions in `dist/index.html`, the enhancement version in `dist/assets/js/bootstrap.js`, and the cache version in `dist/sw.js`.

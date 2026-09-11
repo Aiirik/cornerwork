@@ -1,179 +1,2621 @@
 (() => {
-  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  const safe=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const fmt=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'):m+':'+String(sec).padStart(2,'0')};
-  const read=(key,fallback=[])=>{try{const value=JSON.parse(localStorage.getItem(key));return value??fallback}catch(e){return fallback}};
-  const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
-  let api,installPrompt=null,mirrorStream=null,recorder=null,recorded=[];
-  const focusSessions=focus=>[['10-minute class drill',focus,10],['15-minute block drill',focus,15],['20-minute block drill',focus,20]];
-  const workoutTemplate=(overrides={})=>{const workout={rounds:6,warmupTime:45,roundTime:180,restTime:30,pace:6,...(overrides.workout||{})};return {trainingMode:'general',skill:'intermediate',complexity:'medium',repeats:'none',movementBetween:'off',unique:'yes',focusEnabled:'no',focuses:[],includeTypes:['punch','body','defense','footwork'],structured:'off',coachCues:false,cueFrequency:5,recoveryInstructions:false,guidedBeginner:false,...overrides,workout}};
-  const programs=[
-    {id:'jabreaction',equipment:'bag',name:'Jab Reaction Drill',detail:'Choose 10, 15, or 20 minutes. Repeat each jab assignment until the next callout.',sessions:focusSessions('jabvariations')},
-    {id:'straightreaction',equipment:'bag',name:'High-Low Straights',detail:'Choose 10, 15, or 20 minutes. Repeat the called head and body targets.',sessions:focusSessions('highlow')},
-    {id:'hookreaction',equipment:'bag',name:'Hook Workshop',detail:'Choose 10, 15, or 20 minutes. Repeat compact head and body hook assignments.',sessions:focusSessions('hooks')},
-    {id:'insidereaction',equipment:'bag',name:'Inside Fighting Drill',detail:'Choose 10, 15, or 20 minutes. Stay close and repeat short hooks and uppercuts.',sessions:focusSessions('inside')},
-    {id:'effortreaction',equipment:'bag',name:'Speed and Power Calls',detail:'Choose 10, 15, or 20 minutes. Keep working at the called effort until it changes.',sessions:focusSessions('effort')},
-    {id:'defensereaction',equipment:'shadow',name:'Defense and Counter Calls',detail:'Choose 10, 15, or 20 minutes. Imagine the attack, defend, then counter.',sessions:focusSessions('defense')},
-    {id:'footworkreaction',equipment:'shadow',name:'Footwork Entry Calls',detail:'Choose 10, 15, or 20 minutes. Repeat each movement and finish balanced.',sessions:focusSessions('footwork')},
-    {id:'progressivecombos',equipment:'general',name:'Progressive Combinations',detail:'Build from short combinations into advanced sequences as the rounds progress.',sessions:[['Progressive combination workout','progressive','6 rounds · 2:30 each · combinations grow each round']],sessionConfigs:[workoutTemplate({complexity:'high',progressiveCombos:true,unique:'yes',focusEnabled:'no',workout:{rounds:6,roundTime:150,restTime:30,pace:6}})]},
-    {id:'technicalthemes',equipment:'shadow',name:'Technical Round Themes',detail:'Practice a different tactical goal in every round, including targets, counters, exits, and range.',sessions:[['Tactical theme workout','technical','6 rounds · 3:00 each · a different tactical theme every round']],sessionConfigs:[workoutTemplate({trainingMode:'shadow',skill:'advanced',complexity:'high',technicalThemes:true,focusEnabled:'yes',focuses:['headbody','bodyhead','enterexit','counterdefense','finishdefense','finishfootwork','doublelead','rearcounter','backward','cutoff','inside','longrange'],workout:{rounds:6,warmupTime:60,roundTime:180,restTime:45,pace:6}})]},
-    {id:'tabataboxing',equipment:'bag',name:'Tabata Boxing',detail:'A fixed high-output interval workout built around short bursts and brief recoveries.',sessions:[['Classic Tabata','high','8 rounds · 0:20 work · 0:10 rest']],sessionConfigs:[workoutTemplate({trainingMode:'bag',skill:'intermediate',complexity:'medium',focusEnabled:'yes',focuses:['high','explosive'],includeTypes:['punch','body'],workout:{rounds:8,warmupTime:45,roundTime:20,restTime:10,pace:3}})]},
-    {id:'punchoutintervals',equipment:'bag',name:'Punch-Out Intervals',detail:'Box normally until the coach calls for a short all-out punching burst.',sessions:[['15-second punch-outs','explosive','6 rounds · 2:00 each · randomized 15-second punch-outs']],sessionConfigs:[workoutTemplate({trainingMode:'bag',skill:'intermediate',complexity:'medium',focusEnabled:'yes',focuses:['punchout15','explosive','speed'],includeTypes:['punch','body'],workout:{rounds:6,warmupTime:45,roundTime:120,restTime:30,pace:5}})]},
-    {id:'fightsimulation',equipment:'bag',name:'Fight Simulation',detail:'A complete twelve-round workout with changing tactical focuses and full between-round recovery.',sessions:[['Twelve-round simulation','mixed','12 rounds · 3:00 each · 1:00 rest']],sessionConfigs:[workoutTemplate({trainingMode:'bag',skill:'advanced',complexity:'high',repeats:'none',unique:'yes',focusEnabled:'yes',focuses:['jabs','body','defense','power','movement','high','punchout30'],structured:'60',workout:{rounds:12,warmupTime:60,roundTime:180,restTime:60,pace:5}})]},
-    {id:'foundations',equipment:'general',name:'Boxing Foundations',detail:'Technique-first sessions for new boxers.',sessions:[['Jab and stance','jabs'],['Straight punches','short'],['Hooks and movement','movement'],['Defense basics','defense'],['Complete fundamentals','mixed']]},
-    {id:'heavybag',equipment:'bag',name:'4-Week Heavy Bag',detail:'Power, pace, body work, and conditioning.',sessions:[['Bag fundamentals','mixed'],['Body attack','body'],['Power combinations','power'],['Punch-out conditioning','high'],['Angles and exits','footwork'],['Inside work','inside'],['Speed rounds','speed'],['Final bag test','explosive']]},
-    {id:'defense',equipment:'shadow',name:'Defensive Movement',detail:'Slips, rolls, counters, and exits.',sessions:[['Slip basics','defense'],['Roll and return','defense'],['Counter rounds','defense'],['Footwork exits','footwork'],['Defensive flow','movement']]},
-    {id:'jab',equipment:'general',name:'Jab Development',detail:'Build timing, variety, and control with the lead hand.',sessions:[['Single and double jab','jabs'],['Jab to the body','body'],['Jab while moving','footwork'],['Jab into combinations','mixed']]},
-    {id:'conditioning',equipment:'bag',name:'Conditioning Camp',detail:'Fast rounds, short rests, and punch-out bursts.',sessions:[['Speed base','speed'],['Explosive rounds','explosive'],['High output','high'],['Conditioning test','high']]},
-    {id:'technique',equipment:'shadow',name:'Technique Learning Path',detail:'Build individual skills into complete boxing sequences.',sessions:[['Jab control','jabs'],['Straight punches','straight'],['Hooks','hooks'],['Uppercuts','uppercuts'],['Body targeting','body'],['Defense and counters','counterdefense'],['Entries and exits','enterexit'],['Complete technical flow','mixed']]},
-    {id:'kickboxing',equipment:'bag',name:'Kickboxing Foundations',detail:'Progress from basic kicks to mixed combinations.',sessions:[['Basic kicks','kicks'],['Punch to kick','kickmix'],['Knees and elbows','knees'],['Kickboxing flow','kickflow']]}
-  ];
-  const focusedDrills={
-    jabreaction:{skill:'basic',focuses:['jabs'],includeTypes:['punch','body'],drill:{id:'jab-variations',name:'Jab variations',instructions:'Repeat each assignment at a controlled pace until the next callout. Return the lead hand to guard and keep moving between repetitions.',shortInstruction:'Repeat until the next callout',minInterval:27,maxInterval:35,assignments:[{display:'1 Head',speech:'One to the head',moves:1},{display:'1 Body',speech:'One to the body',moves:1},{display:'1 Feint',speech:'One feint',moves:1},{display:'1 Feint · 1-2',speech:'One feint. One two',moves:3}]}},
-    straightreaction:{skill:'basic',focuses:['straight','body'],includeTypes:['punch','body'],drill:{id:'high-low-straights',name:'High-low straights',instructions:'Repeat the called straight-punch pattern until the next callout. Change level with your knees for body shots and return both hands to guard.',shortInstruction:'Repeat the target pattern',minInterval:27,maxInterval:35,assignments:[{display:'1 Head',speech:'One to the head',moves:1},{display:'1 Body',speech:'One to the body',moves:1},{display:'1-2 Head',speech:'One two to the head',moves:2},{display:'1 Body · 2 Head',speech:'One body. Two head',moves:2},{display:'1 Head · 2 Body',speech:'One head. Two body',moves:2}]}},
-    hookreaction:{skill:'intermediate',focuses:['hooks','body'],includeTypes:['punch','body'],drill:{id:'hook-workshop',name:'Hook workshop',instructions:'Repeat the called hook pattern until the next callout. Keep the punches compact, rotate through your feet, and protect your chin with the opposite hand.',shortInstruction:'Repeat compact hooks',minInterval:27,maxInterval:35,assignments:[{display:'3 Head',speech:'Three to the head',moves:1},{display:'3 Body',speech:'Three to the body',moves:1},{display:'4 Body',speech:'Four to the body',moves:1},{display:'3 Body · 3 Head',speech:'Three body. Three head',moves:2},{display:'3-4 Head',speech:'Three four to the head',moves:2}]}},
-    insidereaction:{skill:'intermediate',focuses:['inside','body','uppercuts'],includeTypes:['punch','body'],drill:{id:'inside-fighting',name:'Inside fighting',instructions:'Work close to the bag and repeat the assignment until the next callout. Keep hooks and uppercuts short, stay balanced, and reset your guard after every combination.',shortInstruction:'Stay close and repeat',minInterval:27,maxInterval:35,assignments:[{display:'3 Body',speech:'Three to the body',moves:1},{display:'4 Body',speech:'Four to the body',moves:1},{display:'5-6',speech:'Five six',moves:2},{display:'3 Body · 5 · 3 Head',speech:'Three body. Five. Three head',moves:3},{display:'6-3',speech:'Six three',moves:2}]}},
-    effortreaction:{skill:'intermediate',focuses:['speed','power','movement'],includeTypes:['punch','body','footwork'],drill:{id:'speed-power',name:'Speed and power calls',instructions:'Follow the effort named and keep working until the next callout. Technique means controlled clean punches, speed means fast light punches, power means strong balanced shots, and movement means active recovery around the bag.',shortInstruction:'Match the called effort',minInterval:27,maxInterval:35,assignments:[{display:'TECHNIQUE · 1-2',speech:'Technique. One two',moves:2},{display:'SPEED · 1-2',speech:'Speed. One two',moves:2},{display:'POWER · 2',speech:'Power. Two',moves:1},{display:'MOVEMENT · JAB',speech:'Movement and jab',moves:1}]}},
-    defensereaction:{skill:'intermediate',focuses:['defense','counterdefense'],includeTypes:['punch','defense'],drill:{id:'defense-counters',name:'Defense and counters',instructions:'Imagine the incoming punch, perform the defense first, then throw the counter. Repeat the complete reaction until the next callout and return to your stance each time.',shortInstruction:'Defend first, then counter',minInterval:27,maxInterval:35,assignments:[{display:'Slip Right · 2',speech:'Slip right. Two',moves:2},{display:'Slip Left · 3',speech:'Slip left. Three',moves:2},{display:'Catch · 1-2',speech:'Catch. One two',moves:3},{display:'Roll · 3-2',speech:'Roll. Three two',moves:3},{display:'Pull · 2',speech:'Pull. Two',moves:2}]}},
-    footworkreaction:{skill:'basic',focuses:['footwork','enterexit'],includeTypes:['punch','footwork'],drill:{id:'footwork-entries',name:'Footwork entries',instructions:'Repeat the complete movement and punch assignment until the next callout. Keep your feet from crossing and finish every repetition balanced in your boxing stance.',shortInstruction:'Move, punch, and reset',minInterval:27,maxInterval:35,assignments:[{display:'Step In · 1',speech:'Step in. One',moves:2},{display:'Double 1 Forward',speech:'Double one moving forward',moves:3},{display:'1 · Circle Left',speech:'One. Circle left',moves:2},{display:'1-2 · Pivot Out',speech:'One two. Pivot out',moves:3},{display:'1 · Step Out',speech:'One. Step out',moves:2}]}}
+  // Shared helpers and authored program data.
+  const $ = (s) => document.querySelector(s),
+    $$ = (s) => [...document.querySelectorAll(s)];
+  const safe = (value) =>
+    String(value ?? '').replace(
+      /[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+    );
+  const fmt = (s) => {
+    s = Math.max(0, Math.round(s || 0));
+    const h = Math.floor(s / 3600),
+      m = Math.floor((s % 3600) / 60),
+      sec = s % 60;
+    return h
+      ? h + ':' + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0')
+      : m + ':' + String(sec).padStart(2, '0');
   };
-  const focusSessionFormats={
-    10:{rounds:2,warmupTime:60,roundTime:240,restTime:60,restSchedule:[60],description:'Two 4-minute rounds with a 1-minute recovery. This preserves the original class-style format.'},
-    15:{rounds:4,warmupTime:60,roundTime:180,restTime:30,restSchedule:[30,60,30],description:'Four 3-minute rounds in two-round blocks. Recover for 30 seconds inside each block and 1 minute in the middle.'},
-    20:{rounds:6,warmupTime:90,roundTime:150,restTime:30,restSchedule:[30,60,30,60,30],description:'Six 2:30 rounds in three two-round blocks. Recover for 30 seconds inside each block and 1 minute between blocks.'}
+  const read = (key, fallback = []) => {
+    try {
+      const value = JSON.parse(localStorage.getItem(key));
+      return value ?? fallback;
+    } catch (e) {
+      return fallback;
+    }
   };
-  const workoutPresets=[
-    ['Pad work','Reactive combinations with defense and counters.','mixed',workoutTemplate({trainingMode:'general',includeTypes:['punch','defense','footwork'],focuses:['mixed','defense'],focusEnabled:'yes',repeats:'some',workout:{rounds:6,warmupTime:45,roundTime:120,restTime:30,pace:7}})],
-    ['Heavy bag power','Longer rests and power-focused rounds.','power',workoutTemplate({trainingMode:'bag',includeTypes:['punch','body'],focuses:['power','body'],focusEnabled:'yes',workout:{rounds:6,warmupTime:45,roundTime:120,restTime:45,pace:7}})],
-    ['Defense reactions','Defense and counter combinations only.','defense',workoutTemplate({trainingMode:'shadow',includeTypes:['punch','defense','footwork'],focuses:['defense','counterdefense'],focusEnabled:'yes',workout:{rounds:6,warmupTime:45,roundTime:120,restTime:30,pace:7}})],
-    ['Footwork rounds','Movement, pivots, exits, and angles.','footwork',workoutTemplate({trainingMode:'shadow',includeTypes:['punch','footwork'],focuses:['footwork','movement','enterexit'],focusEnabled:'yes',workout:{rounds:6,warmupTime:45,roundTime:120,restTime:30,pace:7}})],
-    ['Opposite-stance practice','An editable workout in the stance opposite your current setup.','mixed',workoutTemplate({trainingMode:'shadow',skill:'basic',complexity:'low',includeTypes:['punch','defense','footwork'],focuses:['movement','mixed'],focusEnabled:'yes',workout:{rounds:4,warmupTime:45,roundTime:120,restTime:30,pace:7}})],
-    ['Freestyle coach','Open boxing with occasional coaching reminders.','freestyle',workoutTemplate({trainingMode:'shadow',includeTypes:['punch','body','defense','footwork'],focuses:['freestyle'],focusEnabled:'yes',coachCues:true,cueFrequency:3})],
-    ['Partner pad work','Simple, clear combinations for a partner holding pads.','short',workoutTemplate({trainingMode:'general',includeTypes:['punch','defense','footwork'],complexity:'medium',focuses:['short','mixed'],focusEnabled:'yes',repeats:'some',workout:{rounds:6,warmupTime:45,roundTime:120,restTime:30,pace:7}})],
-    ['Movement conditioning','Footwork, pivots, and exits with short recovery periods.','footwork',workoutTemplate({trainingMode:'shadow',includeTypes:['punch','footwork'],focuses:['footwork','movement'],focusEnabled:'yes',coachCues:true,workout:{rounds:6,warmupTime:30,roundTime:120,restTime:30,pace:7}})],
-    ['Active rest','Movement-focused rounds with very short recovery periods.','movement',workoutTemplate({trainingMode:'shadow',skill:'basic',complexity:'low',includeTypes:['punch','footwork'],focuses:['movement','short'],focusEnabled:'yes',coachCues:true,cueFrequency:3,workout:{rounds:6,warmupTime:30,roundTime:120,restTime:15,pace:7}})]
+  const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  let api,
+    installPrompt = null,
+    mirrorStream = null,
+    recorder = null,
+    recorded = [];
+  const focusSessions = (focus) => [
+    ['10-minute class drill', focus, 10],
+    ['15-minute block drill', focus, 15],
+    ['20-minute block drill', focus, 20],
   ];
-  const techniques=[
-    ['1 · Jab','Fast lead-hand straight punch.','Turn the fist over, protect your chin, and return directly to guard.'],['2 · Cross','Rear-hand straight punch.','Rotate the rear hip and heel without leaning over the front foot.'],['3 · Lead hook','Lead-side hook.','Keep the elbow near fist height and rotate through the floor.'],['4 · Rear hook','Rear-side hook.','Stay compact and avoid swinging the arm wide.'],['5 · Lead uppercut','Lead-side uppercut.','Bend the knees slightly and drive through the target without dropping the hand.'],['6 · Rear uppercut','Rear-side uppercut.','Rotate the rear hip and keep the punch tight.'],['Slip','Move the head just outside a straight punch.','Use the knees and waist while keeping your eyes forward.'],['Roll','Move under a hook.','Make a shallow U shape and return in stance.'],['Pull','Shift away from a punch without crossing your feet.','Keep enough balance to counter immediately.'],['Pivot','Turn around the lead foot to create an angle.','Move the rear foot and finish in your stance.'],['Step out','Exit safely after punching.','Keep your feet from crossing and return your hands to guard.'],['Body shot','Lower the target while maintaining your stance.','Change level with the knees instead of reaching down.'],['Lead kick','Kick from the lead side.','Return the leg quickly and recover your stance.'],['Rear kick','Power kick from the rear side.','Rotate the hip and supporting foot, then return to stance.'],['Knee','Close-range strike using the knee.','Drive the hip through while protecting your head.'],['Elbow','Compact close-range strike.','Keep the opposite hand high and control the distance.']
-  ];
-  function modal(id,title,content,wide=''){
-    const el=document.createElement('dialog');el.id=id;el.className='feature-dialog '+wide;el.tabIndex=-1;el.innerHTML='<div class="feature-shell"><div class="feature-head"><h2>'+title+'</h2><button class="feature-close" data-feature-close aria-label="Close">×</button></div>'+content+'</div>';document.body.appendChild(el);el.querySelector('[data-feature-close]').onclick=()=>el.close();el.onclick=e=>{if(e.target===el)el.close()};return el
-  }
-  function open(el){if(!el.open){el.showModal();el.focus({preventScroll:true})}el.querySelectorAll('select').forEach(select=>select._syncCustomSelect?.())}
-  function mergedConfig(overrides={}){const current=api.snapshot(),workout={...current.workout,...(overrides.workout||{})};return {...current,...overrides,workout}}
-  function workoutRestTotal(workout={}){const rounds=Math.max(0,+workout.rounds||0),schedule=Array.isArray(workout.restSchedule)?workout.restSchedule:[];return Array.from({length:Math.max(0,rounds-1)},(_,index)=>Number.isFinite(+schedule[index])?Math.max(0,+schedule[index]):Math.max(0,+workout.restTime||0)).reduce((total,value)=>total+value,0)}
-  function describeRest(workout={}){if(!Array.isArray(workout.restSchedule)||!workout.restSchedule.length)return fmt(workout.restTime)+' rest';const values=[...new Set(workout.restSchedule.map(Number).filter(Number.isFinite))].sort((a,b)=>a-b);return values.length>1?fmt(values[0])+' to '+fmt(values[values.length-1])+' rest':fmt(values[0])+' rest'}
-  function describeConfig(config){const w=config.workout||{},focus=(config.focuses||[]).map(name=>({jabs:'Jabs',short:'Short combos',mixed:'Mixed combos',explosive:'Explosive',punchout15:'Punch-out 15 sec',punchout30:'Punch-out 30 sec',high:'High output',speed:'Speed',power:'Power',defense:'Defense',footwork:'Footwork',movement:'Movement',body:'Body work',uppercuts:'Uppercuts',inside:'Inside work',freestyle:'Freestyle',kicks:'Kicks',kickmix:'Punch-to-kick',headbody:'Head-to-body',bodyhead:'Body-to-head',enterexit:'Enter and exit',counterdefense:'Counter after defense',finishdefense:'Finish with defense',finishfootwork:'Finish with footwork',doublelead:'Double lead hand',rearcounter:'Rear-hand counters',backward:'Moving backward',cutoff:'Cut off the ring',longrange:'Long-range boxing'}[name]||name)).join(', ');return [w.rounds+' rounds',fmt(w.roundTime)+' work',describeRest(w),config.skill,config.progressiveCombos?'Progressive combinations':'',focus].filter(Boolean).join(' · ')}
-  function apply(overrides,source='quick',meta={}){if(read('cornerwork-setup-mode','custom')==='custom')write('cornerwork-custom-workout',api.snapshot());if(source!=='program')sessionStorage.removeItem('cornerwork-active-program');const workout={...(overrides.workout||{})};if(!Array.isArray(workout.restSchedule))workout.restSchedule=null;const config=mergedConfig({focusedDrill:null,progressiveCombos:false,technicalThemes:false,...overrides,workout,allowedCombos:null});write('cornerwork-setup-mode',source);write('cornerwork-active-selection',{kind:meta.kind||source,name:meta.name||'Preset workout',detail:describeConfig(config)});api.applyConfig(config)}
-  function buildQuickStart(){
-    const el=modal('quickStartDialog','Quick Start','<p class="feature-note">Tell Cornerwork what you want to train. It will build a complete workout that you can still edit.</p><div class="feature-form quick-start-form"><label>Workout length<select id="quickDuration"><option value="10">10 minutes</option><option value="20" selected>20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Training goal<select id="quickGoal"><option value="technique">Technique</option><option value="cardio">Cardio</option><option value="power">Power</option><option value="defense">Defense</option><option value="mixed" selected>Mixed</option></select></label><label>Main focus<select id="quickFocus"><option value="auto" selected>Choose for me</option><option value="fundamentals">Fundamentals</option><option value="body">Body work</option><option value="defense">Defense &amp; counters</option><option value="footwork">Footwork &amp; angles</option><option value="speed">Speed &amp; conditioning</option><option value="power">Power</option><option value="mixed">All-around boxing</option></select></label><label>Skill level<select id="quickLevel"><option value="basic">Basic</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option></select></label><label>Equipment<select id="quickEquipment"><option value="bag">Heavy bag</option><option value="shadow">Shadowboxing</option><option value="either">General / no preference</option></select></label><label>Round style<select id="quickRoundStyle"><option value="balanced" selected>Balanced</option><option value="short">Short &amp; fast</option><option value="standard">Standard boxing rounds</option><option value="technical">Long technical rounds</option></select></label><label>Techniques<select id="quickTechniques"><option value="boxing" selected>Boxing mix</option><option value="punches">Punches only</option><option value="movement">Boxing &amp; movement</option><option value="striking">Full striking</option></select></label><label>Coach guidance<select id="quickCoaching"><option value="regular">Regular</option><option value="occasional" selected>Occasional</option><option value="off">Off</option></select></label></div><div class="feature-actions"><button class="feature-primary" id="buildQuickWorkout">Build workout</button></div>');
-    el.querySelector('#buildQuickWorkout').onclick=()=>{
-      const minutes=+$('#quickDuration').value,goal=$('#quickGoal').value,selectedFocus=$('#quickFocus').value,skill=$('#quickLevel').value,equipment=$('#quickEquipment').value,roundStyle=$('#quickRoundStyle').value,techniques=$('#quickTechniques').value,coaching=$('#quickCoaching').value,pick=list=>list[Math.floor(Math.random()*list.length)],shuffle=list=>[...list].sort(()=>Math.random()-.5);
-      const roundStyles={balanced:{basic:[90,120],intermediate:[120,150,180],advanced:[150,180],rest:[25,30,40]},short:{basic:[60,75,90],intermediate:[60,90,120],advanced:[90,120],rest:[15,20,30]},standard:{basic:[120],intermediate:[180],advanced:[180],rest:[30,45,60]},technical:{basic:[120,150],intermediate:[180,240],advanced:[240,300],rest:[30,45,60]}},style=roundStyles[roundStyle],roundTime=pick(style[skill]),restTime=pick(style.rest),warmupTime=minutes<=10?pick([20,30]):pick([30,45,60]),rounds=Math.max(2,Math.round((minutes*60-warmupTime+restTime)/(roundTime+restTime)));
-      const goalFocus={technique:['jabs','short','movement','uppercuts'],cardio:['speed','high','explosive','punchout15'],power:['power','body','inside'],defense:['defense','footwork','movement'],mixed:['jabs','body','defense','mixed','footwork']},chosenFocus={fundamentals:['jabs','short'],body:['body','headbody','bodyhead'],defense:['defense','counterdefense','finishdefense'],footwork:['footwork','movement','enterexit'],speed:['speed','high','explosive'],power:['power','body','inside'],mixed:['mixed','jabs','body','defense','footwork']}[selectedFocus],focusPool=chosenFocus||goalFocus[goal],focuses=shuffle(focusPool).slice(0,Math.min(focusPool.length,pick([2,3])));
-      const techniqueTypes={punches:['punch'],boxing:['punch','body','defense'],movement:['punch','body','defense','footwork'],striking:['punch','body','defense','footwork','kick','knee']},includeTypes=[...techniqueTypes[techniques]];if((goal==='defense'||selectedFocus==='defense')&&!includeTypes.includes('defense'))includeTypes.push('defense');if(selectedFocus==='footwork'&&!includeTypes.includes('footwork'))includeTypes.push('footwork');if((goal==='power'||selectedFocus==='body'||selectedFocus==='power')&&!includeTypes.includes('body'))includeTypes.push('body');
-      const paceMap={technique:[6,7,8],cardio:[3,4,5],power:[7,8],defense:[6,7],mixed:[5,6,7]},goalName={technique:'Technique',cardio:'Cardio',power:'Power',defense:'Defense',mixed:'Mixed'}[goal],coachCues=coaching!=='off',cueFrequency=coaching==='regular'?3:6;
-      apply({skill,trainingMode:equipment==='either'?'general':equipment,complexity:skill==='basic'?'low':skill==='advanced'?'high':'medium',focusEnabled:'yes',focuses,includeTypes,coachCues,cueFrequency,guidedBeginner:skill==='basic',workout:{rounds,warmupTime,roundTime,restTime,pace:pick(paceMap[goal])}},'quick',{kind:'Quick Start',name:goalName+' · '+minutes+' minutes'});
+  const workoutTemplate = (overrides = {}) => {
+    const workout = {
+      rounds: 6,
+      warmupTime: 45,
+      roundTime: 180,
+      restTime: 30,
+      pace: 6,
+      ...(overrides.workout || {}),
     };
-    return el
+    return {
+      trainingMode: 'general',
+      skill: 'intermediate',
+      complexity: 'medium',
+      repeats: 'none',
+      movementBetween: 'off',
+      unique: 'yes',
+      focusEnabled: 'no',
+      focuses: [],
+      includeTypes: ['punch', 'body', 'defense', 'footwork'],
+      structured: 'off',
+      coachCues: false,
+      cueFrequency: 5,
+      recoveryInstructions: false,
+      guidedBeginner: false,
+      ...overrides,
+      workout,
+    };
+  };
+  const programs = [
+    {
+      id: 'jabreaction',
+      equipment: 'bag',
+      name: 'Jab Reaction Drill',
+      detail: 'Choose 10, 15, or 20 minutes. Repeat each jab assignment until the next callout.',
+      sessions: focusSessions('jabvariations'),
+    },
+    {
+      id: 'straightreaction',
+      equipment: 'bag',
+      name: 'High-Low Straights',
+      detail: 'Choose 10, 15, or 20 minutes. Repeat the called head and body targets.',
+      sessions: focusSessions('highlow'),
+    },
+    {
+      id: 'hookreaction',
+      equipment: 'bag',
+      name: 'Hook Workshop',
+      detail: 'Choose 10, 15, or 20 minutes. Repeat compact head and body hook assignments.',
+      sessions: focusSessions('hooks'),
+    },
+    {
+      id: 'insidereaction',
+      equipment: 'bag',
+      name: 'Inside Fighting Drill',
+      detail: 'Choose 10, 15, or 20 minutes. Stay close and repeat short hooks and uppercuts.',
+      sessions: focusSessions('inside'),
+    },
+    {
+      id: 'effortreaction',
+      equipment: 'bag',
+      name: 'Speed and Power Calls',
+      detail: 'Choose 10, 15, or 20 minutes. Keep working at the called effort until it changes.',
+      sessions: focusSessions('effort'),
+    },
+    {
+      id: 'defensereaction',
+      equipment: 'shadow',
+      name: 'Defense and Counter Calls',
+      detail: 'Choose 10, 15, or 20 minutes. Imagine the attack, defend, then counter.',
+      sessions: focusSessions('defense'),
+    },
+    {
+      id: 'footworkreaction',
+      equipment: 'shadow',
+      name: 'Footwork Entry Calls',
+      detail: 'Choose 10, 15, or 20 minutes. Repeat each movement and finish balanced.',
+      sessions: focusSessions('footwork'),
+    },
+    {
+      id: 'progressivecombos',
+      equipment: 'general',
+      name: 'Progressive Combinations',
+      detail: 'Build from short combinations into advanced sequences as the rounds progress.',
+      sessions: [
+        [
+          'Progressive combination workout',
+          'progressive',
+          '6 rounds · 2:30 each · combinations grow each round',
+        ],
+      ],
+      sessionConfigs: [
+        workoutTemplate({
+          complexity: 'high',
+          progressiveCombos: true,
+          unique: 'yes',
+          focusEnabled: 'no',
+          workout: { rounds: 6, roundTime: 150, restTime: 30, pace: 6 },
+        }),
+      ],
+    },
+    {
+      id: 'technicalthemes',
+      equipment: 'shadow',
+      name: 'Technical Round Themes',
+      detail:
+        'Practice a different tactical goal in every round, including targets, counters, exits, and range.',
+      sessions: [
+        [
+          'Tactical theme workout',
+          'technical',
+          '6 rounds · 3:00 each · a different tactical theme every round',
+        ],
+      ],
+      sessionConfigs: [
+        workoutTemplate({
+          trainingMode: 'shadow',
+          skill: 'advanced',
+          complexity: 'high',
+          technicalThemes: true,
+          focusEnabled: 'yes',
+          focuses: [
+            'headbody',
+            'bodyhead',
+            'enterexit',
+            'counterdefense',
+            'finishdefense',
+            'finishfootwork',
+            'doublelead',
+            'rearcounter',
+            'backward',
+            'cutoff',
+            'inside',
+            'longrange',
+          ],
+          workout: { rounds: 6, warmupTime: 60, roundTime: 180, restTime: 45, pace: 6 },
+        }),
+      ],
+    },
+    {
+      id: 'tabataboxing',
+      equipment: 'bag',
+      name: 'Tabata Boxing',
+      detail:
+        'A fixed high-output interval workout built around short bursts and brief recoveries.',
+      sessions: [['Classic Tabata', 'high', '8 rounds · 0:20 work · 0:10 rest']],
+      sessionConfigs: [
+        workoutTemplate({
+          trainingMode: 'bag',
+          skill: 'intermediate',
+          complexity: 'medium',
+          focusEnabled: 'yes',
+          focuses: ['high', 'explosive'],
+          includeTypes: ['punch', 'body'],
+          workout: { rounds: 8, warmupTime: 45, roundTime: 20, restTime: 10, pace: 3 },
+        }),
+      ],
+    },
+    {
+      id: 'punchoutintervals',
+      equipment: 'bag',
+      name: 'Punch-Out Intervals',
+      detail: 'Box normally until the coach calls for a short all-out punching burst.',
+      sessions: [
+        [
+          '15-second punch-outs',
+          'explosive',
+          '6 rounds · 2:00 each · randomized 15-second punch-outs',
+        ],
+      ],
+      sessionConfigs: [
+        workoutTemplate({
+          trainingMode: 'bag',
+          skill: 'intermediate',
+          complexity: 'medium',
+          focusEnabled: 'yes',
+          focuses: ['punchout15', 'explosive', 'speed'],
+          includeTypes: ['punch', 'body'],
+          workout: { rounds: 6, warmupTime: 45, roundTime: 120, restTime: 30, pace: 5 },
+        }),
+      ],
+    },
+    {
+      id: 'fightsimulation',
+      equipment: 'bag',
+      name: 'Fight Simulation',
+      detail:
+        'A complete twelve-round workout with changing tactical focuses and full between-round recovery.',
+      sessions: [['Twelve-round simulation', 'mixed', '12 rounds · 3:00 each · 1:00 rest']],
+      sessionConfigs: [
+        workoutTemplate({
+          trainingMode: 'bag',
+          skill: 'advanced',
+          complexity: 'high',
+          repeats: 'none',
+          unique: 'yes',
+          focusEnabled: 'yes',
+          focuses: ['jabs', 'body', 'defense', 'power', 'movement', 'high', 'punchout30'],
+          structured: '60',
+          workout: { rounds: 12, warmupTime: 60, roundTime: 180, restTime: 60, pace: 5 },
+        }),
+      ],
+    },
+    {
+      id: 'foundations',
+      equipment: 'general',
+      name: 'Boxing Foundations',
+      detail: 'Technique-first sessions for new boxers.',
+      sessions: [
+        ['Jab and stance', 'jabs'],
+        ['Straight punches', 'short'],
+        ['Hooks and movement', 'movement'],
+        ['Defense basics', 'defense'],
+        ['Complete fundamentals', 'mixed'],
+      ],
+    },
+    {
+      id: 'heavybag',
+      equipment: 'bag',
+      name: '4-Week Heavy Bag',
+      detail: 'Power, pace, body work, and conditioning.',
+      sessions: [
+        ['Bag fundamentals', 'mixed'],
+        ['Body attack', 'body'],
+        ['Power combinations', 'power'],
+        ['Punch-out conditioning', 'high'],
+        ['Angles and exits', 'footwork'],
+        ['Inside work', 'inside'],
+        ['Speed rounds', 'speed'],
+        ['Final bag test', 'explosive'],
+      ],
+    },
+    {
+      id: 'defense',
+      equipment: 'shadow',
+      name: 'Defensive Movement',
+      detail: 'Slips, rolls, counters, and exits.',
+      sessions: [
+        ['Slip basics', 'defense'],
+        ['Roll and return', 'defense'],
+        ['Counter rounds', 'defense'],
+        ['Footwork exits', 'footwork'],
+        ['Defensive flow', 'movement'],
+      ],
+    },
+    {
+      id: 'jab',
+      equipment: 'general',
+      name: 'Jab Development',
+      detail: 'Build timing, variety, and control with the lead hand.',
+      sessions: [
+        ['Single and double jab', 'jabs'],
+        ['Jab to the body', 'body'],
+        ['Jab while moving', 'footwork'],
+        ['Jab into combinations', 'mixed'],
+      ],
+    },
+    {
+      id: 'conditioning',
+      equipment: 'bag',
+      name: 'Conditioning Camp',
+      detail: 'Fast rounds, short rests, and punch-out bursts.',
+      sessions: [
+        ['Speed base', 'speed'],
+        ['Explosive rounds', 'explosive'],
+        ['High output', 'high'],
+        ['Conditioning test', 'high'],
+      ],
+    },
+    {
+      id: 'technique',
+      equipment: 'shadow',
+      name: 'Technique Learning Path',
+      detail: 'Build individual skills into complete boxing sequences.',
+      sessions: [
+        ['Jab control', 'jabs'],
+        ['Straight punches', 'straight'],
+        ['Hooks', 'hooks'],
+        ['Uppercuts', 'uppercuts'],
+        ['Body targeting', 'body'],
+        ['Defense and counters', 'counterdefense'],
+        ['Entries and exits', 'enterexit'],
+        ['Complete technical flow', 'mixed'],
+      ],
+    },
+    {
+      id: 'kickboxing',
+      equipment: 'bag',
+      name: 'Kickboxing Foundations',
+      detail: 'Progress from basic kicks to mixed combinations.',
+      sessions: [
+        ['Basic kicks', 'kicks'],
+        ['Punch to kick', 'kickmix'],
+        ['Knees and elbows', 'knees'],
+        ['Kickboxing flow', 'kickflow'],
+      ],
+    },
+  ];
+  const focusedDrills = {
+    jabreaction: {
+      skill: 'basic',
+      focuses: ['jabs'],
+      includeTypes: ['punch', 'body'],
+      drill: {
+        id: 'jab-variations',
+        name: 'Jab variations',
+        instructions:
+          'Repeat each assignment at a controlled pace until the next callout. Return the lead hand to guard and keep moving between repetitions.',
+        shortInstruction: 'Repeat until the next callout',
+        minInterval: 27,
+        maxInterval: 35,
+        assignments: [
+          { display: '1 Head', speech: 'One to the head', moves: 1 },
+          { display: '1 Body', speech: 'One to the body', moves: 1 },
+          { display: '1 Feint', speech: 'One feint', moves: 1 },
+          { display: '1 Feint · 1-2', speech: 'One feint. One two', moves: 3 },
+        ],
+      },
+    },
+    straightreaction: {
+      skill: 'basic',
+      focuses: ['straight', 'body'],
+      includeTypes: ['punch', 'body'],
+      drill: {
+        id: 'high-low-straights',
+        name: 'High-low straights',
+        instructions:
+          'Repeat the called straight-punch pattern until the next callout. Change level with your knees for body shots and return both hands to guard.',
+        shortInstruction: 'Repeat the target pattern',
+        minInterval: 27,
+        maxInterval: 35,
+        assignments: [
+          { display: '1 Head', speech: 'One to the head', moves: 1 },
+          { display: '1 Body', speech: 'One to the body', moves: 1 },
+          { display: '1-2 Head', speech: 'One two to the head', moves: 2 },
+          { display: '1 Body · 2 Head', speech: 'One body. Two head', moves: 2 },
+          { display: '1 Head · 2 Body', speech: 'One head. Two body', moves: 2 },
+        ],
+      },
+    },
+    hookreaction: {
+      skill: 'intermediate',
+      focuses: ['hooks', 'body'],
+      includeTypes: ['punch', 'body'],
+      drill: {
+        id: 'hook-workshop',
+        name: 'Hook workshop',
+        instructions:
+          'Repeat the called hook pattern until the next callout. Keep the punches compact, rotate through your feet, and protect your chin with the opposite hand.',
+        shortInstruction: 'Repeat compact hooks',
+        minInterval: 27,
+        maxInterval: 35,
+        assignments: [
+          { display: '3 Head', speech: 'Three to the head', moves: 1 },
+          { display: '3 Body', speech: 'Three to the body', moves: 1 },
+          { display: '4 Body', speech: 'Four to the body', moves: 1 },
+          { display: '3 Body · 3 Head', speech: 'Three body. Three head', moves: 2 },
+          { display: '3-4 Head', speech: 'Three four to the head', moves: 2 },
+        ],
+      },
+    },
+    insidereaction: {
+      skill: 'intermediate',
+      focuses: ['inside', 'body', 'uppercuts'],
+      includeTypes: ['punch', 'body'],
+      drill: {
+        id: 'inside-fighting',
+        name: 'Inside fighting',
+        instructions:
+          'Work close to the bag and repeat the assignment until the next callout. Keep hooks and uppercuts short, stay balanced, and reset your guard after every combination.',
+        shortInstruction: 'Stay close and repeat',
+        minInterval: 27,
+        maxInterval: 35,
+        assignments: [
+          { display: '3 Body', speech: 'Three to the body', moves: 1 },
+          { display: '4 Body', speech: 'Four to the body', moves: 1 },
+          { display: '5-6', speech: 'Five six', moves: 2 },
+          { display: '3 Body · 5 · 3 Head', speech: 'Three body. Five. Three head', moves: 3 },
+          { display: '6-3', speech: 'Six three', moves: 2 },
+        ],
+      },
+    },
+    effortreaction: {
+      skill: 'intermediate',
+      focuses: ['speed', 'power', 'movement'],
+      includeTypes: ['punch', 'body', 'footwork'],
+      drill: {
+        id: 'speed-power',
+        name: 'Speed and power calls',
+        instructions:
+          'Follow the effort named and keep working until the next callout. Technique means controlled clean punches, speed means fast light punches, power means strong balanced shots, and movement means active recovery around the bag.',
+        shortInstruction: 'Match the called effort',
+        minInterval: 27,
+        maxInterval: 35,
+        assignments: [
+          { display: 'TECHNIQUE · 1-2', speech: 'Technique. One two', moves: 2 },
+          { display: 'SPEED · 1-2', speech: 'Speed. One two', moves: 2 },
+          { display: 'POWER · 2', speech: 'Power. Two', moves: 1 },
+          { display: 'MOVEMENT · JAB', speech: 'Movement and jab', moves: 1 },
+        ],
+      },
+    },
+    defensereaction: {
+      skill: 'intermediate',
+      focuses: ['defense', 'counterdefense'],
+      includeTypes: ['punch', 'defense'],
+      drill: {
+        id: 'defense-counters',
+        name: 'Defense and counters',
+        instructions:
+          'Imagine the incoming punch, perform the defense first, then throw the counter. Repeat the complete reaction until the next callout and return to your stance each time.',
+        shortInstruction: 'Defend first, then counter',
+        minInterval: 27,
+        maxInterval: 35,
+        assignments: [
+          { display: 'Slip Right · 2', speech: 'Slip right. Two', moves: 2 },
+          { display: 'Slip Left · 3', speech: 'Slip left. Three', moves: 2 },
+          { display: 'Catch · 1-2', speech: 'Catch. One two', moves: 3 },
+          { display: 'Roll · 3-2', speech: 'Roll. Three two', moves: 3 },
+          { display: 'Pull · 2', speech: 'Pull. Two', moves: 2 },
+        ],
+      },
+    },
+    footworkreaction: {
+      skill: 'basic',
+      focuses: ['footwork', 'enterexit'],
+      includeTypes: ['punch', 'footwork'],
+      drill: {
+        id: 'footwork-entries',
+        name: 'Footwork entries',
+        instructions:
+          'Repeat the complete movement and punch assignment until the next callout. Keep your feet from crossing and finish every repetition balanced in your boxing stance.',
+        shortInstruction: 'Move, punch, and reset',
+        minInterval: 27,
+        maxInterval: 35,
+        assignments: [
+          { display: 'Step In · 1', speech: 'Step in. One', moves: 2 },
+          { display: 'Double 1 Forward', speech: 'Double one moving forward', moves: 3 },
+          { display: '1 · Circle Left', speech: 'One. Circle left', moves: 2 },
+          { display: '1-2 · Pivot Out', speech: 'One two. Pivot out', moves: 3 },
+          { display: '1 · Step Out', speech: 'One. Step out', moves: 2 },
+        ],
+      },
+    },
+  };
+  const focusSessionFormats = {
+    10: {
+      rounds: 2,
+      warmupTime: 60,
+      roundTime: 240,
+      restTime: 60,
+      restSchedule: [60],
+      description:
+        'Two 4-minute rounds with a 1-minute recovery. This preserves the original class-style format.',
+    },
+    15: {
+      rounds: 4,
+      warmupTime: 60,
+      roundTime: 180,
+      restTime: 30,
+      restSchedule: [30, 60, 30],
+      description:
+        'Four 3-minute rounds in two-round blocks. Recover for 30 seconds inside each block and 1 minute in the middle.',
+    },
+    20: {
+      rounds: 6,
+      warmupTime: 90,
+      roundTime: 150,
+      restTime: 30,
+      restSchedule: [30, 60, 30, 60, 30],
+      description:
+        'Six 2:30 rounds in three two-round blocks. Recover for 30 seconds inside each block and 1 minute between blocks.',
+    },
+  };
+  const workoutPresets = [
+    [
+      'Pad work',
+      'Reactive combinations with defense and counters.',
+      'mixed',
+      workoutTemplate({
+        trainingMode: 'general',
+        includeTypes: ['punch', 'defense', 'footwork'],
+        focuses: ['mixed', 'defense'],
+        focusEnabled: 'yes',
+        repeats: 'some',
+        workout: { rounds: 6, warmupTime: 45, roundTime: 120, restTime: 30, pace: 7 },
+      }),
+    ],
+    [
+      'Heavy bag power',
+      'Longer rests and power-focused rounds.',
+      'power',
+      workoutTemplate({
+        trainingMode: 'bag',
+        includeTypes: ['punch', 'body'],
+        focuses: ['power', 'body'],
+        focusEnabled: 'yes',
+        workout: { rounds: 6, warmupTime: 45, roundTime: 120, restTime: 45, pace: 7 },
+      }),
+    ],
+    [
+      'Defense reactions',
+      'Defense and counter combinations only.',
+      'defense',
+      workoutTemplate({
+        trainingMode: 'shadow',
+        includeTypes: ['punch', 'defense', 'footwork'],
+        focuses: ['defense', 'counterdefense'],
+        focusEnabled: 'yes',
+        workout: { rounds: 6, warmupTime: 45, roundTime: 120, restTime: 30, pace: 7 },
+      }),
+    ],
+    [
+      'Footwork rounds',
+      'Movement, pivots, exits, and angles.',
+      'footwork',
+      workoutTemplate({
+        trainingMode: 'shadow',
+        includeTypes: ['punch', 'footwork'],
+        focuses: ['footwork', 'movement', 'enterexit'],
+        focusEnabled: 'yes',
+        workout: { rounds: 6, warmupTime: 45, roundTime: 120, restTime: 30, pace: 7 },
+      }),
+    ],
+    [
+      'Opposite-stance practice',
+      'An editable workout in the stance opposite your current setup.',
+      'mixed',
+      workoutTemplate({
+        trainingMode: 'shadow',
+        skill: 'basic',
+        complexity: 'low',
+        includeTypes: ['punch', 'defense', 'footwork'],
+        focuses: ['movement', 'mixed'],
+        focusEnabled: 'yes',
+        workout: { rounds: 4, warmupTime: 45, roundTime: 120, restTime: 30, pace: 7 },
+      }),
+    ],
+    [
+      'Freestyle coach',
+      'Open boxing with occasional coaching reminders.',
+      'freestyle',
+      workoutTemplate({
+        trainingMode: 'shadow',
+        includeTypes: ['punch', 'body', 'defense', 'footwork'],
+        focuses: ['freestyle'],
+        focusEnabled: 'yes',
+        coachCues: true,
+        cueFrequency: 3,
+      }),
+    ],
+    [
+      'Partner pad work',
+      'Simple, clear combinations for a partner holding pads.',
+      'short',
+      workoutTemplate({
+        trainingMode: 'general',
+        includeTypes: ['punch', 'defense', 'footwork'],
+        complexity: 'medium',
+        focuses: ['short', 'mixed'],
+        focusEnabled: 'yes',
+        repeats: 'some',
+        workout: { rounds: 6, warmupTime: 45, roundTime: 120, restTime: 30, pace: 7 },
+      }),
+    ],
+    [
+      'Movement conditioning',
+      'Footwork, pivots, and exits with short recovery periods.',
+      'footwork',
+      workoutTemplate({
+        trainingMode: 'shadow',
+        includeTypes: ['punch', 'footwork'],
+        focuses: ['footwork', 'movement'],
+        focusEnabled: 'yes',
+        coachCues: true,
+        workout: { rounds: 6, warmupTime: 30, roundTime: 120, restTime: 30, pace: 7 },
+      }),
+    ],
+    [
+      'Active rest',
+      'Movement-focused rounds with very short recovery periods.',
+      'movement',
+      workoutTemplate({
+        trainingMode: 'shadow',
+        skill: 'basic',
+        complexity: 'low',
+        includeTypes: ['punch', 'footwork'],
+        focuses: ['movement', 'short'],
+        focusEnabled: 'yes',
+        coachCues: true,
+        cueFrequency: 3,
+        workout: { rounds: 6, warmupTime: 30, roundTime: 120, restTime: 15, pace: 7 },
+      }),
+    ],
+  ];
+  const techniques = [
+    [
+      '1 · Jab',
+      'Fast lead-hand straight punch.',
+      'Turn the fist over, protect your chin, and return directly to guard.',
+    ],
+    [
+      '2 · Cross',
+      'Rear-hand straight punch.',
+      'Rotate the rear hip and heel without leaning over the front foot.',
+    ],
+    [
+      '3 · Lead hook',
+      'Lead-side hook.',
+      'Keep the elbow near fist height and rotate through the floor.',
+    ],
+    ['4 · Rear hook', 'Rear-side hook.', 'Stay compact and avoid swinging the arm wide.'],
+    [
+      '5 · Lead uppercut',
+      'Lead-side uppercut.',
+      'Bend the knees slightly and drive through the target without dropping the hand.',
+    ],
+    ['6 · Rear uppercut', 'Rear-side uppercut.', 'Rotate the rear hip and keep the punch tight.'],
+    [
+      'Slip',
+      'Move the head just outside a straight punch.',
+      'Use the knees and waist while keeping your eyes forward.',
+    ],
+    ['Roll', 'Move under a hook.', 'Make a shallow U shape and return in stance.'],
+    [
+      'Pull',
+      'Shift away from a punch without crossing your feet.',
+      'Keep enough balance to counter immediately.',
+    ],
+    [
+      'Pivot',
+      'Turn around the lead foot to create an angle.',
+      'Move the rear foot and finish in your stance.',
+    ],
+    [
+      'Step out',
+      'Exit safely after punching.',
+      'Keep your feet from crossing and return your hands to guard.',
+    ],
+    [
+      'Body shot',
+      'Lower the target while maintaining your stance.',
+      'Change level with the knees instead of reaching down.',
+    ],
+    ['Lead kick', 'Kick from the lead side.', 'Return the leg quickly and recover your stance.'],
+    [
+      'Rear kick',
+      'Power kick from the rear side.',
+      'Rotate the hip and supporting foot, then return to stance.',
+    ],
+    [
+      'Knee',
+      'Close-range strike using the knee.',
+      'Drive the hip through while protecting your head.',
+    ],
+    [
+      'Elbow',
+      'Compact close-range strike.',
+      'Keep the opposite hand high and control the distance.',
+    ],
+  ];
+  // Shared dialog builders and workout configuration helpers.
+  function modal(id, title, content, wide = '') {
+    const el = document.createElement('dialog');
+    el.id = id;
+    el.className = 'feature-dialog ' + wide;
+    el.tabIndex = -1;
+    el.innerHTML =
+      '<div class="feature-shell"><div class="feature-head"><h2>' +
+      title +
+      '</h2><button class="feature-close" data-feature-close aria-label="Close">×</button></div>' +
+      content +
+      '</div>';
+    document.body.appendChild(el);
+    el.querySelector('[data-feature-close]').onclick = () => el.close();
+    el.onclick = (e) => {
+      if (e.target === el) el.close();
+    };
+    return el;
   }
-  function equipmentLabel(value){return value==='bag'?'Heavy bag':value==='shadow'?'Shadowboxing':'General / flexible'}
-  function programConfig(program,focus,index){const focused=focusedDrills[program.id];if(focused){const minutes=program.sessions[index]?.[2]||10,format=focusSessionFormats[minutes]||focusSessionFormats[10],{description,...workout}=format;return {trainingMode:program.equipment,skill:focused.skill,complexity:focused.skill==='basic'?'low':'medium',unique:'yes',focusEnabled:'yes',focuses:focused.focuses,coachCues:false,guidedBeginner:false,includeTypes:focused.includeTypes,structured:'off',focusedDrill:{...focused.drill,sessionMinutes:minutes},workout:{...workout,pace:30}}}const authored=program.sessionConfigs?.[index];if(authored)return {...authored,focuses:[...(authored.focuses||[])],includeTypes:[...(authored.includeTypes||[])],workout:{...(authored.workout||{})}};const ratio=index/Math.max(1,program.sessions.length-1),skill=ratio<.34?'basic':ratio<.8?'intermediate':'advanced',complexity=skill==='basic'?'low':skill==='advanced'?'high':'medium',rounds=skill==='basic'?4:skill==='intermediate'?5:6;let includeTypes=['punch','body','defense','footwork'],trainingMode=program.equipment||'general';if(program.id==='kickboxing'){trainingMode='bag';includeTypes=focus==='kicks'||focus==='kickmix'?['punch','kick']:focus==='knees'?['punch','knee']:['punch','kick','knee','footwork']}else if(program.id==='conditioning')includeTypes=['punch','body'];else if(program.id==='jab')includeTypes=focus==='body'?['punch','body']:focus==='footwork'?['punch','footwork']:['punch'];else if(program.id==='defense')includeTypes=['punch','defense','footwork'];else if(program.id==='foundations')includeTypes=focus==='defense'?['punch','defense']:focus==='movement'?['punch','footwork']:['punch'];else if(program.id==='technique')includeTypes=['punch',...(focus==='body'?['body']:[]),...(['counterdefense','enterexit','mixed'].includes(focus)?['defense','footwork']:[])];const focuses=['high','explosive'].includes(focus)?[focus,'punchout15']:[focus];return {trainingMode,skill,complexity,unique:'yes',focusEnabled:'yes',focuses,coachCues:true,guidedBeginner:skill==='basic',includeTypes,structured:'off',progressiveCombos:program.id==='technique',workout:{rounds,warmupTime:45,roundTime:skill==='basic'?120:180,restTime:skill==='advanced'?45:30,pace:skill==='basic'?7:skill==='intermediate'?6:5}}}
-  function completedProgramSessions(progress,program){const stored=progress[program.id];if(Array.isArray(stored))return new Set(stored.map(Number).filter(index=>Number.isInteger(index)&&index>=0&&index<program.sessions.length));const count=Math.min(program.sessions.length,Math.max(0,Number(stored)||0));return new Set(Array.from({length:count},(_,index)=>index))}
-  function programSessionDescription(program,session){const focused=focusedDrills[program.id];if(focused){const format=focusSessionFormats[session[2]]||focusSessionFormats[10];return format.rounds+' rounds · '+fmt(format.roundTime)+' each · '+describeRest(format)}if(typeof session[2]==='string')return session[2];const descriptions={jabs:'Develop a reliable jab with clean technique, timing, and control.',short:'Practice short combinations while keeping every punch sharp and balanced.',straight:'Build clean straight punches with efficient hip rotation and a fast return to guard.',hooks:'Practice compact hooks without swinging wide or losing your stance.',uppercuts:'Develop short uppercuts with controlled leg and hip drive.',mixed:'Combine the skills from earlier sessions into varied complete rounds.',body:'Change levels safely and build combinations that attack the body.',power:'Slow the pace enough to practice strong, balanced power combinations.',high:'Maintain a high work rate and finish selected efforts with punch-out bursts.',explosive:'Switch quickly from controlled boxing into short explosive efforts.',footwork:'Use entries, exits, pivots, and angles while staying balanced.',movement:'Blend punches with purposeful movement around the training space.',inside:'Practice compact hooks and uppercuts at close range.',speed:'Throw quick, relaxed combinations and recover immediately to guard.',defense:'Practice defensive movements, counters, and safe exits.',counterdefense:'Defend first, answer with a counter, and reset in stance.',enterexit:'Enter behind punches, finish the combination, and exit safely.',kicks:'Learn the basic kicking mechanics before adding longer combinations.',kickmix:'Connect boxing combinations to balanced lead and rear kicks.',knees:'Add compact knees and elbows while maintaining guard and position.',kickflow:'Blend punches, kicks, knees, movement, and recovery into complete rounds.'};return descriptions[session[1]]||'Practice the session theme through compatible combinations and guided round focuses.'}
-  function buildPrograms(){
-    const categories={focus:{label:'Focus drills',description:'Repeat one clearly explained assignment until the coach changes it.'},bag:{label:'Heavy bag',description:'Progressive bag programs for power, combinations, conditioning, and complete sessions.'},shadow:{label:'Shadowboxing',description:'Programs for defense, movement, technique, and visualization without a bag.'},general:{label:'Foundations',description:'Flexible learning paths that work with a bag, pads, or shadowboxing.'}};
-    const el=modal('programDialog','Training Programs','<div class="program-browser"><p class="feature-note">Choose what you want to improve. Every program has a distinct teaching or practice goal.</p><div class="program-tabs" role="tablist">'+Object.entries(categories).map(([id,item])=>'<button role="tab" data-program-tab="'+id+'">'+item.label+'</button>').join('')+'</div><p class="program-category-note"></p><div class="program-grid"></div></div><section class="program-detail hidden-feature" aria-live="polite"></section>');
-    let active=read('cornerwork-program-tab','focus');
-    if(!categories[active])active='focus';
-    const browser=el.querySelector('.program-browser'),detail=el.querySelector('.program-detail');
-    const showBrowser=()=>{detail.classList.add('hidden-feature');browser.classList.remove('hidden-feature');el.querySelector('.feature-head h2').textContent='Training Programs';render()};
-    const showProgram=program=>{
-      const progress=read('cornerwork-program-progress',{}),completed=completedProgramSessions(progress,program),suggested=program.sessions.findIndex((session,index)=>!completed.has(index)),defaultIndex=suggested<0?program.sessions.length-1:suggested;
-      browser.classList.add('hidden-feature');detail.classList.remove('hidden-feature');el.querySelector('.feature-head h2').textContent='Program Details';
-      const renderDetail=selectedIndex=>{
-        const focused=focusedDrills[program.id],selected=program.sessions[selectedIndex],config=programConfig(program,selected[1],selectedIndex),done=completed.size;
-        const itemLabel=(session,index)=>focused?session[0]:'Session '+(index+1)+': '+session[0],progressLabel=focused?'versions':'sessions';
-        const overview=focused?focused.drill.instructions:program.detail;
-        detail.innerHTML='<button class="program-back" type="button"><span aria-hidden="true">←</span> All programs</button><div class="program-detail-head"><div>'+(focused?'<span class="equipment-badge focus-badge">Focus drill</span>':'')+'<span class="equipment-badge">'+equipmentLabel(program.equipment)+'</span><h3>'+program.name+'</h3><p>'+overview+'</p></div><strong>'+done+' of '+program.sessions.length+' '+progressLabel+' completed</strong></div><div class="program-progress program-detail-progress"><i style="width:'+Math.round(done/program.sessions.length*100)+'%"></i></div><div class="program-session-list">'+program.sessions.map((session,index)=>'<button type="button" class="program-session'+(completed.has(index)?' completed':'')+(index===selectedIndex?' selected':'')+'" data-program-session="'+index+'"><span class="program-session-state">'+(completed.has(index)?'✓':index+1)+'</span><span><strong>'+itemLabel(session,index)+'</strong><small>'+programSessionDescription(program,session)+'</small></span></button>').join('')+'</div><button class="feature-primary program-load-session" type="button">'+(focused?'Start '+selected[2]+'-minute drill':'Start selected session')+'</button>';
-        detail.querySelector('.program-back').onclick=showBrowser;
-        detail.querySelectorAll('[data-program-session]').forEach(button=>button.onclick=()=>renderDetail(+button.dataset.programSession));
-        detail.querySelector('.program-load-session').onclick=()=>{sessionStorage.setItem('cornerwork-active-program',JSON.stringify({id:program.id,index:selectedIndex,name:program.name,session:selected[0]}));apply(config,'program',{kind:focused?'Focus Drill':'Training Program',name:program.name+(focused?' · '+selected[2]+' minutes':program.sessions.length>1?' · Session '+(selectedIndex+1)+' of '+program.sessions.length+': '+selected[0]:'')})};
+  function open(el) {
+    if (!el.open) {
+      el.showModal();
+      el.focus({ preventScroll: true });
+    }
+    el.querySelectorAll('select').forEach((select) => select._syncCustomSelect?.());
+  }
+  function mergedConfig(overrides = {}) {
+    const current = api.snapshot(),
+      workout = { ...current.workout, ...(overrides.workout || {}) };
+    return { ...current, ...overrides, workout };
+  }
+  function workoutRestTotal(workout = {}) {
+    const rounds = Math.max(0, +workout.rounds || 0),
+      schedule = Array.isArray(workout.restSchedule) ? workout.restSchedule : [];
+    return Array.from({ length: Math.max(0, rounds - 1) }, (_, index) =>
+      Number.isFinite(+schedule[index])
+        ? Math.max(0, +schedule[index])
+        : Math.max(0, +workout.restTime || 0),
+    ).reduce((total, value) => total + value, 0);
+  }
+  function describeRest(workout = {}) {
+    if (!Array.isArray(workout.restSchedule) || !workout.restSchedule.length)
+      return fmt(workout.restTime) + ' rest';
+    const values = [...new Set(workout.restSchedule.map(Number).filter(Number.isFinite))].sort(
+      (a, b) => a - b,
+    );
+    return values.length > 1
+      ? fmt(values[0]) + ' to ' + fmt(values[values.length - 1]) + ' rest'
+      : fmt(values[0]) + ' rest';
+  }
+  function describeConfig(config) {
+    const w = config.workout || {},
+      focus = (config.focuses || [])
+        .map(
+          (name) =>
+            ({
+              jabs: 'Jabs',
+              short: 'Short combos',
+              mixed: 'Mixed combos',
+              explosive: 'Explosive',
+              punchout15: 'Punch-out 15 sec',
+              punchout30: 'Punch-out 30 sec',
+              high: 'High output',
+              speed: 'Speed',
+              power: 'Power',
+              defense: 'Defense',
+              footwork: 'Footwork',
+              movement: 'Movement',
+              body: 'Body work',
+              uppercuts: 'Uppercuts',
+              inside: 'Inside work',
+              freestyle: 'Freestyle',
+              kicks: 'Kicks',
+              kickmix: 'Punch-to-kick',
+              headbody: 'Head-to-body',
+              bodyhead: 'Body-to-head',
+              enterexit: 'Enter and exit',
+              counterdefense: 'Counter after defense',
+              finishdefense: 'Finish with defense',
+              finishfootwork: 'Finish with footwork',
+              doublelead: 'Double lead hand',
+              rearcounter: 'Rear-hand counters',
+              backward: 'Moving backward',
+              cutoff: 'Cut off the ring',
+              longrange: 'Long-range boxing',
+            })[name] || name,
+        )
+        .join(', ');
+    return [
+      w.rounds + ' rounds',
+      fmt(w.roundTime) + ' work',
+      describeRest(w),
+      config.skill,
+      config.progressiveCombos ? 'Progressive combinations' : '',
+      focus,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  }
+  function apply(overrides, source = 'quick', meta = {}) {
+    if (read('cornerwork-setup-mode', 'custom') === 'custom')
+      write('cornerwork-custom-workout', api.snapshot());
+    if (source !== 'program') sessionStorage.removeItem('cornerwork-active-program');
+    const workout = { ...(overrides.workout || {}) };
+    if (!Array.isArray(workout.restSchedule)) workout.restSchedule = null;
+    const config = mergedConfig({
+      focusedDrill: null,
+      progressiveCombos: false,
+      technicalThemes: false,
+      ...overrides,
+      workout,
+      allowedCombos: null,
+    });
+    write('cornerwork-setup-mode', source);
+    write('cornerwork-active-selection', {
+      kind: meta.kind || source,
+      name: meta.name || 'Preset workout',
+      detail: describeConfig(config),
+    });
+    api.applyConfig(config);
+  }
+  function buildQuickStart() {
+    const el = modal(
+      'quickStartDialog',
+      'Quick Start',
+      '<p class="feature-note">Tell Cornerwork what you want to train. It will build a complete workout that you can still edit.</p><div class="feature-form quick-start-form"><label>Workout length<select id="quickDuration"><option value="10">10 minutes</option><option value="20" selected>20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Training goal<select id="quickGoal"><option value="technique">Technique</option><option value="cardio">Cardio</option><option value="power">Power</option><option value="defense">Defense</option><option value="mixed" selected>Mixed</option></select></label><label>Main focus<select id="quickFocus"><option value="auto" selected>Choose for me</option><option value="fundamentals">Fundamentals</option><option value="body">Body work</option><option value="defense">Defense &amp; counters</option><option value="footwork">Footwork &amp; angles</option><option value="speed">Speed &amp; conditioning</option><option value="power">Power</option><option value="mixed">All-around boxing</option></select></label><label>Skill level<select id="quickLevel"><option value="basic">Basic</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option></select></label><label>Equipment<select id="quickEquipment"><option value="bag">Heavy bag</option><option value="shadow">Shadowboxing</option><option value="either">General / no preference</option></select></label><label>Round style<select id="quickRoundStyle"><option value="balanced" selected>Balanced</option><option value="short">Short &amp; fast</option><option value="standard">Standard boxing rounds</option><option value="technical">Long technical rounds</option></select></label><label>Techniques<select id="quickTechniques"><option value="boxing" selected>Boxing mix</option><option value="punches">Punches only</option><option value="movement">Boxing &amp; movement</option><option value="striking">Full striking</option></select></label><label>Coach guidance<select id="quickCoaching"><option value="regular">Regular</option><option value="occasional" selected>Occasional</option><option value="off">Off</option></select></label></div><div class="feature-actions"><button class="feature-primary" id="buildQuickWorkout">Build workout</button></div>',
+    );
+    el.querySelector('#buildQuickWorkout').onclick = () => {
+      const minutes = +$('#quickDuration').value,
+        goal = $('#quickGoal').value,
+        selectedFocus = $('#quickFocus').value,
+        skill = $('#quickLevel').value,
+        equipment = $('#quickEquipment').value,
+        roundStyle = $('#quickRoundStyle').value,
+        techniques = $('#quickTechniques').value,
+        coaching = $('#quickCoaching').value,
+        pick = (list) => list[Math.floor(Math.random() * list.length)],
+        shuffle = (list) => [...list].sort(() => Math.random() - 0.5);
+      const roundStyles = {
+          balanced: {
+            basic: [90, 120],
+            intermediate: [120, 150, 180],
+            advanced: [150, 180],
+            rest: [25, 30, 40],
+          },
+          short: {
+            basic: [60, 75, 90],
+            intermediate: [60, 90, 120],
+            advanced: [90, 120],
+            rest: [15, 20, 30],
+          },
+          standard: { basic: [120], intermediate: [180], advanced: [180], rest: [30, 45, 60] },
+          technical: {
+            basic: [120, 150],
+            intermediate: [180, 240],
+            advanced: [240, 300],
+            rest: [30, 45, 60],
+          },
+        },
+        style = roundStyles[roundStyle],
+        roundTime = pick(style[skill]),
+        restTime = pick(style.rest),
+        warmupTime = minutes <= 10 ? pick([20, 30]) : pick([30, 45, 60]),
+        rounds = Math.max(
+          2,
+          Math.round((minutes * 60 - warmupTime + restTime) / (roundTime + restTime)),
+        );
+      const goalFocus = {
+          technique: ['jabs', 'short', 'movement', 'uppercuts'],
+          cardio: ['speed', 'high', 'explosive', 'punchout15'],
+          power: ['power', 'body', 'inside'],
+          defense: ['defense', 'footwork', 'movement'],
+          mixed: ['jabs', 'body', 'defense', 'mixed', 'footwork'],
+        },
+        chosenFocus = {
+          fundamentals: ['jabs', 'short'],
+          body: ['body', 'headbody', 'bodyhead'],
+          defense: ['defense', 'counterdefense', 'finishdefense'],
+          footwork: ['footwork', 'movement', 'enterexit'],
+          speed: ['speed', 'high', 'explosive'],
+          power: ['power', 'body', 'inside'],
+          mixed: ['mixed', 'jabs', 'body', 'defense', 'footwork'],
+        }[selectedFocus],
+        focusPool = chosenFocus || goalFocus[goal],
+        focuses = shuffle(focusPool).slice(0, Math.min(focusPool.length, pick([2, 3])));
+      const techniqueTypes = {
+          punches: ['punch'],
+          boxing: ['punch', 'body', 'defense'],
+          movement: ['punch', 'body', 'defense', 'footwork'],
+          striking: ['punch', 'body', 'defense', 'footwork', 'kick', 'knee'],
+        },
+        includeTypes = [...techniqueTypes[techniques]];
+      if ((goal === 'defense' || selectedFocus === 'defense') && !includeTypes.includes('defense'))
+        includeTypes.push('defense');
+      if (selectedFocus === 'footwork' && !includeTypes.includes('footwork'))
+        includeTypes.push('footwork');
+      if (
+        (goal === 'power' || selectedFocus === 'body' || selectedFocus === 'power') &&
+        !includeTypes.includes('body')
+      )
+        includeTypes.push('body');
+      const paceMap = {
+          technique: [6, 7, 8],
+          cardio: [3, 4, 5],
+          power: [7, 8],
+          defense: [6, 7],
+          mixed: [5, 6, 7],
+        },
+        goalName = {
+          technique: 'Technique',
+          cardio: 'Cardio',
+          power: 'Power',
+          defense: 'Defense',
+          mixed: 'Mixed',
+        }[goal],
+        coachCues = coaching !== 'off',
+        cueFrequency = coaching === 'regular' ? 3 : 6;
+      apply(
+        {
+          skill,
+          trainingMode: equipment === 'either' ? 'general' : equipment,
+          complexity: skill === 'basic' ? 'low' : skill === 'advanced' ? 'high' : 'medium',
+          focusEnabled: 'yes',
+          focuses,
+          includeTypes,
+          coachCues,
+          cueFrequency,
+          guidedBeginner: skill === 'basic',
+          workout: { rounds, warmupTime, roundTime, restTime, pace: pick(paceMap[goal]) },
+        },
+        'quick',
+        { kind: 'Quick Start', name: goalName + ' · ' + minutes + ' minutes' },
+      );
+    };
+    return el;
+  }
+  function equipmentLabel(value) {
+    return value === 'bag'
+      ? 'Heavy bag'
+      : value === 'shadow'
+        ? 'Shadowboxing'
+        : 'General / flexible';
+  }
+  function programConfig(program, focus, index) {
+    const focused = focusedDrills[program.id];
+    if (focused) {
+      const minutes = program.sessions[index]?.[2] || 10,
+        format = focusSessionFormats[minutes] || focusSessionFormats[10],
+        { description, ...workout } = format;
+      return {
+        trainingMode: program.equipment,
+        skill: focused.skill,
+        complexity: focused.skill === 'basic' ? 'low' : 'medium',
+        unique: 'yes',
+        focusEnabled: 'yes',
+        focuses: focused.focuses,
+        coachCues: false,
+        guidedBeginner: false,
+        includeTypes: focused.includeTypes,
+        structured: 'off',
+        focusedDrill: { ...focused.drill, sessionMinutes: minutes },
+        workout: { ...workout, pace: 30 },
+      };
+    }
+    const authored = program.sessionConfigs?.[index];
+    if (authored)
+      return {
+        ...authored,
+        focuses: [...(authored.focuses || [])],
+        includeTypes: [...(authored.includeTypes || [])],
+        workout: { ...(authored.workout || {}) },
+      };
+    const ratio = index / Math.max(1, program.sessions.length - 1),
+      skill = ratio < 0.34 ? 'basic' : ratio < 0.8 ? 'intermediate' : 'advanced',
+      complexity = skill === 'basic' ? 'low' : skill === 'advanced' ? 'high' : 'medium',
+      rounds = skill === 'basic' ? 4 : skill === 'intermediate' ? 5 : 6;
+    let includeTypes = ['punch', 'body', 'defense', 'footwork'],
+      trainingMode = program.equipment || 'general';
+    if (program.id === 'kickboxing') {
+      trainingMode = 'bag';
+      includeTypes =
+        focus === 'kicks' || focus === 'kickmix'
+          ? ['punch', 'kick']
+          : focus === 'knees'
+            ? ['punch', 'knee']
+            : ['punch', 'kick', 'knee', 'footwork'];
+    } else if (program.id === 'conditioning') includeTypes = ['punch', 'body'];
+    else if (program.id === 'jab')
+      includeTypes =
+        focus === 'body'
+          ? ['punch', 'body']
+          : focus === 'footwork'
+            ? ['punch', 'footwork']
+            : ['punch'];
+    else if (program.id === 'defense') includeTypes = ['punch', 'defense', 'footwork'];
+    else if (program.id === 'foundations')
+      includeTypes =
+        focus === 'defense'
+          ? ['punch', 'defense']
+          : focus === 'movement'
+            ? ['punch', 'footwork']
+            : ['punch'];
+    else if (program.id === 'technique')
+      includeTypes = [
+        'punch',
+        ...(focus === 'body' ? ['body'] : []),
+        ...(['counterdefense', 'enterexit', 'mixed'].includes(focus)
+          ? ['defense', 'footwork']
+          : []),
+      ];
+    const focuses = ['high', 'explosive'].includes(focus) ? [focus, 'punchout15'] : [focus];
+    return {
+      trainingMode,
+      skill,
+      complexity,
+      unique: 'yes',
+      focusEnabled: 'yes',
+      focuses,
+      coachCues: true,
+      guidedBeginner: skill === 'basic',
+      includeTypes,
+      structured: 'off',
+      progressiveCombos: program.id === 'technique',
+      workout: {
+        rounds,
+        warmupTime: 45,
+        roundTime: skill === 'basic' ? 120 : 180,
+        restTime: skill === 'advanced' ? 45 : 30,
+        pace: skill === 'basic' ? 7 : skill === 'intermediate' ? 6 : 5,
+      },
+    };
+  }
+  function completedProgramSessions(progress, program) {
+    const stored = progress[program.id];
+    if (Array.isArray(stored))
+      return new Set(
+        stored
+          .map(Number)
+          .filter(
+            (index) => Number.isInteger(index) && index >= 0 && index < program.sessions.length,
+          ),
+      );
+    const count = Math.min(program.sessions.length, Math.max(0, Number(stored) || 0));
+    return new Set(Array.from({ length: count }, (_, index) => index));
+  }
+  function programSessionDescription(program, session) {
+    const focused = focusedDrills[program.id];
+    if (focused) {
+      const format = focusSessionFormats[session[2]] || focusSessionFormats[10];
+      return (
+        format.rounds + ' rounds · ' + fmt(format.roundTime) + ' each · ' + describeRest(format)
+      );
+    }
+    if (typeof session[2] === 'string') return session[2];
+    const descriptions = {
+      jabs: 'Develop a reliable jab with clean technique, timing, and control.',
+      short: 'Practice short combinations while keeping every punch sharp and balanced.',
+      straight:
+        'Build clean straight punches with efficient hip rotation and a fast return to guard.',
+      hooks: 'Practice compact hooks without swinging wide or losing your stance.',
+      uppercuts: 'Develop short uppercuts with controlled leg and hip drive.',
+      mixed: 'Combine the skills from earlier sessions into varied complete rounds.',
+      body: 'Change levels safely and build combinations that attack the body.',
+      power: 'Slow the pace enough to practice strong, balanced power combinations.',
+      high: 'Maintain a high work rate and finish selected efforts with punch-out bursts.',
+      explosive: 'Switch quickly from controlled boxing into short explosive efforts.',
+      footwork: 'Use entries, exits, pivots, and angles while staying balanced.',
+      movement: 'Blend punches with purposeful movement around the training space.',
+      inside: 'Practice compact hooks and uppercuts at close range.',
+      speed: 'Throw quick, relaxed combinations and recover immediately to guard.',
+      defense: 'Practice defensive movements, counters, and safe exits.',
+      counterdefense: 'Defend first, answer with a counter, and reset in stance.',
+      enterexit: 'Enter behind punches, finish the combination, and exit safely.',
+      kicks: 'Learn the basic kicking mechanics before adding longer combinations.',
+      kickmix: 'Connect boxing combinations to balanced lead and rear kicks.',
+      knees: 'Add compact knees and elbows while maintaining guard and position.',
+      kickflow: 'Blend punches, kicks, knees, movement, and recovery into complete rounds.',
+    };
+    return (
+      descriptions[session[1]] ||
+      'Practice the session theme through compatible combinations and guided round focuses.'
+    );
+  }
+  // Program, preset, technique, and history interfaces.
+  function buildPrograms() {
+    const categories = {
+      focus: {
+        label: 'Focus drills',
+        description: 'Repeat one clearly explained assignment until the coach changes it.',
+      },
+      bag: {
+        label: 'Heavy bag',
+        description:
+          'Progressive bag programs for power, combinations, conditioning, and complete sessions.',
+      },
+      shadow: {
+        label: 'Shadowboxing',
+        description: 'Programs for defense, movement, technique, and visualization without a bag.',
+      },
+      general: {
+        label: 'Foundations',
+        description: 'Flexible learning paths that work with a bag, pads, or shadowboxing.',
+      },
+    };
+    const el = modal(
+      'programDialog',
+      'Training Programs',
+      '<div class="program-browser"><p class="feature-note">Choose what you want to improve. Every program has a distinct teaching or practice goal.</p><div class="program-tabs" role="tablist">' +
+        Object.entries(categories)
+          .map(
+            ([id, item]) =>
+              '<button role="tab" data-program-tab="' + id + '">' + item.label + '</button>',
+          )
+          .join('') +
+        '</div><p class="program-category-note"></p><div class="program-grid"></div></div><section class="program-detail hidden-feature" aria-live="polite"></section>',
+    );
+    let active = read('cornerwork-program-tab', 'focus');
+    if (!categories[active]) active = 'focus';
+    const browser = el.querySelector('.program-browser'),
+      detail = el.querySelector('.program-detail');
+    const showBrowser = () => {
+      detail.classList.add('hidden-feature');
+      browser.classList.remove('hidden-feature');
+      el.querySelector('.feature-head h2').textContent = 'Training Programs';
+      render();
+    };
+    const showProgram = (program) => {
+      const progress = read('cornerwork-program-progress', {}),
+        completed = completedProgramSessions(progress, program),
+        suggested = program.sessions.findIndex((session, index) => !completed.has(index)),
+        defaultIndex = suggested < 0 ? program.sessions.length - 1 : suggested;
+      browser.classList.add('hidden-feature');
+      detail.classList.remove('hidden-feature');
+      el.querySelector('.feature-head h2').textContent = 'Program Details';
+      const renderDetail = (selectedIndex) => {
+        const focused = focusedDrills[program.id],
+          selected = program.sessions[selectedIndex],
+          config = programConfig(program, selected[1], selectedIndex),
+          done = completed.size;
+        const itemLabel = (session, index) =>
+            focused ? session[0] : 'Session ' + (index + 1) + ': ' + session[0],
+          progressLabel = focused ? 'versions' : 'sessions';
+        const overview = focused ? focused.drill.instructions : program.detail;
+        detail.innerHTML =
+          '<button class="program-back" type="button"><span aria-hidden="true">←</span> All programs</button><div class="program-detail-head"><div>' +
+          (focused ? '<span class="equipment-badge focus-badge">Focus drill</span>' : '') +
+          '<span class="equipment-badge">' +
+          equipmentLabel(program.equipment) +
+          '</span><h3>' +
+          program.name +
+          '</h3><p>' +
+          overview +
+          '</p></div><strong>' +
+          done +
+          ' of ' +
+          program.sessions.length +
+          ' ' +
+          progressLabel +
+          ' completed</strong></div><div class="program-progress program-detail-progress"><i style="width:' +
+          Math.round((done / program.sessions.length) * 100) +
+          '%"></i></div><div class="program-session-list">' +
+          program.sessions
+            .map(
+              (session, index) =>
+                '<button type="button" class="program-session' +
+                (completed.has(index) ? ' completed' : '') +
+                (index === selectedIndex ? ' selected' : '') +
+                '" data-program-session="' +
+                index +
+                '"><span class="program-session-state">' +
+                (completed.has(index) ? '✓' : index + 1) +
+                '</span><span><strong>' +
+                itemLabel(session, index) +
+                '</strong><small>' +
+                programSessionDescription(program, session) +
+                '</small></span></button>',
+            )
+            .join('') +
+          '</div><button class="feature-primary program-load-session" type="button">' +
+          (focused ? 'Start ' + selected[2] + '-minute drill' : 'Start selected session') +
+          '</button>';
+        detail.querySelector('.program-back').onclick = showBrowser;
+        detail
+          .querySelectorAll('[data-program-session]')
+          .forEach(
+            (button) => (button.onclick = () => renderDetail(+button.dataset.programSession)),
+          );
+        detail.querySelector('.program-load-session').onclick = () => {
+          sessionStorage.setItem(
+            'cornerwork-active-program',
+            JSON.stringify({
+              id: program.id,
+              index: selectedIndex,
+              name: program.name,
+              session: selected[0],
+            }),
+          );
+          apply(config, 'program', {
+            kind: focused ? 'Focus Drill' : 'Training Program',
+            name:
+              program.name +
+              (focused
+                ? ' · ' + selected[2] + ' minutes'
+                : program.sessions.length > 1
+                  ? ' · Session ' +
+                    (selectedIndex + 1) +
+                    ' of ' +
+                    program.sessions.length +
+                    ': ' +
+                    selected[0]
+                  : ''),
+          });
+        };
       };
       renderDetail(defaultIndex);
     };
-    const render=()=>{
-      const progress=read('cornerwork-program-progress',{}),grid=el.querySelector('.program-grid'),list=programs.filter(program=>active==='focus'?!!focusedDrills[program.id]:!focusedDrills[program.id]&&program.equipment===active);
-      el.querySelectorAll('[data-program-tab]').forEach(button=>{const selected=button.dataset.programTab===active;button.classList.toggle('active',selected);button.setAttribute('aria-selected',String(selected))});
-      el.querySelector('.program-category-note').textContent=categories[active].description;
-      grid.innerHTML=list.map(program=>{const focused=focusedDrills[program.id],completed=completedProgramSessions(progress,program),done=completed.size,nextIndex=program.sessions.findIndex((session,index)=>!completed.has(index)),next=program.sessions[nextIndex<0?program.sessions.length-1:nextIndex],progressLabel=focused?'versions':'sessions',status=done===program.sessions.length?'All '+program.sessions.length+' '+progressLabel+' completed':'Next: '+next[0]+' · '+done+' of '+program.sessions.length+' completed',badges=(focused?'<span class="equipment-badge focus-badge">Focus drill</span>':'')+'<span class="equipment-badge">'+equipmentLabel(program.equipment)+'</span>';return '<button class="program-card" data-program="'+program.id+'">'+badges+'<strong>'+program.name+'</strong><span>'+program.detail+'</span><span>'+status+'</span><div class="program-progress"><i style="width:'+Math.round(done/program.sessions.length*100)+'%"></i></div></button>'}).join('');
-      grid.querySelectorAll('[data-program]').forEach(button=>button.onclick=()=>showProgram(programs.find(program=>program.id===button.dataset.program)));
+    const render = () => {
+      const progress = read('cornerwork-program-progress', {}),
+        grid = el.querySelector('.program-grid'),
+        list = programs.filter((program) =>
+          active === 'focus'
+            ? !!focusedDrills[program.id]
+            : !focusedDrills[program.id] && program.equipment === active,
+        );
+      el.querySelectorAll('[data-program-tab]').forEach((button) => {
+        const selected = button.dataset.programTab === active;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-selected', String(selected));
+      });
+      el.querySelector('.program-category-note').textContent = categories[active].description;
+      grid.innerHTML = list
+        .map((program) => {
+          const focused = focusedDrills[program.id],
+            completed = completedProgramSessions(progress, program),
+            done = completed.size,
+            nextIndex = program.sessions.findIndex((session, index) => !completed.has(index)),
+            next = program.sessions[nextIndex < 0 ? program.sessions.length - 1 : nextIndex],
+            progressLabel = focused ? 'versions' : 'sessions',
+            status =
+              done === program.sessions.length
+                ? 'All ' + program.sessions.length + ' ' + progressLabel + ' completed'
+                : 'Next: ' +
+                  next[0] +
+                  ' · ' +
+                  done +
+                  ' of ' +
+                  program.sessions.length +
+                  ' completed',
+            badges =
+              (focused ? '<span class="equipment-badge focus-badge">Focus drill</span>' : '') +
+              '<span class="equipment-badge">' +
+              equipmentLabel(program.equipment) +
+              '</span>';
+          return (
+            '<button class="program-card" data-program="' +
+            program.id +
+            '">' +
+            badges +
+            '<strong>' +
+            program.name +
+            '</strong><span>' +
+            program.detail +
+            '</span><span>' +
+            status +
+            '</span><div class="program-progress"><i style="width:' +
+            Math.round((done / program.sessions.length) * 100) +
+            '%"></i></div></button>'
+          );
+        })
+        .join('');
+      grid
+        .querySelectorAll('[data-program]')
+        .forEach(
+          (button) =>
+            (button.onclick = () =>
+              showProgram(programs.find((program) => program.id === button.dataset.program))),
+        );
     };
-    el.querySelectorAll('[data-program-tab]').forEach(button=>button.onclick=()=>{active=button.dataset.programTab;write('cornerwork-program-tab',active);render()});
-    el.addEventListener('close',()=>{detail.classList.add('hidden-feature');browser.classList.remove('hidden-feature')});
-    el.refresh=()=>{if(!browser.classList.contains('hidden-feature'))render()};render();return el
+    el.querySelectorAll('[data-program-tab]').forEach(
+      (button) =>
+        (button.onclick = () => {
+          active = button.dataset.programTab;
+          write('cornerwork-program-tab', active);
+          render();
+        }),
+    );
+    el.addEventListener('close', () => {
+      detail.classList.add('hidden-feature');
+      browser.classList.remove('hidden-feature');
+    });
+    el.refresh = () => {
+      if (!browser.classList.contains('hidden-feature')) render();
+    };
+    render();
+    return el;
   }
-  function buildPresets(){const order=['bag','shadow','general'],content=order.map(equipment=>'<div class="catalog-group-title">'+equipmentLabel(equipment)+'</div>'+workoutPresets.map((preset,index)=>({preset,index})).filter(item=>item.preset[3].trainingMode===equipment).map(({preset,index})=>'<button class="mode-card" data-workout-preset="'+index+'"><span class="equipment-badge">'+equipmentLabel(equipment)+'</span><strong>'+preset[0]+'</strong><span>'+preset[1]+'</span></button>').join('')).join(''),el=modal('workoutPresetsDialog','Workout Presets','<p class="feature-note">Choose an editable starting point. Selecting a preset reloads its original setup, so save the workout if you want to keep your changes.</p><div class="mode-grid">'+content+'</div>');el.querySelectorAll('[data-workout-preset]').forEach(button=>button.onclick=()=>{const preset=workoutPresets[+button.dataset.workoutPreset],config={...preset[3],focuses:[...(preset[3].focuses||[])],includeTypes:[...(preset[3].includeTypes||[])],workout:{...(preset[3].workout||{})}};if(preset[0]==='Opposite-stance practice')config.stance=api.snapshot().stance==='orthodox'?'southpaw':'orthodox';apply(config,'mode',{kind:'Workout Preset',name:preset[0]})});return el}
-  function buildTechniques(){const el=modal('techniqueDialog','Technique Catalogue','<input class="history-search" id="techniqueSearch" placeholder="Search techniques"><div class="technique-grid" id="techniqueGrid">'+techniques.map(t=>'<article class="technique-card"><strong>'+t[0]+'</strong><span>'+t[1]+'</span><em>'+t[2]+'</em></article>').join('')+'</div>');el.querySelector('#techniqueSearch').oninput=e=>{const q=e.target.value.toLowerCase();el.querySelectorAll('.technique-card').forEach((card,i)=>card.classList.toggle('hidden-feature',!techniques[i].join(' ').toLowerCase().includes(q)))};return el}
-  function buildComboCreator(){const moves=[['1',1,'punch'],['2',2,'punch'],['3',3,'punch'],['4',4,'punch'],['5',5,'punch'],['6',6,'punch'],['Body 1','body 1','body'],['Body 2','body 2','body'],['Body 3','body 3','body'],['Body 4','body 4','body'],['Slip','slip','defense'],['Roll','roll','defense'],['Pull','pull','defense'],['Step in','step in','footwork'],['Step out','step out','footwork'],['Pivot','pivot','footwork'],['Lead kick','lead kick','kick'],['Rear kick','rear kick','kick'],['Lead knee','lead knee','knee'],['Rear knee','rear knee','knee'],['Lead elbow','lead elbow','knee'],['Rear elbow','rear elbow','knee']];let sequence=[],editingId=null;const el=modal('comboCreatorDialog','Custom Combo Creator','<p class="feature-note" id="comboCreatorNote">Tap movements in the order they should be performed. Cornerwork will add the finished combo to the randomized pool.</p><div class="combo-builder"><div class="feature-form"><label>Combo name<input id="customComboName" maxlength="60" placeholder="My counter combo"></label><label>Skill level<select id="customComboLevel"><option value="1">Basic</option><option value="2">Intermediate</option><option value="3">Advanced</option></select></label></div><div class="move-palette">'+moves.map((m,i)=>'<button data-move="'+i+'">'+m[0]+'</button>').join('')+'</div><div class="combo-sequence" id="comboSequence"><span class="feature-note">Choose the first movement</span></div><div class="builder-warning" id="builderWarning"></div><div class="feature-actions"><button class="feature-danger hidden-feature" id="deleteCustomCombo">Delete combo</button><button class="feature-secondary" id="undoMove">Undo</button><button class="feature-secondary" id="clearMoves">Clear</button><button class="feature-primary" id="saveCustomCombo">Add combo</button></div></div>');const render=()=>{el.querySelector('#comboSequence').innerHTML=sequence.length?sequence.map(x=>'<span class="combo-token">'+moves[x][0]+'</span>').join(''):'<span class="feature-note">Choose the first movement</span>';const last=sequence.slice(-3).map(x=>moves[x][1]),warning=sequence.length>10?'Long combos are difficult to perform cleanly.':last.length===3&&last.every(x=>x===last[0])?'Three identical movements in a row may be impractical.':'';el.querySelector('#builderWarning').textContent=warning};el.openFor=combo=>{editingId=combo?.id||null;sequence=combo?combo.m.map(value=>moves.findIndex(move=>String(move[1])===String(value))).filter(index=>index>=0):[];el.querySelector('.feature-head h2').textContent=editingId?'Edit Custom Combo':'Create Custom Combo';el.querySelector('#comboCreatorNote').textContent=editingId?'Adjust the name, skill level, or movement sequence for this custom combo.':'Tap movements in the order they should be performed. Cornerwork will add the finished combo to the randomized pool.';el.querySelector('#customComboName').value=combo?.n||'';el.querySelector('#customComboLevel').value=String(combo?.level||1);el.querySelector('#saveCustomCombo').textContent=editingId?'Save changes':'Add combo';el.querySelector('#deleteCustomCombo').classList.toggle('hidden-feature',!editingId);render();open(el)};el.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{if(sequence.length<12){sequence.push(+b.dataset.move);render()}});el.querySelector('#undoMove').onclick=()=>{sequence.pop();render()};el.querySelector('#clearMoves').onclick=()=>{sequence=[];render()};el.querySelector('#saveCustomCombo').onclick=()=>{if(!sequence.length){el.querySelector('#builderWarning').textContent='Add at least one movement.';return}const selected=sequence.map(i=>moves[i]),combo={n:el.querySelector('#customComboName').value||selected.map(x=>x[0]).join(' '),m:selected.map(x=>x[1]),types:[...new Set(selected.flatMap(x=>x[2]==='body'?['punch','body']:[x[2]]))],level:+el.querySelector('#customComboLevel').value};editingId?api.updateCustomCombo(editingId,combo):api.addCustomCombo(combo)};el.querySelector('#deleteCustomCombo').onclick=()=>{if(editingId&&confirm('Delete this custom combo?'))api.removeCustomCombo(editingId)};return el}
-  function historyStats(history){const total=history.reduce((n,x)=>n+(x.duration||x.plannedDuration||0),0),rounds=history.reduce((n,x)=>n+(x.rounds||0),0),moves=history.reduce((n,x)=>n+(x.moves||0),0),days=[...new Set(history.map(x=>new Date(x.date).toISOString().slice(0,10)))].sort().reverse();let streak=0,cursor=new Date();cursor.setHours(0,0,0,0);for(const day of days){const d=new Date(day+'T00:00:00');const delta=Math.round((cursor-d)/86400000);if(delta===0||delta===1){streak++;cursor=d}else break}return {total,rounds,moves,streak}}
-  function buildHistory(){const el=modal('historyDialog','Workout History','<div id="historyContent"></div><div class="feature-actions"><button class="feature-secondary" id="historyBackup">Backup data</button><button class="feature-secondary" id="clearHistory">Clear history</button></div>');el.querySelector('#clearHistory').onclick=()=>{if(confirm('Clear your workout history on this device?')){write('cornerwork-history',[]);renderHistory(el)}};renderHistory(el);return el}
-  function renderHistory(el=$('#historyDialog')){if(!el)return;const history=read('cornerwork-history',[]),s=historyStats(history),month=history.filter(x=>Date.now()-x.date<2592000000).length,week=history.filter(x=>Date.now()-x.date<604800000).length;el.querySelector('#historyContent').innerHTML='<div class="stats-grid"><div class="stat-card"><strong>'+history.length+'</strong><span>Workouts</span></div><div class="stat-card"><strong>'+s.rounds+'</strong><span>Rounds</span></div><div class="stat-card"><strong>'+fmt(s.total)+'</strong><span>Training</span></div><div class="stat-card"><strong>'+s.streak+'</strong><span>Day streak</span></div></div><p class="feature-note">'+week+' this week · '+month+' this month · '+s.moves+' total moves</p><div class="history-list">'+(history.length?history.slice(0,50).map(x=>'<div class="history-item"><div><strong>'+safe(x.workoutName||new Date(x.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}))+'</strong><span>'+new Date(x.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})+' · '+safe(x.skill)+' '+safe(x.mode)+' · '+x.rounds+' rounds · '+fmt(x.duration||x.plannedDuration)+'</span></div><b>'+x.combos+' combos</b></div>').join(''):'<p class="feature-note">Your completed workouts will appear here.</p>')+'</div>'}
-  function buildCompletion(){return modal('completionDialog','Workout Complete','<div class="completion-hero"><div class="completion-mark">✓</div><p class="feature-note">Session complete. Your workout has been added to your history.</p></div><div class="completion-stats" id="completionStats"></div><div class="feature-actions"><button class="feature-secondary" id="completionHistory">View history</button><button class="feature-secondary" id="completionSave">Save setup</button><button class="feature-primary" id="completionRepeat">Repeat workout</button></div>')}
-  function buildMirror(){const el=modal('mirrorDialog','Mirror and Record','<p class="feature-note">Use your camera as a mirror to check form. Recording stays on your device and is downloaded only when you choose.</p><video class="mirror-video" id="mirrorVideo" autoplay playsinline muted></video><div class="mirror-actions"><button class="feature-primary" id="startCamera">Start camera</button><button class="feature-secondary" id="recordCamera" disabled>Record</button><button class="feature-secondary" id="stopCamera" disabled>Stop camera</button></div>');el.addEventListener('close',stopMirror);el.querySelector('#startCamera').onclick=async()=>{try{mirrorStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});el.querySelector('#mirrorVideo').srcObject=mirrorStream;el.querySelector('#recordCamera').disabled=false;el.querySelector('#stopCamera').disabled=false}catch(e){alert('Camera access was not available. Check your browser permissions.')}};el.querySelector('#recordCamera').onclick=()=>{if(!mirrorStream)return;if(recorder?.state==='recording'){recorder.stop();return}recorded=[];recorder=new MediaRecorder(mirrorStream);recorder.ondataavailable=e=>recorded.push(e.data);recorder.onstop=()=>{const url=URL.createObjectURL(new Blob(recorded,{type:recorder.mimeType})),a=document.createElement('a');a.href=url;a.download='cornerwork-form-review.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);el.querySelector('#recordCamera').textContent='Record'};recorder.start();el.querySelector('#recordCamera').textContent='Stop recording'};el.querySelector('#stopCamera').onclick=stopMirror;return el}
-  function stopMirror(){if(recorder?.state==='recording')recorder.stop();mirrorStream?.getTracks().forEach(t=>t.stop());mirrorStream=null;const video=$('#mirrorVideo');if(video)video.srcObject=null}
-  function buildBackup(){const el=modal('backupDialog','Backup and Restore','<p class="feature-note">Export all local settings, workouts, custom combos, and history. The file can restore Cornerwork in another browser.</p><div class="backup-grid"><button class="feature-primary" id="exportCornerwork">Export backup</button><label class="feature-secondary" style="text-align:center;cursor:pointer">Import backup<input id="importCornerwork" type="file" accept="application/json" hidden></label></div>');el.querySelector('#exportCornerwork').onclick=()=>{const blob=new Blob([JSON.stringify(api.exportData(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cornerwork-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};el.querySelector('#importCornerwork').onchange=async e=>{try{api.importData(JSON.parse(await e.target.files[0].text()))}catch(err){alert('That backup file could not be read.')}};return el}
-  function buildCoaching(){const el=modal('coachingDialog','Coaching','<p class="feature-note">Choose how much guidance the coach adds around your combinations. These choices are included when you save or share the workout.</p><div class="coaching-dialog-options"><div class="enhanced-row"><label>Coach reminders</label><button class="enhanced-switch" data-coaching-setting="coachCues" aria-label="Toggle coach reminders"><i></i></button></div><div class="enhanced-row"><label>Cue frequency</label><select id="coachingCueFrequency" aria-label="Coach reminder frequency"><option value="3">Often</option><option value="5">Balanced</option><option value="8">Occasional</option></select></div><div class="enhanced-row"><label>Recovery instructions during rest</label><button class="enhanced-switch" data-coaching-setting="recoveryInstructions" aria-label="Toggle recovery instructions"><i></i></button></div><div class="enhanced-row"><label>Guided beginner</label><button class="enhanced-switch" data-coaching-setting="guidedBeginner" aria-label="Toggle guided beginner coaching"><i></i></button></div></div>');const frequency=el.querySelector('#coachingCueFrequency');el.refresh=()=>{el.querySelectorAll('[data-coaching-setting]').forEach(button=>{const on=!!api.settings[button.dataset.coachingSetting];button.classList.toggle('on',on);button.setAttribute('aria-pressed',String(on))});frequency.value=String(api.settings.cueFrequency||5);frequency._syncCustomSelect?.()};el.querySelectorAll('[data-coaching-setting]').forEach(button=>button.onclick=()=>{const key=button.dataset.coachingSetting;api.settings[key]=!api.settings[key];write('cornerwork-settings',api.settings);el.refresh()});frequency.onchange=()=>{api.settings.cueFrequency=+frequency.value;write('cornerwork-settings',api.settings)};el.refresh();return el}
-  function buildQr(){return modal('qrDialog','Share Workout','<p class="feature-note">Scan this code on another device to open the shared workout.</p><div class="qr-wrap"><canvas id="qrCanvas"></canvas></div>')}
-  function enhanceSavedWorkouts(qr){const list=$('#presetList'),modalEl=$('#loadPresetModal');if(!list||!modalEl)return;if(!modalEl.querySelector('#presetSearch')){const input=document.createElement('input');input.id='presetSearch';input.className='history-search';input.placeholder='Search saved workouts';modalEl.querySelector('.preset-list').before(input);input.oninput=()=>{const q=input.value.toLowerCase();list.querySelectorAll('.preset-item').forEach(item=>item.classList.toggle('hidden-feature',!item.textContent.toLowerCase().includes(q)))}}const decorate=()=>{const presets=read('cornerwork-presets',[]);list.querySelectorAll('.preset-item').forEach(item=>{if(item.dataset.enhanced)return;const id=item.querySelector('[data-load]')?.dataset.load,p=presets.find(x=>x.id===id);if(!p)return;item.dataset.enhanced='1';const actions=item.querySelector('.preset-actions'),star=document.createElement('button');star.className='preset-favorite';star.textContent=p.favorite?'★':'☆';star.title=p.favorite?'Remove from favourites':'Add to favourites';star.setAttribute('aria-label',star.title);star.onclick=()=>{p.favorite=!p.favorite;write('cornerwork-presets',presets.sort((a,b)=>(b.favorite?1:0)-(a.favorite?1:0)||(b.updatedAt||0)-(a.updatedAt||0)));location.reload()};const duplicate=document.createElement('button');duplicate.className='preset-duplicate';duplicate.textContent='Duplicate';duplicate.setAttribute('aria-label','Duplicate '+p.name);duplicate.onclick=()=>{presets.unshift({...p,id:Date.now().toString(36),name:(p.name+' copy').slice(0,36),updatedAt:Date.now()});write('cornerwork-presets',presets);location.reload()};const qrButton=document.createElement('button');qrButton.className='preset-qr';qrButton.textContent='QR';qrButton.setAttribute('aria-label','Show QR code for '+p.name);qrButton.onclick=()=>{const url=location.origin+location.pathname+'#workout='+btoa(unescape(encodeURIComponent(JSON.stringify({name:p.name,config:p.config})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');open(qr);if(window.QRCode)QRCode.toCanvas($('#qrCanvas'),url,{width:260,margin:1},()=>{})};actions.prepend(star,duplicate,qrButton);if(p.note){const note=document.createElement('span');note.className='preset-note';note.textContent=p.note;item.querySelector('.preset-name').after(note)}})};new MutationObserver(decorate).observe(list,{childList:true});decorate();list.addEventListener('click',e=>{const button=e.target.closest('[data-delete]');if(!button)return;const backup=presets.find(x=>x.id===button.dataset.delete);if(!backup)return;setTimeout(()=>showUndo(backup),100)},{capture:true})}
-  function showUndo(preset){document.querySelector('.toast')?.remove();const toast=document.createElement('div');toast.className='toast';toast.innerHTML='Workout deleted <button>Undo</button>';toast.querySelector('button').onclick=()=>{api.upsertPreset(preset);toast.remove()};document.body.appendChild(toast);setTimeout(()=>toast.remove(),5000)}
-  function injectSettings(){const keyboard=[...document.querySelectorAll('.settings-group')].find(x=>x.querySelector('h2')?.textContent==='Keyboard shortcuts');if(!keyboard)return;const accessibility=document.createElement('div');accessibility.className='settings-group enhanced-settings';accessibility.innerHTML='<div class="settings-title"><h2>Accessibility</h2><button class="help settings-help" aria-label="About accessibility settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Phone vibration:</strong> Vibrates supported phones during important phase changes.</span><span><strong>High contrast:</strong> Improves separation between text, controls, and the background.</span></div></div><div class="enhanced-row"><label>Phone vibration</label><button class="enhanced-switch" data-setting="haptics"><i></i></button></div><div class="enhanced-row"><label>High contrast</label><button class="enhanced-switch" data-setting="highContrast"><i></i></button></div>';keyboard.before(accessibility);accessibility.querySelectorAll('[data-setting]').forEach(button=>{const key=button.dataset.setting;button.classList.toggle('on',!!api.settings[key]);button.onclick=()=>{api.settings[key]=!api.settings[key];write('cornerwork-settings',api.settings);button.classList.toggle('on',api.settings[key]);document.body.classList.toggle('high-contrast',!!api.settings.highContrast)}});accessibility.querySelector('.settings-help').onclick=event=>{event.stopPropagation();event.currentTarget.classList.toggle('open')}}
-  function installTitleHelp(){const closeAll=except=>document.querySelectorAll('.title-help.help-open,.settings-title.help-open').forEach(title=>{if(title!==except){title.classList.remove('help-open');title.querySelector('[aria-expanded]')?.setAttribute('aria-expanded','false')}});document.querySelectorAll('.help').forEach(help=>{const title=help.closest('.eyebrow-row,.settings-title'),label=title?.querySelector('.eyebrow,h2');if(!title||!label)return;if(help.dataset.tip){title.classList.add('title-help');title.dataset.tip=help.dataset.tip}else title.classList.add('title-help-settings');label.tabIndex=0;label.setAttribute('role','button');label.setAttribute('aria-expanded','false');label.setAttribute('aria-label',help.getAttribute('aria-label')||('About '+label.textContent.trim()));const toggle=event=>{event.stopPropagation();const opening=!title.classList.contains('help-open');closeAll(title);title.classList.toggle('help-open',opening);label.setAttribute('aria-expanded',String(opening))};label.addEventListener('click',toggle);label.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggle(event)}});help.remove()});document.addEventListener('click',()=>closeAll())}
-  function injectAppearanceSettings(){const group=[...document.querySelectorAll('.settings-group')].find(x=>x.querySelector('h2')?.textContent==='Accessibility');if(!group)return;const tip=group.querySelector('.settings-tip');tip?.insertAdjacentHTML('beforeend','<span><strong>Button white text:</strong> Changes accent-coloured labels inside outlined buttons to white for easier reading.</span><span><strong>App colour:</strong> Recolours Cornerwork buttons, outlines, highlights, and active states.</span>');group.insertAdjacentHTML('beforeend','<div class="enhanced-row"><label>Button white text</label><button class="enhanced-switch '+(api.settings.whiteOutlineText?'on':'')+'" id="whiteOutlineText"><i></i></button></div><div class="enhanced-row"><label for="accentColor">App colour</label><select id="accentColor"><option value="red">Red</option><option value="orange">Orange</option><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option></select></div>');const white=group.querySelector('#whiteOutlineText'),colour=group.querySelector('#accentColor'),colours={red:'#ff3b30',orange:'#ff7a1a',blue:'#438cff',green:'#24b86a',purple:'#9b6cff'};colour.value=api.settings.accentColor||'red';white.onclick=()=>{api.settings.whiteOutlineText=!api.settings.whiteOutlineText;white.classList.toggle('on',api.settings.whiteOutlineText);document.body.classList.toggle('white-outline-text',api.settings.whiteOutlineText);write('cornerwork-settings',api.settings)};colour.onchange=()=>{api.settings.accentColor=colour.value;document.documentElement.style.setProperty('--red',colours[colour.value]||colours.red);write('cornerwork-settings',api.settings)}}
-  function injectButtonBrightnessSetting(){const group=[...document.querySelectorAll('.settings-group')].find(x=>x.querySelector('h2')?.textContent==='Accessibility');if(!group)return;group.querySelector('.settings-tip')?.insertAdjacentHTML('beforeend','<span><strong>White text brightness:</strong> Softens or brightens white interface labels, including workout choices, saved-workout controls, and smaller buttons. The clock and combo callouts stay unchanged.</span>');group.insertAdjacentHTML('beforeend','<div class="enhanced-row"><label for="buttonTextBrightness">White text brightness</label><span class="enhanced-range"><input id="buttonTextBrightness" type="range" min="65" max="100" step="1" value="98" aria-label="White text brightness"><output id="buttonTextBrightnessValue">98%</output></span></div>');const slider=group.querySelector('#buttonTextBrightness'),output=group.querySelector('#buttonTextBrightnessValue'),apply=()=>{const value=Math.min(100,Math.max(65,+slider.value||98));api.settings.buttonTextBrightness=value;output.textContent=value+'%';document.documentElement.style.setProperty('--button-text','rgb(255 255 255 / '+value+'%)')};slider.value=api.settings.buttonTextBrightness??98;apply();slider.oninput=()=>{apply();write('cornerwork-settings',api.settings)}}
-  function injectWorkoutTabMemorySettings(){const group=[...document.querySelectorAll('.settings-group')].find(x=>x.querySelector('h2')?.textContent==='Display');if(!group)return;const enabled=!!api.settings.rememberWorkoutTabs,allowed=['workout','combos','focus'],selected=(Array.isArray(api.settings.rememberedWorkoutTabs)?api.settings.rememberedWorkoutTabs:['workout','combos']).filter(value=>allowed.includes(value));api.settings.rememberedWorkoutTabs=selected;group.querySelector('.settings-tip')?.insertAdjacentHTML('beforeend','<span><strong>Use saved tab layout:</strong> When off, Cornerwork restores the tabs exactly as you last left them. Turn it on to always launch with only the tabs selected using the gear open. Saved workouts always stays visible.</span>');group.insertAdjacentHTML('beforeend','<div class="setting-row workout-memory-row"><span>Use saved tab layout</span><span class="workout-memory-actions"><button class="sound-gear '+(enabled?'':'hidden-feature')+'" id="workoutTabsGear" aria-label="Choose saved workout tab layout" aria-expanded="false">⚙</button><button class="enhanced-switch '+(enabled?'on':'')+'" id="rememberWorkoutTabs" aria-label="Use saved workout tab layout" aria-pressed="'+enabled+'"><i></i></button></span></div><div class="workout-memory-options" id="workoutMemoryOptions"><label><input type="checkbox" value="workout"> Workout</label><label><input type="checkbox" value="combos"> Combo setup</label><label><input type="checkbox" value="focus"> Round focuses</label></div>');const toggle=group.querySelector('#rememberWorkoutTabs'),gear=group.querySelector('#workoutTabsGear'),options=group.querySelector('#workoutMemoryOptions'),applySelected=()=>document.querySelectorAll('#setup .setup-fold').forEach(fold=>fold.open=api.settings.rememberedWorkoutTabs.includes(fold.dataset.fold));options.querySelectorAll('input').forEach(input=>{input.checked=selected.includes(input.value);input.onchange=()=>{api.settings.rememberedWorkoutTabs=[...options.querySelectorAll('input:checked')].map(item=>item.value);write('cornerwork-settings',api.settings);applySelected()}});toggle.onclick=()=>{api.settings.rememberWorkoutTabs=!api.settings.rememberWorkoutTabs;toggle.classList.toggle('on',api.settings.rememberWorkoutTabs);toggle.setAttribute('aria-pressed',String(api.settings.rememberWorkoutTabs));gear.classList.toggle('hidden-feature',!api.settings.rememberWorkoutTabs);if(api.settings.rememberWorkoutTabs)applySelected();else{options.classList.remove('open');gear.classList.remove('active');gear.setAttribute('aria-expanded','false');const state={};document.querySelectorAll('#setup .setup-fold').forEach(fold=>state[fold.dataset.fold]=fold.open);write('cornerwork-workout-fold-state',state)}write('cornerwork-settings',api.settings)};gear.onclick=()=>{const open=options.classList.toggle('open');gear.classList.toggle('active',open);gear.setAttribute('aria-expanded',String(open))}}
-  function injectUtilities(techniquesEl,backup){const shell=$('#settingsPage .settings-shell'),keyboard=[...document.querySelectorAll('.settings-group')].find(x=>x.querySelector('h2')?.textContent==='Keyboard shortcuts');if(!keyboard)return;const technique=document.createElement('button');technique.className='settings-technique-button';technique.textContent='Open Technique Catalogue';keyboard.before(technique);technique.onclick=()=>{$('#closePreferences').click();open(techniquesEl)};const utilities=document.createElement('div');utilities.className='settings-utilities';utilities.innerHTML='<button id="settingsBackup">Backup / export</button><i></i><button id="settingsInstall">Install for offline use</button>';shell.append(utilities);utilities.querySelector('#settingsBackup').onclick=()=>{$('#closePreferences').click();open(backup)};utilities.querySelector('#settingsInstall').onclick=async()=>{if(installPrompt){await installPrompt.prompt();return}showUndoMessage(/iP(hone|ad|od)/.test(navigator.userAgent)?'Use Share, then Add to Home Screen':'Use your browser menu to install Cornerwork')}}
-  let customSelectId=0;
-  function closeCustomSelects(except){document.querySelectorAll('.custom-select.open').forEach(wrap=>{if(wrap===except)return;wrap.classList.remove('open');wrap.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded','false')})}
-  function positionCustomSelect(trigger,menu){const rect=trigger.getBoundingClientRect(),gap=5,edge=10,below=innerHeight-rect.bottom-edge,above=rect.top-edge,desired=Math.min(menu.scrollHeight||240,240),openUp=below<Math.min(desired,150)&&above>below,maxHeight=Math.max(88,Math.min(240,(openUp?above:below)-gap)),width=Math.min(rect.width,innerWidth-edge*2);menu.style.left=Math.max(edge,Math.min(rect.left,innerWidth-width-edge))+'px';menu.style.width=width+'px';menu.style.maxHeight=maxHeight+'px';menu.style.top=(openUp?Math.max(edge,rect.top-gap-Math.min(desired,maxHeight)):rect.bottom+gap)+'px'}
-  function installCustomSelects(root=document){root.querySelectorAll('select:not([data-custom-select])').forEach(select=>{select.dataset.customSelect='true';select.classList.add('native-select-proxy');select.tabIndex=-1;const wrap=document.createElement('div'),trigger=document.createElement('button'),menu=document.createElement('div'),menuId='custom-select-'+(++customSelectId),label=select.getAttribute('aria-label')||select.closest('label')?.childNodes[0]?.textContent.trim()||'Choose option';wrap.className='custom-select';trigger.type='button';trigger.className='custom-select-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls',menuId);trigger.setAttribute('aria-label',label);menu.className='custom-select-menu';menu.id=menuId;menu.setAttribute('role','listbox');select.before(wrap);wrap.append(select,trigger,menu);[...select.options].forEach(option=>{const choice=document.createElement('button');choice.type='button';choice.className='custom-select-option';choice.dataset.value=option.value;choice.textContent=option.textContent;choice.disabled=option.disabled;choice.setAttribute('role','option');choice.onclick=event=>{event.preventDefault();select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));closeCustomSelects()};menu.append(choice)});const sync=()=>{const option=select.selectedOptions[0];trigger.textContent=option?.textContent||'';trigger.disabled=select.disabled;menu.querySelectorAll('.custom-select-option').forEach(choice=>{const active=choice.dataset.value===select.value;choice.classList.toggle('active',active);choice.setAttribute('aria-selected',String(active))})};select._syncCustomSelect=sync;select.addEventListener('change',sync);new MutationObserver(sync).observe(select,{attributes:true,attributeFilter:['disabled']});trigger.onclick=event=>{event.preventDefault();event.stopPropagation();const opening=!wrap.classList.contains('open');closeCustomSelects(wrap);wrap.classList.toggle('open',opening);trigger.setAttribute('aria-expanded',String(opening));if(opening){positionCustomSelect(trigger,menu);menu.querySelector('.active')?.focus({preventScroll:true})}};trigger.onkeydown=event=>{if(['ArrowDown','Enter',' '].includes(event.key)){event.preventDefault();trigger.click()}else if(event.key==='Escape'){closeCustomSelects();trigger.focus()}};menu.onkeydown=event=>{const choices=[...menu.querySelectorAll('.custom-select-option:not(:disabled)')],index=choices.indexOf(document.activeElement);if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();choices[(index+(event.key==='ArrowDown'?1:-1)+choices.length)%choices.length]?.focus()}else if(event.key==='Escape'){event.preventDefault();closeCustomSelects();trigger.focus()}};sync()});if(!document.documentElement.dataset.customSelectListener){document.documentElement.dataset.customSelectListener='true';document.addEventListener('click',()=>closeCustomSelects());window.addEventListener('resize',()=>closeCustomSelects());document.addEventListener('scroll',event=>{if(!event.target.closest?.('.custom-select-menu'))closeCustomSelects()},{capture:true})}}
-  function installPanelAccordions(){
-    const setup=$('#setup'),launch=setup.querySelector('.feature-launch'),shortcuts=$('#sidebarShortcuts');
-    const sectionNamed=name=>[...setup.querySelectorAll(':scope>section')].find(section=>section.querySelector(':scope .eyebrow')?.textContent.trim()===name);
-    const makeGroup=(title,id,sections,open=false)=>{const details=document.createElement('details');details.className='setup-fold';details.dataset.fold=id;details.open=open;const head=document.createElement('summary');head.innerHTML='<span><strong>'+title+'</strong><small data-fold-summary></small></span><i class="collapse-indicator" aria-hidden="true"></i>';const body=document.createElement('div');body.className='setup-fold-body';sections.filter(Boolean).forEach(section=>body.append(section));details.append(head,body);return details};
-    const timing=sectionNamed('Workout'),focus=sectionNamed('Round focuses'),saved=sectionNamed('Saved workouts'),account=sectionNamed('Account');
-    const advanced=document.createElement('details');advanced.className='advanced-fold';advanced.innerHTML='<summary><span>Advanced combo setup</span><i class="collapse-indicator" aria-hidden="true"></i></summary><div class="advanced-fold-body"></div>';['Combo complexity','Combo repeats','Movement between combos','Unique rounds'].map(sectionNamed).filter(Boolean).forEach(section=>advanced.querySelector('.advanced-fold-body').append(section));
-    const basic=['Include','Training mode','Skill level','Allowed combos'].map(sectionNamed);
-    const remembered=!!api.settings.rememberWorkoutTabs,openTabs=Array.isArray(api.settings.rememberedWorkoutTabs)?api.settings.rememberedWorkoutTabs:['workout','combos'],lastTabs=read('cornerwork-workout-fold-state',null),shouldOpen=(id,fallback)=>remembered?openTabs.includes(id):lastTabs&&typeof lastTabs[id]==='boolean'?lastTabs[id]:fallback;
-    const workout=makeGroup('Workout','workout',[timing],shouldOpen('workout',true)),combos=makeGroup('Combo setup','combos',[...basic.slice(0,3),advanced,basic[3]],shouldOpen('combos',true)),rounds=makeGroup('Round focuses','focus',[focus],shouldOpen('focus',false)),library=document.createElement('div');library.className='saved-workouts-static';library.append(saved,account);
-    launch.after(workout,combos,rounds);if(shortcuts)setup.append(shortcuts);setup.append(library);[workout,combos,rounds].forEach(fold=>fold.addEventListener('toggle',()=>{if(api.settings.rememberWorkoutTabs)return;const state=read('cornerwork-workout-fold-state',{});state[fold.dataset.fold]=fold.open;write('cornerwork-workout-fold-state',state)}));
-    const refresh=()=>{const s=api.settings,w=s.workout||{},roundCount=+w.rounds||0,total=(+w.warmupTime||0)+roundCount*(+w.roundTime||0)+workoutRestTotal(w);workout.querySelector('[data-fold-summary]').textContent=roundCount+' rounds · '+fmt(w.roundTime||0)+' work · '+describeRest(w)+' · '+fmt(total)+' total';combos.querySelector('[data-fold-summary]').textContent=((s.includeTypes||[]).map(x=>({punch:'Punches',body:'Body',defense:'Defense',footwork:'Footwork',kick:'Kicks',knee:'Knees & elbows'}[x]||x)).join(' + ')||'No techniques')+' · '+(s.skill||'basic');rounds.querySelector('[data-fold-summary]').textContent=s.focusEnabled==='yes'?(s.focuses||[]).length+' focuses selected':'Off';};
-    setup.addEventListener('click',()=>setTimeout(refresh,0));setup.addEventListener('change',()=>setTimeout(refresh,0));refresh();
-    const groups=[...document.querySelectorAll('#settingsPage .settings-group')],alwaysOpen=new Set(['Combo callouts','Boxing stance']);groups.forEach(group=>{const title=group.querySelector(':scope>.settings-title'),name=title?.querySelector('h2')?.textContent||'';if(!title)return;if(name==='Keyboard shortcuts')group.classList.add('keyboard-settings-group');if(alwaysOpen.has(name)){group.classList.add('settings-static');return}group.classList.add('settings-collapsible','collapsed');const toggle=document.createElement('button');toggle.type='button';toggle.className='settings-collapse-toggle collapse-indicator';toggle.setAttribute('aria-label','Open '+name);toggle.setAttribute('aria-expanded','false');title.append(toggle);const activate=event=>{if(event?.target.closest('.help,.settings-tip'))return;const opening=group.classList.toggle('collapsed');toggle.setAttribute('aria-expanded',String(!opening));toggle.setAttribute('aria-label',(opening?'Open ':'Close ')+name)};title.onclick=activate;});
+  function buildPresets() {
+    const order = ['bag', 'shadow', 'general'],
+      content = order
+        .map(
+          (equipment) =>
+            '<div class="catalog-group-title">' +
+            equipmentLabel(equipment) +
+            '</div>' +
+            workoutPresets
+              .map((preset, index) => ({ preset, index }))
+              .filter((item) => item.preset[3].trainingMode === equipment)
+              .map(
+                ({ preset, index }) =>
+                  '<button class="mode-card" data-workout-preset="' +
+                  index +
+                  '"><span class="equipment-badge">' +
+                  equipmentLabel(equipment) +
+                  '</span><strong>' +
+                  preset[0] +
+                  '</strong><span>' +
+                  preset[1] +
+                  '</span></button>',
+              )
+              .join(''),
+        )
+        .join(''),
+      el = modal(
+        'workoutPresetsDialog',
+        'Workout Presets',
+        '<p class="feature-note">Choose an editable starting point. Selecting a preset reloads its original setup, so save the workout if you want to keep your changes.</p><div class="mode-grid">' +
+          content +
+          '</div>',
+      );
+    el.querySelectorAll('[data-workout-preset]').forEach(
+      (button) =>
+        (button.onclick = () => {
+          const preset = workoutPresets[+button.dataset.workoutPreset],
+            config = {
+              ...preset[3],
+              focuses: [...(preset[3].focuses || [])],
+              includeTypes: [...(preset[3].includeTypes || [])],
+              workout: { ...(preset[3].workout || {}) },
+            };
+          if (preset[0] === 'Opposite-stance practice')
+            config.stance = api.snapshot().stance === 'orthodox' ? 'southpaw' : 'orthodox';
+          apply(config, 'mode', { kind: 'Workout Preset', name: preset[0] });
+        }),
+    );
+    return el;
   }
-  function init(){
-    if(window.__cornerworkFeatures)return;window.__cornerworkFeatures=true;api=window.CornerworkApp;
-    const launch=document.createElement('section');launch.className='feature-launch';launch.innerHTML='<div class="eyebrow">Workout type</div><button class="custom-workout" id="customWorkout">Custom workout</button><div class="feature-grid"><button id="quickStart">Quick Start</button><button id="workoutPresets">Presets</button><button id="programs">Programs</button></div>';$('#setup').prepend(launch);launch.after($('#rounds').closest('section'));
-    const quick=buildQuickStart(),program=buildPrograms(),presetBrowser=buildPresets(),techniquesEl=buildTechniques(),creator=buildComboCreator(),history=buildHistory(),completion=buildCompletion(),backup=buildBackup(),coaching=buildCoaching(),qr=buildQr();
-    window.addEventListener('cornerwork-program-progress-sync',()=>program.refresh());
-    const selectedWorkout=read('cornerwork-active-selection',null),selectionKind=selectedWorkout?.kind==='Training Mode'?'Workout Preset':selectedWorkout?.kind,selectionCard=document.createElement('div');selectionCard.className='workout-selection';if(selectedWorkout&&read('cornerwork-setup-mode','custom')!=='custom'){selectionCard.innerHTML='<span>'+safe(selectionKind)+'</span><strong>'+safe(selectedWorkout.name)+'</strong><small>'+safe(selectedWorkout.detail)+'</small>'}else selectionCard.classList.add('hidden-feature');$('.combo-wrap').prepend(selectionCard);
-    const completionShare=document.createElement('button');completionShare.className='feature-secondary';completionShare.textContent='Share workout';completionShare.onclick=async()=>{const payload=btoa(unescape(encodeURIComponent(JSON.stringify({name:'Cornerwork workout',config:api.snapshot()})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),url=location.origin+location.pathname+'#workout='+payload;try{await navigator.clipboard.writeText(url);showUndoMessage('Workout link copied')}catch(e){prompt('Copy this workout link',url)}};completion.querySelector('#completionRepeat').before(completionShare);
-    function setSetupMode(mode){write('cornerwork-setup-mode',mode);const lockedMode=mode==='program';$('#setup').classList.toggle('preset-setup',lockedMode);launch.classList.toggle('preset-selected',lockedMode);launch.querySelectorAll('#customWorkout,#quickStart,#programs,#workoutPresets').forEach(button=>button.classList.toggle('active',button.id===(mode==='custom'?'customWorkout':mode==='quick'?'quickStart':mode==='program'?'programs':'workoutPresets')));const sections=[...$('#setup').children];for(const section of sections){if(section===launch||section.classList.contains('shortcut-card')||section.contains($('#cloudAccount')))continue;section.classList.toggle('config-locked',lockedMode);section.querySelectorAll('button,input,select').forEach(control=>control.disabled=lockedMode)}}
-    setSetupMode(read('cornerwork-setup-mode','custom'));$('#customWorkout').onclick=()=>{const saved=read('cornerwork-custom-workout',null);write('cornerwork-setup-mode','custom');localStorage.removeItem('cornerwork-active-selection');sessionStorage.removeItem('cornerwork-active-program');if(saved)api.applyConfig(saved);else{selectionCard.classList.add('hidden-feature');setSetupMode('custom')}};$('#quickStart').onclick=()=>open(quick);$('#programs').onclick=()=>{program.refresh();open(program)};$('#workoutPresets').onclick=()=>open(presetBrowser);$('#editCoaching').onclick=()=>{coaching.refresh();open(coaching)};
-    const customizeButton=$('#customize'),allowedHead=customizeButton.parentElement,wrap=document.createElement('div');wrap.className='customize-tools';customizeButton.remove();wrap.append(customizeButton);const custom=document.createElement('button');custom.className='customize';custom.textContent='Create combo';custom.onclick=()=>creator.openFor();wrap.append(custom);allowedHead.after(wrap);window.addEventListener('cornerwork-edit-combo',event=>{const combo=api.customCombos.find(item=>item.id===event.detail?.id);if(combo)creator.openFor(combo)});
-    const account=$('#cloudAccount'),savedSection=account.closest('section'),manage=document.createElement('div');manage.className='preset-launch';manage.style.marginTop='8px';manage.innerHTML='<button id="openHistory">Workout history</button>';savedSection.append(manage);$('#openHistory').onclick=()=>{renderHistory(history);open(history)};history.querySelector('#historyBackup').onclick=()=>{history.close();open(backup)};const accountSection=document.createElement('section');accountSection.className='account-section';accountSection.innerHTML='<div class="eyebrow">Account</div>';accountSection.append(account);$('#sidebarShortcuts').before(accountSection);
-    const fullscreen=document.createElement('button');fullscreen.className='top-feature-button';fullscreen.title='Full screen';fullscreen.setAttribute('aria-label','Toggle full screen');fullscreen.textContent='⛶';fullscreen.onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();$('#preferences').before(fullscreen);
-    injectSettings();injectAppearanceSettings();injectButtonBrightnessSetting();injectWorkoutTabMemorySettings();injectUtilities(techniquesEl,backup);installPanelAccordions();installTitleHelp();installCustomSelects();
+  function buildTechniques() {
+    const el = modal(
+      'techniqueDialog',
+      'Technique Catalogue',
+      '<input class="history-search" id="techniqueSearch" placeholder="Search techniques"><div class="technique-grid" id="techniqueGrid">' +
+        techniques
+          .map(
+            (t) =>
+              '<article class="technique-card"><strong>' +
+              t[0] +
+              '</strong><span>' +
+              t[1] +
+              '</span><em>' +
+              t[2] +
+              '</em></article>',
+          )
+          .join('') +
+        '</div>',
+    );
+    el.querySelector('#techniqueSearch').oninput = (e) => {
+      const q = e.target.value.toLowerCase();
+      el.querySelectorAll('.technique-card').forEach((card, i) =>
+        card.classList.toggle('hidden-feature', !techniques[i].join(' ').toLowerCase().includes(q)),
+      );
+    };
+    return el;
+  }
+  function buildComboCreator() {
+    const moves = [
+      ['1', 1, 'punch'],
+      ['2', 2, 'punch'],
+      ['3', 3, 'punch'],
+      ['4', 4, 'punch'],
+      ['5', 5, 'punch'],
+      ['6', 6, 'punch'],
+      ['Body 1', 'body 1', 'body'],
+      ['Body 2', 'body 2', 'body'],
+      ['Body 3', 'body 3', 'body'],
+      ['Body 4', 'body 4', 'body'],
+      ['Slip', 'slip', 'defense'],
+      ['Roll', 'roll', 'defense'],
+      ['Pull', 'pull', 'defense'],
+      ['Step in', 'step in', 'footwork'],
+      ['Step out', 'step out', 'footwork'],
+      ['Pivot', 'pivot', 'footwork'],
+      ['Lead kick', 'lead kick', 'kick'],
+      ['Rear kick', 'rear kick', 'kick'],
+      ['Lead knee', 'lead knee', 'knee'],
+      ['Rear knee', 'rear knee', 'knee'],
+      ['Lead elbow', 'lead elbow', 'knee'],
+      ['Rear elbow', 'rear elbow', 'knee'],
+    ];
+    let sequence = [],
+      editingId = null;
+    const el = modal(
+      'comboCreatorDialog',
+      'Custom Combo Creator',
+      '<p class="feature-note" id="comboCreatorNote">Tap movements in the order they should be performed. Cornerwork will add the finished combo to the randomized pool.</p><div class="combo-builder"><div class="feature-form"><label>Combo name<input id="customComboName" maxlength="60" placeholder="My counter combo"></label><label>Skill level<select id="customComboLevel"><option value="1">Basic</option><option value="2">Intermediate</option><option value="3">Advanced</option></select></label></div><div class="move-palette">' +
+        moves.map((m, i) => '<button data-move="' + i + '">' + m[0] + '</button>').join('') +
+        '</div><div class="combo-sequence" id="comboSequence"><span class="feature-note">Choose the first movement</span></div><div class="builder-warning" id="builderWarning"></div><div class="feature-actions"><button class="feature-danger hidden-feature" id="deleteCustomCombo">Delete combo</button><button class="feature-secondary" id="undoMove">Undo</button><button class="feature-secondary" id="clearMoves">Clear</button><button class="feature-primary" id="saveCustomCombo">Add combo</button></div></div>',
+    );
+    const render = () => {
+      el.querySelector('#comboSequence').innerHTML = sequence.length
+        ? sequence.map((x) => '<span class="combo-token">' + moves[x][0] + '</span>').join('')
+        : '<span class="feature-note">Choose the first movement</span>';
+      const last = sequence.slice(-3).map((x) => moves[x][1]),
+        warning =
+          sequence.length > 10
+            ? 'Long combos are difficult to perform cleanly.'
+            : last.length === 3 && last.every((x) => x === last[0])
+              ? 'Three identical movements in a row may be impractical.'
+              : '';
+      el.querySelector('#builderWarning').textContent = warning;
+    };
+    el.openFor = (combo) => {
+      editingId = combo?.id || null;
+      sequence = combo
+        ? combo.m
+            .map((value) => moves.findIndex((move) => String(move[1]) === String(value)))
+            .filter((index) => index >= 0)
+        : [];
+      el.querySelector('.feature-head h2').textContent = editingId
+        ? 'Edit Custom Combo'
+        : 'Create Custom Combo';
+      el.querySelector('#comboCreatorNote').textContent = editingId
+        ? 'Adjust the name, skill level, or movement sequence for this custom combo.'
+        : 'Tap movements in the order they should be performed. Cornerwork will add the finished combo to the randomized pool.';
+      el.querySelector('#customComboName').value = combo?.n || '';
+      el.querySelector('#customComboLevel').value = String(combo?.level || 1);
+      el.querySelector('#saveCustomCombo').textContent = editingId ? 'Save changes' : 'Add combo';
+      el.querySelector('#deleteCustomCombo').classList.toggle('hidden-feature', !editingId);
+      render();
+      open(el);
+    };
+    el.querySelectorAll('[data-move]').forEach(
+      (b) =>
+        (b.onclick = () => {
+          if (sequence.length < 12) {
+            sequence.push(+b.dataset.move);
+            render();
+          }
+        }),
+    );
+    el.querySelector('#undoMove').onclick = () => {
+      sequence.pop();
+      render();
+    };
+    el.querySelector('#clearMoves').onclick = () => {
+      sequence = [];
+      render();
+    };
+    el.querySelector('#saveCustomCombo').onclick = () => {
+      if (!sequence.length) {
+        el.querySelector('#builderWarning').textContent = 'Add at least one movement.';
+        return;
+      }
+      const selected = sequence.map((i) => moves[i]),
+        combo = {
+          n: el.querySelector('#customComboName').value || selected.map((x) => x[0]).join(' '),
+          m: selected.map((x) => x[1]),
+          types: [
+            ...new Set(selected.flatMap((x) => (x[2] === 'body' ? ['punch', 'body'] : [x[2]]))),
+          ],
+          level: +el.querySelector('#customComboLevel').value,
+        };
+      editingId ? api.updateCustomCombo(editingId, combo) : api.addCustomCombo(combo);
+    };
+    el.querySelector('#deleteCustomCombo').onclick = () => {
+      if (editingId && confirm('Delete this custom combo?')) api.removeCustomCombo(editingId);
+    };
+    return el;
+  }
+  function historyStats(history) {
+    const total = history.reduce((n, x) => n + (x.duration || x.plannedDuration || 0), 0),
+      rounds = history.reduce((n, x) => n + (x.rounds || 0), 0),
+      moves = history.reduce((n, x) => n + (x.moves || 0), 0),
+      days = [...new Set(history.map((x) => new Date(x.date).toISOString().slice(0, 10)))]
+        .sort()
+        .reverse();
+    let streak = 0,
+      cursor = new Date();
+    cursor.setHours(0, 0, 0, 0);
+    for (const day of days) {
+      const d = new Date(day + 'T00:00:00');
+      const delta = Math.round((cursor - d) / 86400000);
+      if (delta === 0 || delta === 1) {
+        streak++;
+        cursor = d;
+      } else break;
+    }
+    return { total, rounds, moves, streak };
+  }
+  function buildHistory() {
+    const el = modal(
+      'historyDialog',
+      'Workout History',
+      '<div id="historyContent"></div><div class="feature-actions"><button class="feature-secondary" id="historyBackup">Backup data</button><button class="feature-secondary" id="clearHistory">Clear history</button></div>',
+    );
+    el.querySelector('#clearHistory').onclick = () => {
+      if (confirm('Clear your workout history on this device?')) {
+        write('cornerwork-history', []);
+        renderHistory(el);
+      }
+    };
+    renderHistory(el);
+    return el;
+  }
+  function renderHistory(el = $('#historyDialog')) {
+    if (!el) return;
+    const history = read('cornerwork-history', []),
+      s = historyStats(history),
+      month = history.filter((x) => Date.now() - x.date < 2592000000).length,
+      week = history.filter((x) => Date.now() - x.date < 604800000).length;
+    el.querySelector('#historyContent').innerHTML =
+      '<div class="stats-grid"><div class="stat-card"><strong>' +
+      history.length +
+      '</strong><span>Workouts</span></div><div class="stat-card"><strong>' +
+      s.rounds +
+      '</strong><span>Rounds</span></div><div class="stat-card"><strong>' +
+      fmt(s.total) +
+      '</strong><span>Training</span></div><div class="stat-card"><strong>' +
+      s.streak +
+      '</strong><span>Day streak</span></div></div><p class="feature-note">' +
+      week +
+      ' this week · ' +
+      month +
+      ' this month · ' +
+      s.moves +
+      ' total moves</p><div class="history-list">' +
+      (history.length
+        ? history
+            .slice(0, 50)
+            .map(
+              (x) =>
+                '<div class="history-item"><div><strong>' +
+                safe(
+                  x.workoutName ||
+                    new Date(x.date).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }),
+                ) +
+                '</strong><span>' +
+                new Date(x.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+                ' · ' +
+                safe(x.skill) +
+                ' ' +
+                safe(x.mode) +
+                ' · ' +
+                x.rounds +
+                ' rounds · ' +
+                fmt(x.duration || x.plannedDuration) +
+                '</span></div><b>' +
+                x.combos +
+                ' combos</b></div>',
+            )
+            .join('')
+        : '<p class="feature-note">Your completed workouts will appear here.</p>') +
+      '</div>';
+  }
+  function buildCompletion() {
+    return modal(
+      'completionDialog',
+      'Workout Complete',
+      '<div class="completion-hero"><div class="completion-mark">✓</div><p class="feature-note">Session complete. Your workout has been added to your history.</p></div><div class="completion-stats" id="completionStats"></div><div class="feature-actions"><button class="feature-secondary" id="completionHistory">View history</button><button class="feature-secondary" id="completionSave">Save setup</button><button class="feature-primary" id="completionRepeat">Repeat workout</button></div>',
+    );
+  }
+  // Camera, backup, coaching, sharing, and saved workout tools.
+  function buildMirror() {
+    const el = modal(
+      'mirrorDialog',
+      'Mirror and Record',
+      '<p class="feature-note">Use your camera as a mirror to check form. Recording stays on your device and is downloaded only when you choose.</p><video class="mirror-video" id="mirrorVideo" autoplay playsinline muted></video><div class="mirror-actions"><button class="feature-primary" id="startCamera">Start camera</button><button class="feature-secondary" id="recordCamera" disabled>Record</button><button class="feature-secondary" id="stopCamera" disabled>Stop camera</button></div>',
+    );
+    el.addEventListener('close', stopMirror);
+    el.querySelector('#startCamera').onclick = async () => {
+      try {
+        mirrorStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: false,
+        });
+        el.querySelector('#mirrorVideo').srcObject = mirrorStream;
+        el.querySelector('#recordCamera').disabled = false;
+        el.querySelector('#stopCamera').disabled = false;
+      } catch (e) {
+        alert('Camera access was not available. Check your browser permissions.');
+      }
+    };
+    el.querySelector('#recordCamera').onclick = () => {
+      if (!mirrorStream) return;
+      if (recorder?.state === 'recording') {
+        recorder.stop();
+        return;
+      }
+      recorded = [];
+      recorder = new MediaRecorder(mirrorStream);
+      recorder.ondataavailable = (e) => recorded.push(e.data);
+      recorder.onstop = () => {
+        const url = URL.createObjectURL(new Blob(recorded, { type: recorder.mimeType })),
+          a = document.createElement('a');
+        a.href = url;
+        a.download = 'cornerwork-form-review.webm';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        el.querySelector('#recordCamera').textContent = 'Record';
+      };
+      recorder.start();
+      el.querySelector('#recordCamera').textContent = 'Stop recording';
+    };
+    el.querySelector('#stopCamera').onclick = stopMirror;
+    return el;
+  }
+  function stopMirror() {
+    if (recorder?.state === 'recording') recorder.stop();
+    mirrorStream?.getTracks().forEach((t) => t.stop());
+    mirrorStream = null;
+    const video = $('#mirrorVideo');
+    if (video) video.srcObject = null;
+  }
+  function buildBackup() {
+    const el = modal(
+      'backupDialog',
+      'Backup and Restore',
+      '<p class="feature-note">Export all local settings, workouts, custom combos, and history. The file can restore Cornerwork in another browser.</p><div class="backup-grid"><button class="feature-primary" id="exportCornerwork">Export backup</button><label class="feature-secondary" style="text-align:center;cursor:pointer">Import backup<input id="importCornerwork" type="file" accept="application/json" hidden></label></div>',
+    );
+    el.querySelector('#exportCornerwork').onclick = () => {
+      const blob = new Blob([JSON.stringify(api.exportData(), null, 2)], {
+          type: 'application/json',
+        }),
+        url = URL.createObjectURL(blob),
+        a = document.createElement('a');
+      a.href = url;
+      a.download = 'cornerwork-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    el.querySelector('#importCornerwork').onchange = async (e) => {
+      try {
+        api.importData(JSON.parse(await e.target.files[0].text()));
+      } catch (err) {
+        alert('That backup file could not be read.');
+      }
+    };
+    return el;
+  }
+  function buildCoaching() {
+    const el = modal(
+      'coachingDialog',
+      'Coaching',
+      '<p class="feature-note">Choose how much guidance the coach adds around your combinations. These choices are included when you save or share the workout.</p><div class="coaching-dialog-options"><div class="enhanced-row"><label>Coach reminders</label><button class="enhanced-switch" data-coaching-setting="coachCues" aria-label="Toggle coach reminders"><i></i></button></div><div class="enhanced-row"><label>Cue frequency</label><select id="coachingCueFrequency" aria-label="Coach reminder frequency"><option value="3">Often</option><option value="5">Balanced</option><option value="8">Occasional</option></select></div><div class="enhanced-row"><label>Recovery instructions during rest</label><button class="enhanced-switch" data-coaching-setting="recoveryInstructions" aria-label="Toggle recovery instructions"><i></i></button></div><div class="enhanced-row"><label>Guided beginner</label><button class="enhanced-switch" data-coaching-setting="guidedBeginner" aria-label="Toggle guided beginner coaching"><i></i></button></div></div>',
+    );
+    const frequency = el.querySelector('#coachingCueFrequency');
+    el.refresh = () => {
+      el.querySelectorAll('[data-coaching-setting]').forEach((button) => {
+        const on = !!api.settings[button.dataset.coachingSetting];
+        button.classList.toggle('on', on);
+        button.setAttribute('aria-pressed', String(on));
+      });
+      frequency.value = String(api.settings.cueFrequency || 5);
+      frequency._syncCustomSelect?.();
+    };
+    el.querySelectorAll('[data-coaching-setting]').forEach(
+      (button) =>
+        (button.onclick = () => {
+          const key = button.dataset.coachingSetting;
+          api.settings[key] = !api.settings[key];
+          write('cornerwork-settings', api.settings);
+          el.refresh();
+        }),
+    );
+    frequency.onchange = () => {
+      api.settings.cueFrequency = +frequency.value;
+      write('cornerwork-settings', api.settings);
+    };
+    el.refresh();
+    return el;
+  }
+  function buildQr() {
+    return modal(
+      'qrDialog',
+      'Share Workout',
+      '<p class="feature-note">Scan this code on another device to open the shared workout.</p><div class="qr-wrap"><canvas id="qrCanvas"></canvas></div>',
+    );
+  }
+  function enhanceSavedWorkouts(qr) {
+    const list = $('#presetList'),
+      modalEl = $('#loadPresetModal');
+    if (!list || !modalEl) return;
+    if (!modalEl.querySelector('#presetSearch')) {
+      const input = document.createElement('input');
+      input.id = 'presetSearch';
+      input.className = 'history-search';
+      input.placeholder = 'Search saved workouts';
+      modalEl.querySelector('.preset-list').before(input);
+      input.oninput = () => {
+        const q = input.value.toLowerCase();
+        list
+          .querySelectorAll('.preset-item')
+          .forEach((item) =>
+            item.classList.toggle('hidden-feature', !item.textContent.toLowerCase().includes(q)),
+          );
+      };
+    }
+    const decorate = () => {
+      const presets = read('cornerwork-presets', []);
+      list.querySelectorAll('.preset-item').forEach((item) => {
+        if (item.dataset.enhanced) return;
+        const id = item.querySelector('[data-load]')?.dataset.load,
+          p = presets.find((x) => x.id === id);
+        if (!p) return;
+        item.dataset.enhanced = '1';
+        const actions = item.querySelector('.preset-actions'),
+          star = document.createElement('button');
+        star.className = 'preset-favorite';
+        star.textContent = p.favorite ? '★' : '☆';
+        star.title = p.favorite ? 'Remove from favourites' : 'Add to favourites';
+        star.setAttribute('aria-label', star.title);
+        star.onclick = () => {
+          p.favorite = !p.favorite;
+          write(
+            'cornerwork-presets',
+            presets.sort(
+              (a, b) =>
+                (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0) ||
+                (b.updatedAt || 0) - (a.updatedAt || 0),
+            ),
+          );
+          location.reload();
+        };
+        const duplicate = document.createElement('button');
+        duplicate.className = 'preset-duplicate';
+        duplicate.textContent = 'Duplicate';
+        duplicate.setAttribute('aria-label', 'Duplicate ' + p.name);
+        duplicate.onclick = () => {
+          presets.unshift({
+            ...p,
+            id: Date.now().toString(36),
+            name: (p.name + ' copy').slice(0, 36),
+            updatedAt: Date.now(),
+          });
+          write('cornerwork-presets', presets);
+          location.reload();
+        };
+        const qrButton = document.createElement('button');
+        qrButton.className = 'preset-qr';
+        qrButton.textContent = 'QR';
+        qrButton.setAttribute('aria-label', 'Show QR code for ' + p.name);
+        qrButton.onclick = () => {
+          const url =
+            location.origin +
+            location.pathname +
+            '#workout=' +
+            btoa(unescape(encodeURIComponent(JSON.stringify({ name: p.name, config: p.config }))))
+              .replace(/\+/g, '-')
+              .replace(/\//g, '_')
+              .replace(/=+$/, '');
+          open(qr);
+          if (window.QRCode)
+            QRCode.toCanvas($('#qrCanvas'), url, { width: 260, margin: 1 }, () => {});
+        };
+        actions.prepend(star, duplicate, qrButton);
+        if (p.note) {
+          const note = document.createElement('span');
+          note.className = 'preset-note';
+          note.textContent = p.note;
+          item.querySelector('.preset-name').after(note);
+        }
+      });
+    };
+    new MutationObserver(decorate).observe(list, { childList: true });
+    decorate();
+    list.addEventListener(
+      'click',
+      (e) => {
+        const button = e.target.closest('[data-delete]');
+        if (!button) return;
+        const backup = presets.find((x) => x.id === button.dataset.delete);
+        if (!backup) return;
+        setTimeout(() => showUndo(backup), 100);
+      },
+      { capture: true },
+    );
+  }
+  function showUndo(preset) {
+    document.querySelector('.toast')?.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = 'Workout deleted <button>Undo</button>';
+    toast.querySelector('button').onclick = () => {
+      api.upsertPreset(preset);
+      toast.remove();
+    };
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+  }
+  // Settings enhancements.
+  function injectSettings() {
+    const keyboard = [...document.querySelectorAll('.settings-group')].find(
+      (x) => x.querySelector('h2')?.textContent === 'Keyboard shortcuts',
+    );
+    if (!keyboard) return;
+    const accessibility = document.createElement('div');
+    accessibility.className = 'settings-group enhanced-settings';
+    accessibility.innerHTML =
+      '<div class="settings-title"><h2>Accessibility</h2><button class="help settings-help" aria-label="About accessibility settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Phone vibration:</strong> Vibrates supported phones during important phase changes.</span><span><strong>High contrast:</strong> Improves separation between text, controls, and the background.</span></div></div><div class="enhanced-row"><label>Phone vibration</label><button class="enhanced-switch" data-setting="haptics"><i></i></button></div><div class="enhanced-row"><label>High contrast</label><button class="enhanced-switch" data-setting="highContrast"><i></i></button></div>';
+    keyboard.before(accessibility);
+    accessibility.querySelectorAll('[data-setting]').forEach((button) => {
+      const key = button.dataset.setting;
+      button.classList.toggle('on', !!api.settings[key]);
+      button.onclick = () => {
+        api.settings[key] = !api.settings[key];
+        write('cornerwork-settings', api.settings);
+        button.classList.toggle('on', api.settings[key]);
+        document.body.classList.toggle('high-contrast', !!api.settings.highContrast);
+      };
+    });
+    accessibility.querySelector('.settings-help').onclick = (event) => {
+      event.stopPropagation();
+      event.currentTarget.classList.toggle('open');
+    };
+  }
+  function installTitleHelp() {
+    const closeAll = (except) =>
+      document
+        .querySelectorAll('.title-help.help-open,.settings-title.help-open')
+        .forEach((title) => {
+          if (title !== except) {
+            title.classList.remove('help-open');
+            title.querySelector('[aria-expanded]')?.setAttribute('aria-expanded', 'false');
+          }
+        });
+    document.querySelectorAll('.help').forEach((help) => {
+      const title = help.closest('.eyebrow-row,.settings-title'),
+        label = title?.querySelector('.eyebrow,h2');
+      if (!title || !label) return;
+      if (help.dataset.tip) {
+        title.classList.add('title-help');
+        title.dataset.tip = help.dataset.tip;
+      } else title.classList.add('title-help-settings');
+      label.tabIndex = 0;
+      label.setAttribute('role', 'button');
+      label.setAttribute('aria-expanded', 'false');
+      label.setAttribute(
+        'aria-label',
+        help.getAttribute('aria-label') || 'About ' + label.textContent.trim(),
+      );
+      const toggle = (event) => {
+        event.stopPropagation();
+        const opening = !title.classList.contains('help-open');
+        closeAll(title);
+        title.classList.toggle('help-open', opening);
+        label.setAttribute('aria-expanded', String(opening));
+      };
+      label.addEventListener('click', toggle);
+      label.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggle(event);
+        }
+      });
+      help.remove();
+    });
+    document.addEventListener('click', () => closeAll());
+  }
+  function injectAppearanceSettings() {
+    const group = [...document.querySelectorAll('.settings-group')].find(
+      (x) => x.querySelector('h2')?.textContent === 'Accessibility',
+    );
+    if (!group) return;
+    const tip = group.querySelector('.settings-tip');
+    tip?.insertAdjacentHTML(
+      'beforeend',
+      '<span><strong>Button white text:</strong> Changes accent-coloured labels inside outlined buttons to white for easier reading.</span><span><strong>App colour:</strong> Recolours Cornerwork buttons, outlines, highlights, and active states.</span>',
+    );
+    group.insertAdjacentHTML(
+      'beforeend',
+      '<div class="enhanced-row"><label>Button white text</label><button class="enhanced-switch ' +
+        (api.settings.whiteOutlineText ? 'on' : '') +
+        '" id="whiteOutlineText"><i></i></button></div><div class="enhanced-row"><label for="accentColor">App colour</label><select id="accentColor"><option value="red">Red</option><option value="orange">Orange</option><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option></select></div>',
+    );
+    const white = group.querySelector('#whiteOutlineText'),
+      colour = group.querySelector('#accentColor'),
+      colours = {
+        red: '#ff3b30',
+        orange: '#ff7a1a',
+        blue: '#438cff',
+        green: '#24b86a',
+        purple: '#9b6cff',
+      };
+    colour.value = api.settings.accentColor || 'red';
+    white.onclick = () => {
+      api.settings.whiteOutlineText = !api.settings.whiteOutlineText;
+      white.classList.toggle('on', api.settings.whiteOutlineText);
+      document.body.classList.toggle('white-outline-text', api.settings.whiteOutlineText);
+      write('cornerwork-settings', api.settings);
+    };
+    colour.onchange = () => {
+      api.settings.accentColor = colour.value;
+      document.documentElement.style.setProperty('--red', colours[colour.value] || colours.red);
+      write('cornerwork-settings', api.settings);
+    };
+  }
+  function injectButtonBrightnessSetting() {
+    const group = [...document.querySelectorAll('.settings-group')].find(
+      (x) => x.querySelector('h2')?.textContent === 'Accessibility',
+    );
+    if (!group) return;
+    group
+      .querySelector('.settings-tip')
+      ?.insertAdjacentHTML(
+        'beforeend',
+        '<span><strong>White text brightness:</strong> Softens or brightens white interface labels, including workout choices, saved-workout controls, and smaller buttons. The clock and combo callouts stay unchanged.</span>',
+      );
+    group.insertAdjacentHTML(
+      'beforeend',
+      '<div class="enhanced-row"><label for="buttonTextBrightness">White text brightness</label><span class="enhanced-range"><input id="buttonTextBrightness" type="range" min="65" max="100" step="1" value="98" aria-label="White text brightness"><output id="buttonTextBrightnessValue">98%</output></span></div>',
+    );
+    const slider = group.querySelector('#buttonTextBrightness'),
+      output = group.querySelector('#buttonTextBrightnessValue'),
+      apply = () => {
+        const value = Math.min(100, Math.max(65, +slider.value || 98));
+        api.settings.buttonTextBrightness = value;
+        output.textContent = value + '%';
+        document.documentElement.style.setProperty(
+          '--button-text',
+          'rgb(255 255 255 / ' + value + '%)',
+        );
+      };
+    slider.value = api.settings.buttonTextBrightness ?? 98;
+    apply();
+    slider.oninput = () => {
+      apply();
+      write('cornerwork-settings', api.settings);
+    };
+  }
+  function injectWorkoutTabMemorySettings() {
+    const group = [...document.querySelectorAll('.settings-group')].find(
+      (x) => x.querySelector('h2')?.textContent === 'Display',
+    );
+    if (!group) return;
+    const enabled = !!api.settings.rememberWorkoutTabs,
+      allowed = ['workout', 'combos', 'focus'],
+      selected = (
+        Array.isArray(api.settings.rememberedWorkoutTabs)
+          ? api.settings.rememberedWorkoutTabs
+          : ['workout', 'combos']
+      ).filter((value) => allowed.includes(value));
+    api.settings.rememberedWorkoutTabs = selected;
+    group
+      .querySelector('.settings-tip')
+      ?.insertAdjacentHTML(
+        'beforeend',
+        '<span><strong>Use saved tab layout:</strong> When off, Cornerwork restores the tabs exactly as you last left them. Turn it on to always launch with only the tabs selected using the gear open. Saved workouts always stays visible.</span>',
+      );
+    group.insertAdjacentHTML(
+      'beforeend',
+      '<div class="setting-row workout-memory-row"><span>Use saved tab layout</span><span class="workout-memory-actions"><button class="sound-gear ' +
+        (enabled ? '' : 'hidden-feature') +
+        '" id="workoutTabsGear" aria-label="Choose saved workout tab layout" aria-expanded="false">⚙</button><button class="enhanced-switch ' +
+        (enabled ? 'on' : '') +
+        '" id="rememberWorkoutTabs" aria-label="Use saved workout tab layout" aria-pressed="' +
+        enabled +
+        '"><i></i></button></span></div><div class="workout-memory-options" id="workoutMemoryOptions"><label><input type="checkbox" value="workout"> Workout</label><label><input type="checkbox" value="combos"> Combo setup</label><label><input type="checkbox" value="focus"> Round focuses</label></div>',
+    );
+    const toggle = group.querySelector('#rememberWorkoutTabs'),
+      gear = group.querySelector('#workoutTabsGear'),
+      options = group.querySelector('#workoutMemoryOptions'),
+      applySelected = () =>
+        document
+          .querySelectorAll('#setup .setup-fold')
+          .forEach(
+            (fold) => (fold.open = api.settings.rememberedWorkoutTabs.includes(fold.dataset.fold)),
+          );
+    options.querySelectorAll('input').forEach((input) => {
+      input.checked = selected.includes(input.value);
+      input.onchange = () => {
+        api.settings.rememberedWorkoutTabs = [...options.querySelectorAll('input:checked')].map(
+          (item) => item.value,
+        );
+        write('cornerwork-settings', api.settings);
+        applySelected();
+      };
+    });
+    toggle.onclick = () => {
+      api.settings.rememberWorkoutTabs = !api.settings.rememberWorkoutTabs;
+      toggle.classList.toggle('on', api.settings.rememberWorkoutTabs);
+      toggle.setAttribute('aria-pressed', String(api.settings.rememberWorkoutTabs));
+      gear.classList.toggle('hidden-feature', !api.settings.rememberWorkoutTabs);
+      if (api.settings.rememberWorkoutTabs) applySelected();
+      else {
+        options.classList.remove('open');
+        gear.classList.remove('active');
+        gear.setAttribute('aria-expanded', 'false');
+        const state = {};
+        document
+          .querySelectorAll('#setup .setup-fold')
+          .forEach((fold) => (state[fold.dataset.fold] = fold.open));
+        write('cornerwork-workout-fold-state', state);
+      }
+      write('cornerwork-settings', api.settings);
+    };
+    gear.onclick = () => {
+      const open = options.classList.toggle('open');
+      gear.classList.toggle('active', open);
+      gear.setAttribute('aria-expanded', String(open));
+    };
+  }
+  function injectUtilities(techniquesEl, backup) {
+    const shell = $('#settingsPage .settings-shell'),
+      keyboard = [...document.querySelectorAll('.settings-group')].find(
+        (x) => x.querySelector('h2')?.textContent === 'Keyboard shortcuts',
+      );
+    if (!keyboard) return;
+    const technique = document.createElement('button');
+    technique.className = 'settings-technique-button';
+    technique.textContent = 'Open Technique Catalogue';
+    keyboard.before(technique);
+    technique.onclick = () => {
+      $('#closePreferences').click();
+      open(techniquesEl);
+    };
+    const utilities = document.createElement('div');
+    utilities.className = 'settings-utilities';
+    utilities.innerHTML =
+      '<button id="settingsBackup">Backup / export</button><i></i><button id="settingsInstall">Install for offline use</button>';
+    shell.append(utilities);
+    utilities.querySelector('#settingsBackup').onclick = () => {
+      $('#closePreferences').click();
+      open(backup);
+    };
+    utilities.querySelector('#settingsInstall').onclick = async () => {
+      if (installPrompt) {
+        await installPrompt.prompt();
+        return;
+      }
+      showUndoMessage(
+        /iP(hone|ad|od)/.test(navigator.userAgent)
+          ? 'Use Share, then Add to Home Screen'
+          : 'Use your browser menu to install Cornerwork',
+      );
+    };
+  }
+  let customSelectId = 0;
+  function closeCustomSelects(except) {
+    document.querySelectorAll('.custom-select.open').forEach((wrap) => {
+      if (wrap === except) return;
+      wrap.classList.remove('open');
+      wrap.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+  function positionCustomSelect(trigger, menu) {
+    const rect = trigger.getBoundingClientRect(),
+      gap = 5,
+      edge = 10,
+      below = innerHeight - rect.bottom - edge,
+      above = rect.top - edge,
+      desired = Math.min(menu.scrollHeight || 240, 240),
+      openUp = below < Math.min(desired, 150) && above > below,
+      maxHeight = Math.max(88, Math.min(240, (openUp ? above : below) - gap)),
+      width = Math.min(rect.width, innerWidth - edge * 2);
+    menu.style.left = Math.max(edge, Math.min(rect.left, innerWidth - width - edge)) + 'px';
+    menu.style.width = width + 'px';
+    menu.style.maxHeight = maxHeight + 'px';
+    menu.style.top =
+      (openUp ? Math.max(edge, rect.top - gap - Math.min(desired, maxHeight)) : rect.bottom + gap) +
+      'px';
+  }
+  // Custom select menus and collapsible panel behavior.
+  function installCustomSelects(root = document) {
+    root.querySelectorAll('select:not([data-custom-select])').forEach((select) => {
+      select.dataset.customSelect = 'true';
+      select.classList.add('native-select-proxy');
+      select.tabIndex = -1;
+      const wrap = document.createElement('div'),
+        trigger = document.createElement('button'),
+        menu = document.createElement('div'),
+        menuId = 'custom-select-' + ++customSelectId,
+        label =
+          select.getAttribute('aria-label') ||
+          select.closest('label')?.childNodes[0]?.textContent.trim() ||
+          'Choose option';
+      wrap.className = 'custom-select';
+      trigger.type = 'button';
+      trigger.className = 'custom-select-trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('aria-controls', menuId);
+      trigger.setAttribute('aria-label', label);
+      menu.className = 'custom-select-menu';
+      menu.id = menuId;
+      menu.setAttribute('role', 'listbox');
+      select.before(wrap);
+      wrap.append(select, trigger, menu);
+      [...select.options].forEach((option) => {
+        const choice = document.createElement('button');
+        choice.type = 'button';
+        choice.className = 'custom-select-option';
+        choice.dataset.value = option.value;
+        choice.textContent = option.textContent;
+        choice.disabled = option.disabled;
+        choice.setAttribute('role', 'option');
+        choice.onclick = (event) => {
+          event.preventDefault();
+          select.value = option.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          closeCustomSelects();
+        };
+        menu.append(choice);
+      });
+      const sync = () => {
+        const option = select.selectedOptions[0];
+        trigger.textContent = option?.textContent || '';
+        trigger.disabled = select.disabled;
+        menu.querySelectorAll('.custom-select-option').forEach((choice) => {
+          const active = choice.dataset.value === select.value;
+          choice.classList.toggle('active', active);
+          choice.setAttribute('aria-selected', String(active));
+        });
+      };
+      select._syncCustomSelect = sync;
+      select.addEventListener('change', sync);
+      new MutationObserver(sync).observe(select, {
+        attributes: true,
+        attributeFilter: ['disabled'],
+      });
+      trigger.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const opening = !wrap.classList.contains('open');
+        closeCustomSelects(wrap);
+        wrap.classList.toggle('open', opening);
+        trigger.setAttribute('aria-expanded', String(opening));
+        if (opening) {
+          positionCustomSelect(trigger, menu);
+          menu.querySelector('.active')?.focus({ preventScroll: true });
+        }
+      };
+      trigger.onkeydown = (event) => {
+        if (['ArrowDown', 'Enter', ' '].includes(event.key)) {
+          event.preventDefault();
+          trigger.click();
+        } else if (event.key === 'Escape') {
+          closeCustomSelects();
+          trigger.focus();
+        }
+      };
+      menu.onkeydown = (event) => {
+        const choices = [...menu.querySelectorAll('.custom-select-option:not(:disabled)')],
+          index = choices.indexOf(document.activeElement);
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          choices[
+            (index + (event.key === 'ArrowDown' ? 1 : -1) + choices.length) % choices.length
+          ]?.focus();
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          closeCustomSelects();
+          trigger.focus();
+        }
+      };
+      sync();
+    });
+    if (!document.documentElement.dataset.customSelectListener) {
+      document.documentElement.dataset.customSelectListener = 'true';
+      document.addEventListener('click', () => closeCustomSelects());
+      window.addEventListener('resize', () => closeCustomSelects());
+      document.addEventListener(
+        'scroll',
+        (event) => {
+          if (!event.target.closest?.('.custom-select-menu')) closeCustomSelects();
+        },
+        { capture: true },
+      );
+    }
+  }
+  function installPanelAccordions() {
+    const setup = $('#setup'),
+      launch = setup.querySelector('.feature-launch'),
+      shortcuts = $('#sidebarShortcuts');
+    const sectionNamed = (name) =>
+      [...setup.querySelectorAll(':scope>section')].find(
+        (section) => section.querySelector(':scope .eyebrow')?.textContent.trim() === name,
+      );
+    const makeGroup = (title, id, sections, open = false) => {
+      const details = document.createElement('details');
+      details.className = 'setup-fold';
+      details.dataset.fold = id;
+      details.open = open;
+      const head = document.createElement('summary');
+      head.innerHTML =
+        '<span><strong>' +
+        title +
+        '</strong><small data-fold-summary></small></span><i class="collapse-indicator" aria-hidden="true"></i>';
+      const body = document.createElement('div');
+      body.className = 'setup-fold-body';
+      sections.filter(Boolean).forEach((section) => body.append(section));
+      details.append(head, body);
+      return details;
+    };
+    const timing = sectionNamed('Workout'),
+      focus = sectionNamed('Round focuses'),
+      saved = sectionNamed('Saved workouts'),
+      account = sectionNamed('Account');
+    const advanced = document.createElement('details');
+    advanced.className = 'advanced-fold';
+    advanced.innerHTML =
+      '<summary><span>Advanced combo setup</span><i class="collapse-indicator" aria-hidden="true"></i></summary><div class="advanced-fold-body"></div>';
+    ['Combo complexity', 'Combo repeats', 'Movement between combos', 'Unique rounds']
+      .map(sectionNamed)
+      .filter(Boolean)
+      .forEach((section) => advanced.querySelector('.advanced-fold-body').append(section));
+    const basic = ['Include', 'Training mode', 'Skill level', 'Allowed combos'].map(sectionNamed);
+    const remembered = !!api.settings.rememberWorkoutTabs,
+      openTabs = Array.isArray(api.settings.rememberedWorkoutTabs)
+        ? api.settings.rememberedWorkoutTabs
+        : ['workout', 'combos'],
+      lastTabs = read('cornerwork-workout-fold-state', null),
+      shouldOpen = (id, fallback) =>
+        remembered
+          ? openTabs.includes(id)
+          : lastTabs && typeof lastTabs[id] === 'boolean'
+            ? lastTabs[id]
+            : fallback;
+    const workout = makeGroup('Workout', 'workout', [timing], shouldOpen('workout', true)),
+      combos = makeGroup(
+        'Combo setup',
+        'combos',
+        [...basic.slice(0, 3), advanced, basic[3]],
+        shouldOpen('combos', true),
+      ),
+      rounds = makeGroup('Round focuses', 'focus', [focus], shouldOpen('focus', false)),
+      library = document.createElement('div');
+    library.className = 'saved-workouts-static';
+    library.append(saved, account);
+    launch.after(workout, combos, rounds);
+    if (shortcuts) setup.append(shortcuts);
+    setup.append(library);
+    [workout, combos, rounds].forEach((fold) =>
+      fold.addEventListener('toggle', () => {
+        if (api.settings.rememberWorkoutTabs) return;
+        const state = read('cornerwork-workout-fold-state', {});
+        state[fold.dataset.fold] = fold.open;
+        write('cornerwork-workout-fold-state', state);
+      }),
+    );
+    const refresh = () => {
+      const s = api.settings,
+        w = s.workout || {},
+        roundCount = +w.rounds || 0,
+        total = (+w.warmupTime || 0) + roundCount * (+w.roundTime || 0) + workoutRestTotal(w);
+      workout.querySelector('[data-fold-summary]').textContent =
+        roundCount +
+        ' rounds · ' +
+        fmt(w.roundTime || 0) +
+        ' work · ' +
+        describeRest(w) +
+        ' · ' +
+        fmt(total) +
+        ' total';
+      combos.querySelector('[data-fold-summary]').textContent =
+        ((s.includeTypes || [])
+          .map(
+            (x) =>
+              ({
+                punch: 'Punches',
+                body: 'Body',
+                defense: 'Defense',
+                footwork: 'Footwork',
+                kick: 'Kicks',
+                knee: 'Knees & elbows',
+              })[x] || x,
+          )
+          .join(' + ') || 'No techniques') +
+        ' · ' +
+        (s.skill || 'basic');
+      rounds.querySelector('[data-fold-summary]').textContent =
+        s.focusEnabled === 'yes' ? (s.focuses || []).length + ' focuses selected' : 'Off';
+    };
+    setup.addEventListener('click', () => setTimeout(refresh, 0));
+    setup.addEventListener('change', () => setTimeout(refresh, 0));
+    refresh();
+    const groups = [...document.querySelectorAll('#settingsPage .settings-group')],
+      alwaysOpen = new Set(['Combo callouts', 'Boxing stance']);
+    groups.forEach((group) => {
+      const title = group.querySelector(':scope>.settings-title'),
+        name = title?.querySelector('h2')?.textContent || '';
+      if (!title) return;
+      if (name === 'Keyboard shortcuts') group.classList.add('keyboard-settings-group');
+      if (alwaysOpen.has(name)) {
+        group.classList.add('settings-static');
+        return;
+      }
+      group.classList.add('settings-collapsible', 'collapsed');
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'settings-collapse-toggle collapse-indicator';
+      toggle.setAttribute('aria-label', 'Open ' + name);
+      toggle.setAttribute('aria-expanded', 'false');
+      title.append(toggle);
+      const activate = (event) => {
+        if (event?.target.closest('.help,.settings-tip')) return;
+        const opening = group.classList.toggle('collapsed');
+        toggle.setAttribute('aria-expanded', String(!opening));
+        toggle.setAttribute('aria-label', (opening ? 'Open ' : 'Close ') + name);
+      };
+      title.onclick = activate;
+    });
+  }
+  // Enhancement initialization.
+  function init() {
+    if (window.__cornerworkFeatures) return;
+    window.__cornerworkFeatures = true;
+    api = window.CornerworkApp;
+    const launch = document.createElement('section');
+    launch.className = 'feature-launch';
+    launch.innerHTML =
+      '<div class="eyebrow">Workout type</div><button class="custom-workout" id="customWorkout">Custom workout</button><div class="feature-grid"><button id="quickStart">Quick Start</button><button id="workoutPresets">Presets</button><button id="programs">Programs</button></div>';
+    $('#setup').prepend(launch);
+    launch.after($('#rounds').closest('section'));
+    const quick = buildQuickStart(),
+      program = buildPrograms(),
+      presetBrowser = buildPresets(),
+      techniquesEl = buildTechniques(),
+      creator = buildComboCreator(),
+      history = buildHistory(),
+      completion = buildCompletion(),
+      backup = buildBackup(),
+      coaching = buildCoaching(),
+      qr = buildQr();
+    window.addEventListener('cornerwork-program-progress-sync', () => program.refresh());
+    const selectedWorkout = read('cornerwork-active-selection', null),
+      selectionKind =
+        selectedWorkout?.kind === 'Training Mode' ? 'Workout Preset' : selectedWorkout?.kind,
+      selectionCard = document.createElement('div');
+    selectionCard.className = 'workout-selection';
+    if (selectedWorkout && read('cornerwork-setup-mode', 'custom') !== 'custom') {
+      selectionCard.innerHTML =
+        '<span>' +
+        safe(selectionKind) +
+        '</span><strong>' +
+        safe(selectedWorkout.name) +
+        '</strong><small>' +
+        safe(selectedWorkout.detail) +
+        '</small>';
+    } else selectionCard.classList.add('hidden-feature');
+    $('.combo-wrap').prepend(selectionCard);
+    const completionShare = document.createElement('button');
+    completionShare.className = 'feature-secondary';
+    completionShare.textContent = 'Share workout';
+    completionShare.onclick = async () => {
+      const payload = btoa(
+          unescape(
+            encodeURIComponent(
+              JSON.stringify({ name: 'Cornerwork workout', config: api.snapshot() }),
+            ),
+          ),
+        )
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, ''),
+        url = location.origin + location.pathname + '#workout=' + payload;
+      try {
+        await navigator.clipboard.writeText(url);
+        showUndoMessage('Workout link copied');
+      } catch (e) {
+        prompt('Copy this workout link', url);
+      }
+    };
+    completion.querySelector('#completionRepeat').before(completionShare);
+    function setSetupMode(mode) {
+      write('cornerwork-setup-mode', mode);
+      const lockedMode = mode === 'program';
+      $('#setup').classList.toggle('preset-setup', lockedMode);
+      launch.classList.toggle('preset-selected', lockedMode);
+      launch
+        .querySelectorAll('#customWorkout,#quickStart,#programs,#workoutPresets')
+        .forEach((button) =>
+          button.classList.toggle(
+            'active',
+            button.id ===
+              (mode === 'custom'
+                ? 'customWorkout'
+                : mode === 'quick'
+                  ? 'quickStart'
+                  : mode === 'program'
+                    ? 'programs'
+                    : 'workoutPresets'),
+          ),
+        );
+      const sections = [...$('#setup').children];
+      for (const section of sections) {
+        if (
+          section === launch ||
+          section.classList.contains('shortcut-card') ||
+          section.contains($('#cloudAccount'))
+        )
+          continue;
+        section.classList.toggle('config-locked', lockedMode);
+        section
+          .querySelectorAll('button,input,select')
+          .forEach((control) => (control.disabled = lockedMode));
+      }
+    }
+    setSetupMode(read('cornerwork-setup-mode', 'custom'));
+    $('#customWorkout').onclick = () => {
+      const saved = read('cornerwork-custom-workout', null);
+      write('cornerwork-setup-mode', 'custom');
+      localStorage.removeItem('cornerwork-active-selection');
+      sessionStorage.removeItem('cornerwork-active-program');
+      if (saved) api.applyConfig(saved);
+      else {
+        selectionCard.classList.add('hidden-feature');
+        setSetupMode('custom');
+      }
+    };
+    $('#quickStart').onclick = () => open(quick);
+    $('#programs').onclick = () => {
+      program.refresh();
+      open(program);
+    };
+    $('#workoutPresets').onclick = () => open(presetBrowser);
+    $('#editCoaching').onclick = () => {
+      coaching.refresh();
+      open(coaching);
+    };
+    const customizeButton = $('#customize'),
+      allowedHead = customizeButton.parentElement,
+      wrap = document.createElement('div');
+    wrap.className = 'customize-tools';
+    customizeButton.remove();
+    wrap.append(customizeButton);
+    const custom = document.createElement('button');
+    custom.className = 'customize';
+    custom.textContent = 'Create combo';
+    custom.onclick = () => creator.openFor();
+    wrap.append(custom);
+    allowedHead.after(wrap);
+    window.addEventListener('cornerwork-edit-combo', (event) => {
+      const combo = api.customCombos.find((item) => item.id === event.detail?.id);
+      if (combo) creator.openFor(combo);
+    });
+    const account = $('#cloudAccount'),
+      savedSection = account.closest('section'),
+      manage = document.createElement('div');
+    manage.className = 'preset-launch';
+    manage.style.marginTop = '8px';
+    manage.innerHTML = '<button id="openHistory">Workout history</button>';
+    savedSection.append(manage);
+    $('#openHistory').onclick = () => {
+      renderHistory(history);
+      open(history);
+    };
+    history.querySelector('#historyBackup').onclick = () => {
+      history.close();
+      open(backup);
+    };
+    const accountSection = document.createElement('section');
+    accountSection.className = 'account-section';
+    accountSection.innerHTML = '<div class="eyebrow">Account</div>';
+    accountSection.append(account);
+    $('#sidebarShortcuts').before(accountSection);
+    const fullscreen = document.createElement('button');
+    fullscreen.className = 'top-feature-button';
+    fullscreen.title = 'Full screen';
+    fullscreen.setAttribute('aria-label', 'Toggle full screen');
+    fullscreen.textContent = '⛶';
+    fullscreen.onclick = () =>
+      document.fullscreenElement
+        ? document.exitFullscreen()
+        : document.documentElement.requestFullscreen?.();
+    $('#preferences').before(fullscreen);
+    injectSettings();
+    injectAppearanceSettings();
+    injectButtonBrightnessSetting();
+    injectWorkoutTabMemorySettings();
+    injectUtilities(techniquesEl, backup);
+    installPanelAccordions();
+    installTitleHelp();
+    installCustomSelects();
     enhanceSavedWorkouts(qr);
-    const pending=readSession('cornerwork-pending-shared');if(pending?.config){sessionStorage.removeItem('cornerwork-pending-shared');const shared=modal('sharedWorkoutDialog','Shared Workout','<p class="feature-note"><strong>'+safe(pending.name||'Shared workout')+'</strong> is ready to import. Your current workout will not change until you choose an option.</p><div class="completion-stats"><div><strong>'+safe(pending.config.workout?.rounds||'')+'</strong><span>Rounds</span></div><div><strong>'+fmt(pending.config.workout?.roundTime||0)+'</strong><span>Round</span></div><div><strong>'+describeRest(pending.config.workout||{})+'</strong><span>Recovery</span></div></div><div class="feature-actions"><button class="feature-secondary" id="saveSharedWorkout">Save only</button><button class="feature-primary" id="loadSharedWorkout">Use workout</button></div>');shared.querySelector('#saveSharedWorkout').onclick=()=>{api.upsertPreset({name:String(pending.name||'Shared workout').slice(0,36),config:pending.config});shared.close();showUndoMessage('Workout saved')};shared.querySelector('#loadSharedWorkout').onclick=()=>api.applyConfig(pending.config);open(shared)}
-    const saveModal=$('#savePresetModal .preset-create');if(saveModal&&!$('#presetNote')){const note=document.createElement('textarea');note.id='presetNote';note.maxLength=160;note.placeholder='Workout note (optional)';note.setAttribute('aria-label','Workout note');saveModal.insertBefore(note,$('#savePreset'));$('#savePreset').addEventListener('click',()=>{const value=note.value.trim();if(!value)return;setTimeout(()=>{const presets=read('cornerwork-presets',[]);if(presets[0]){presets[0].note=value;write('cornerwork-presets',presets)}note.value=''},0)})}
-    window.addEventListener('cornerwork-complete',e=>{const selected=read('cornerwork-active-selection',null),detail={...e.detail,workoutName:selected?.name||''},historyData=read('cornerwork-history',[]);historyData.unshift(detail);write('cornerwork-history',historyData.slice(0,500));const active=readSession('cornerwork-active-program');if(active){const progress=read('cornerwork-program-progress',{}),trackedProgram=programs.find(item=>item.id===active.id);if(trackedProgram){const completed=completedProgramSessions(progress,trackedProgram);completed.add(active.index);progress[active.id]=[...completed].sort((a,b)=>a-b);api.syncProgramProgress(progress)}sessionStorage.removeItem('cornerwork-active-program');program.refresh()}completion.querySelector('#completionStats').innerHTML='<div><strong>'+e.detail.rounds+'</strong><span>Rounds</span></div><div><strong>'+e.detail.combos+'</strong><span>Combos</span></div><div><strong>'+e.detail.moves+'</strong><span>Moves</span></div><div><strong>'+fmt(e.detail.duration||e.detail.plannedDuration)+'</strong><span>Time</span></div><div><strong>'+safe(e.detail.skill)+'</strong><span>Level</span></div><div><strong>'+safe(selected?.name||e.detail.mode)+'</strong><span>Workout</span></div>';open(completion)});
-    completion.addEventListener('close',()=>{if(api.phase==='complete')api.resetWorkout()});
-    completion.querySelector('#completionHistory').onclick=()=>{completion.close();renderHistory(history);open(history)};completion.querySelector('#completionSave').onclick=()=>{completion.close();$('#openSavePreset').click()};completion.querySelector('#completionRepeat').onclick=()=>{completion.close();api.startWorkout()};
-    if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('message',event=>{const version=event.data?.version;if(event.data?.type==='CORNERWORK_UPDATE'&&version&&sessionStorage.getItem('cornerwork-sw-version')!==version){sessionStorage.setItem('cornerwork-sw-version',version);location.reload()}});navigator.serviceWorker.register('sw.js').catch(()=>{});}
+    const pending = readSession('cornerwork-pending-shared');
+    if (pending?.config) {
+      sessionStorage.removeItem('cornerwork-pending-shared');
+      const shared = modal(
+        'sharedWorkoutDialog',
+        'Shared Workout',
+        '<p class="feature-note"><strong>' +
+          safe(pending.name || 'Shared workout') +
+          '</strong> is ready to import. Your current workout will not change until you choose an option.</p><div class="completion-stats"><div><strong>' +
+          safe(pending.config.workout?.rounds || '') +
+          '</strong><span>Rounds</span></div><div><strong>' +
+          fmt(pending.config.workout?.roundTime || 0) +
+          '</strong><span>Round</span></div><div><strong>' +
+          describeRest(pending.config.workout || {}) +
+          '</strong><span>Recovery</span></div></div><div class="feature-actions"><button class="feature-secondary" id="saveSharedWorkout">Save only</button><button class="feature-primary" id="loadSharedWorkout">Use workout</button></div>',
+      );
+      shared.querySelector('#saveSharedWorkout').onclick = () => {
+        api.upsertPreset({
+          name: String(pending.name || 'Shared workout').slice(0, 36),
+          config: pending.config,
+        });
+        shared.close();
+        showUndoMessage('Workout saved');
+      };
+      shared.querySelector('#loadSharedWorkout').onclick = () => api.applyConfig(pending.config);
+      open(shared);
+    }
+    const saveModal = $('#savePresetModal .preset-create');
+    if (saveModal && !$('#presetNote')) {
+      const note = document.createElement('textarea');
+      note.id = 'presetNote';
+      note.maxLength = 160;
+      note.placeholder = 'Workout note (optional)';
+      note.setAttribute('aria-label', 'Workout note');
+      saveModal.insertBefore(note, $('#savePreset'));
+      $('#savePreset').addEventListener('click', () => {
+        const value = note.value.trim();
+        if (!value) return;
+        setTimeout(() => {
+          const presets = read('cornerwork-presets', []);
+          if (presets[0]) {
+            presets[0].note = value;
+            write('cornerwork-presets', presets);
+          }
+          note.value = '';
+        }, 0);
+      });
+    }
+    window.addEventListener('cornerwork-complete', (e) => {
+      const selected = read('cornerwork-active-selection', null),
+        detail = { ...e.detail, workoutName: selected?.name || '' },
+        historyData = read('cornerwork-history', []);
+      historyData.unshift(detail);
+      write('cornerwork-history', historyData.slice(0, 500));
+      const active = readSession('cornerwork-active-program');
+      if (active) {
+        const progress = read('cornerwork-program-progress', {}),
+          trackedProgram = programs.find((item) => item.id === active.id);
+        if (trackedProgram) {
+          const completed = completedProgramSessions(progress, trackedProgram);
+          completed.add(active.index);
+          progress[active.id] = [...completed].sort((a, b) => a - b);
+          api.syncProgramProgress(progress);
+        }
+        sessionStorage.removeItem('cornerwork-active-program');
+        program.refresh();
+      }
+      completion.querySelector('#completionStats').innerHTML =
+        '<div><strong>' +
+        e.detail.rounds +
+        '</strong><span>Rounds</span></div><div><strong>' +
+        e.detail.combos +
+        '</strong><span>Combos</span></div><div><strong>' +
+        e.detail.moves +
+        '</strong><span>Moves</span></div><div><strong>' +
+        fmt(e.detail.duration || e.detail.plannedDuration) +
+        '</strong><span>Time</span></div><div><strong>' +
+        safe(e.detail.skill) +
+        '</strong><span>Level</span></div><div><strong>' +
+        safe(selected?.name || e.detail.mode) +
+        '</strong><span>Workout</span></div>';
+      open(completion);
+    });
+    completion.addEventListener('close', () => {
+      if (api.phase === 'complete') api.resetWorkout();
+    });
+    completion.querySelector('#completionHistory').onclick = () => {
+      completion.close();
+      renderHistory(history);
+      open(history);
+    };
+    completion.querySelector('#completionSave').onclick = () => {
+      completion.close();
+      $('#openSavePreset').click();
+    };
+    completion.querySelector('#completionRepeat').onclick = () => {
+      completion.close();
+      api.startWorkout();
+    };
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        const version = event.data?.version;
+        if (
+          event.data?.type === 'CORNERWORK_UPDATE' &&
+          version &&
+          sessionStorage.getItem('cornerwork-sw-version') !== version
+        ) {
+          sessionStorage.setItem('cornerwork-sw-version', version);
+          location.reload();
+        }
+      });
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
   }
-  function readSession(key){try{return JSON.parse(sessionStorage.getItem(key))}catch(e){return null}}
-  function showUndoMessage(message){document.querySelector('.toast')?.remove();const toast=document.createElement('div');toast.className='toast';toast.textContent=message;document.body.appendChild(toast);setTimeout(()=>toast.remove(),2600)}
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$$('.install-button').forEach(b=>b.classList.add('show'))});
-  if(window.CornerworkApp)init();else window.addEventListener('cornerwork-ready',init,{once:true});
+  function readSession(key) {
+    try {
+      return JSON.parse(sessionStorage.getItem(key));
+    } catch (e) {
+      return null;
+    }
+  }
+  function showUndoMessage(message) {
+    document.querySelector('.toast')?.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2600);
+  }
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    installPrompt = e;
+    $$('.install-button').forEach((b) => b.classList.add('show'));
+  });
+  if (window.CornerworkApp) init();
+  else window.addEventListener('cornerwork-ready', init, { once: true });
 })();

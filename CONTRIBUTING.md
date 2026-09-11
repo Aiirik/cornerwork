@@ -1,5 +1,16 @@
 # Contributing to Cornerwork
 
+## Code formatting
+
+Before submitting changes, format the repository with:
+
+```sh
+npx --yes prettier@3.6.2 --write .
+```
+
+The shared Prettier configuration keeps HTML, CSS, JavaScript, JSON, Markdown, and workflow
+files consistent. Binary font and image assets are excluded.
+
 Thanks for helping improve Cornerwork.
 
 ## Reporting problems

@@ -25,12 +25,12 @@ Cornerwork builds varied workouts from practical combinations instead of repeati
 
 ## Controls
 
-| Action | Default key |
-| --- | --- |
-| Start or pause | Space |
-| Next round | N |
-| Previous round | R |
-| Mute voice | M |
+| Action         | Default key |
+| -------------- | ----------- |
+| Start or pause | Space       |
+| Next round     | N           |
+| Previous round | R           |
+| Mute voice     | M           |
 
 Shortcuts can be changed in Cornerwork's settings.
 

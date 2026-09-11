@@ -38,19 +38,19 @@ Cornerwork is not intended to become a social network, competitive leaderboard, 
 
 Use these labels consistently in the interface and documentation:
 
-| Concept | Preferred label |
-| --- | --- |
-| User-created configuration | Custom workout |
-| Guided one-time generator | Quick Start |
-| Multi-session progression | Training Program |
-| Editable starting configuration | Workout Preset |
-| Main configuration drawer | Workout |
-| Global preferences popup | Settings |
-| Active work period | Round |
-| Transition between timed periods | Phase |
-| Spoken and displayed sequence | Combo or combination |
-| Optional tactical theme | Round focus |
-| Timed focus subdivision | Structured block |
+| Concept                          | Preferred label      |
+| -------------------------------- | -------------------- |
+| User-created configuration       | Custom workout       |
+| Guided one-time generator        | Quick Start          |
+| Multi-session progression        | Training Program     |
+| Editable starting configuration  | Workout Preset       |
+| Main configuration drawer        | Workout              |
+| Global preferences popup         | Settings             |
+| Active work period               | Round                |
+| Transition between timed periods | Phase                |
+| Spoken and displayed sequence    | Combo or combination |
+| Optional tactical theme          | Round focus          |
+| Timed focus subdivision          | Structured block     |
 
 ## Current feature map
 
@@ -195,18 +195,18 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 
 ### Persistent storage
 
-| Key | Purpose |
-| --- | --- |
-| `cornerwork-settings` | Workout, display, audio, accessibility, and shortcut settings |
-| `cornerwork-presets` | Locally saved workout presets |
-| `cornerwork-custom-combos` | User-created combinations |
-| `cornerwork-history` | Completed workout records |
-| `cornerwork-program-progress` | Completed program sessions |
-| `cornerwork-setup-mode` | Current custom, quick, program, or mode selection |
-| `cornerwork-active-selection` | Selected preset description |
-| `cornerwork-custom-workout` | Last custom setup before loading a preset |
-| `cornerwork-workout-fold-state` | Last open Workout panel groups |
-| `cornerwork-allow-page-zoom` | Mobile zoom accessibility preference |
+| Key                             | Purpose                                                       |
+| ------------------------------- | ------------------------------------------------------------- |
+| `cornerwork-settings`           | Workout, display, audio, accessibility, and shortcut settings |
+| `cornerwork-presets`            | Locally saved workout presets                                 |
+| `cornerwork-custom-combos`      | User-created combinations                                     |
+| `cornerwork-history`            | Completed workout records                                     |
+| `cornerwork-program-progress`   | Completed program sessions                                    |
+| `cornerwork-setup-mode`         | Current custom, quick, program, or mode selection             |
+| `cornerwork-active-selection`   | Selected preset description                                   |
+| `cornerwork-custom-workout`     | Last custom setup before loading a preset                     |
+| `cornerwork-workout-fold-state` | Last open Workout panel groups                                |
+| `cornerwork-allow-page-zoom`    | Mobile zoom accessibility preference                          |
 
 Session storage is used for pending shared workouts, active program sessions, and service-worker update coordination.
 
@@ -221,16 +221,17 @@ Before changing code:
 
 Before publishing:
 
-1. Run `node --check dist/assets/js/app.js`.
-2. Run `node --check dist/assets/js/bootstrap.js`.
-3. Run `node --check dist/assets/js/enhancements.js`.
-4. Run `node --check dist/sw.js`.
-5. Run `git diff --check`.
-6. Verify every local asset referenced by HTML, CSS, the manifest, and the service worker exists.
-7. Test setup, start, pause, resume, previous, next, reset, and workout completion.
-8. Test the affected flow at desktop width and iPhone-sized width.
-9. When page scripts or styles change, update their query-string versions in `index.html`, update the enhancement version in `bootstrap.js`, and increment the cache name in `sw.js`.
-10. After pushing, confirm the GitHub Pages workflow succeeds and the deployed app serves the new cache version.
+1. Run `npx --yes prettier@3.6.2 --check .`.
+2. Run `node --check dist/assets/js/app.js`.
+3. Run `node --check dist/assets/js/bootstrap.js`.
+4. Run `node --check dist/assets/js/enhancements.js`.
+5. Run `node --check dist/sw.js`.
+6. Run `git diff --check`.
+7. Verify every local asset referenced by HTML, CSS, the manifest, and the service worker exists.
+8. Test setup, start, pause, resume, previous, next, reset, and workout completion.
+9. Test the affected flow at desktop width and iPhone-sized width.
+10. When page scripts or styles change, update their query-string versions in `index.html`, update the enhancement version in `bootstrap.js`, and increment the cache name in `sw.js`.
+11. After pushing, confirm the GitHub Pages workflow succeeds and the deployed app serves the new cache version.
 
 ## Decision test for new ideas
 
