@@ -1514,7 +1514,7 @@ select {
   color: #fff;
   font-weight: 800;
 }
-.custom-select-check {
+.ui-icon.custom-select-check {
   display: none;
   width: 15px;
   height: 15px;
