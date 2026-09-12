@@ -1109,6 +1109,10 @@ button {
   pointer-events: none;
   -webkit-user-drag: none;
 }
+body.circular-header-icon .mark,
+body.circular-header-icon .mark img {
+  border-radius: 50%;
+}
 body.compact-brand .brand {
   gap: 10px;
   letter-spacing: 0.08em;
@@ -1827,6 +1831,23 @@ button *,
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
+.icon-picker-shape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 9px 10px 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 750;
+}
+.icon-picker-shape .segmented {
+  flex: 0 1 190px;
+}
 .icon-picker-option {
   position: relative;
   min-width: 0;
@@ -1897,11 +1918,35 @@ button *,
   line-height: 1.45;
   text-align: left;
 }
-.icon-picker-install-note strong {
-  display: block;
-  margin-bottom: 4px;
+.icon-picker-install-note summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
   color: var(--text);
   font-size: 11px;
+  font-weight: 800;
+}
+.icon-picker-install-note summary::-webkit-details-marker {
+  display: none;
+}
+.icon-picker-install-note summary::after {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: '';
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.18s ease;
+}
+.icon-picker-install-note[open] summary::after {
+  transform: rotate(225deg) translate(-2px, -2px);
+}
+.icon-picker-install-content {
+  padding-top: 7px;
 }
 .icon-picker-install-note p {
   margin: 0;
@@ -1913,7 +1958,14 @@ button *,
 .icon-picker-install-note li + li {
   margin-top: 2px;
 }
-@media (max-width: 390px) {
+@media (max-width: 350px) {
+  .icon-picker-shape {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .icon-picker-shape .segmented {
+    flex-basis: auto;
+  }
   .icon-picker-grid {
     gap: 6px;
   }

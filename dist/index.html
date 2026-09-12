@@ -31,7 +31,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=185" />
+    <link rel="stylesheet" href="assets/css/app.css?v=186" />
   </head>
   <body>
     <main class="app">
@@ -560,25 +560,39 @@
           Select the icon used throughout Cornerwork. Your header and browser icon update
           immediately.
         </p>
+        <div class="icon-picker-shape">
+          <span>Header shape</span>
+          <div
+            class="segmented"
+            data-setting="headerIconShape"
+            role="radiogroup"
+            aria-label="Header icon shape"
+          >
+            <button class="active" type="button" data-value="rounded">Rounded square</button
+            ><button type="button" data-value="circle">Circle</button>
+          </div>
+        </div>
         <div
           class="icon-picker-grid"
           id="iconPickerGrid"
           role="radiogroup"
           aria-label="Cornerwork app icon"
         ></div>
-        <div class="icon-picker-install-note">
-          <strong>Changing the iPhone Home Screen icon</strong>
-          <p>
-            iPhone keeps the icon that was active when Cornerwork was added to your Home Screen. To
-            update it:
-          </p>
-          <ol>
-            <li>Open cornerwork.ca in Safari.</li>
-            <li>Select the icon you want above.</li>
-            <li>Tap Share, then Add to Home Screen.</li>
-            <li>Remove the old Cornerwork icon from your Home Screen.</li>
-          </ol>
-        </div>
+        <details class="icon-picker-install-note">
+          <summary>Changing the iPhone Home Screen icon</summary>
+          <div class="icon-picker-install-content">
+            <p>
+              iPhone keeps the icon that was active when Cornerwork was added to your Home Screen.
+              To update it:
+            </p>
+            <ol>
+              <li>Open cornerwork.ca in Safari.</li>
+              <li>Select the icon you want above.</li>
+              <li>Tap Share, then Add to Home Screen.</li>
+              <li>Remove the old Cornerwork icon from your Home Screen.</li>
+            </ol>
+          </div>
+        </details>
       </div>
     </dialog>
     <section class="settings-page" id="settingsPage" aria-hidden="true">
@@ -1230,8 +1244,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=186"></script>
+    <script type="module" src="assets/js/app.js?v=187"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=188" defer></script>
+    <script src="assets/js/bootstrap.js?v=189" defer></script>
   </body>
 </html>

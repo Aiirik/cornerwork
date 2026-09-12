@@ -441,6 +441,7 @@ import {
     format: 'numbers',
     displayMode: 'standard',
     appIconTheme: 'default',
+    headerIconShape: 'rounded',
     brandLayout: 'default',
     compactRoundLabels: false,
     shortcutLabels: true,
@@ -1978,6 +1979,7 @@ import {
     document.body.classList.toggle('show-fullscreen-button', !!settings.showFullscreen);
     document.body.classList.toggle('compact-workout', settings.displayMode === 'compact');
     document.body.classList.toggle('compact-brand', settings.brandLayout === 'compact');
+    document.body.classList.toggle('circular-header-icon', settings.headerIconShape === 'circle');
     document.body.classList.toggle('compact-round-labels', !!settings.compactRoundLabels);
     const iconTheme =
         iconThemes.get(settings.appIconTheme) || createIconTheme(settings.appIconTheme),
@@ -2531,6 +2533,10 @@ import {
   }
   if (!isIconThemeId(settings.appIconTheme)) {
     settings.appIconTheme = 'default';
+    saveSettings();
+  }
+  if (!['rounded', 'circle'].includes(settings.headerIconShape)) {
+    settings.headerIconShape = 'rounded';
     saveSettings();
   }
   if (settings.brandLayout === 'large') {
