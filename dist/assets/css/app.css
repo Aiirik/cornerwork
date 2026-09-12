@@ -1088,29 +1088,37 @@ button {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
-.mark {
+.mark,
+.icon-picker-preview {
   --mark-frame: #25272b;
-  width: 52px;
-  height: 52px;
-  padding: 5px;
   box-sizing: border-box;
   border: 1px solid #343840;
-  border-radius: 13px;
   overflow: hidden;
   background: var(--mark-frame);
   box-shadow: 0 0 18px #ffffff14;
 }
-.mark img {
+.mark {
+  width: 52px;
+  height: 52px;
+  padding: 5px;
+  border-radius: 13px;
+}
+.mark img,
+.icon-picker-preview img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
-  border-radius: 7px;
   pointer-events: none;
   -webkit-user-drag: none;
 }
+.mark img {
+  border-radius: 7px;
+}
 body.circular-header-icon .mark,
-body.circular-header-icon .mark img {
+body.circular-header-icon .mark img,
+body.circular-header-icon .icon-picker-preview,
+body.circular-header-icon .icon-picker-preview img {
   border-radius: 50%;
 }
 body.compact-brand .brand {
@@ -1891,18 +1899,13 @@ button *,
 .icon-picker-preview {
   width: 82px;
   height: 82px;
+  padding: 8px;
   display: grid;
   place-items: center;
-  overflow: hidden;
-  border-radius: 18px;
-  background: #25272b;
-  box-shadow: 0 0 18px #ffffff12;
+  border-radius: 20px;
 }
 .icon-picker-preview img {
-  width: 76px;
-  height: 76px;
-  object-fit: contain;
-  pointer-events: none;
+  border-radius: 11px;
 }
 .icon-picker-option strong {
   font-size: 12px;
@@ -1975,10 +1978,11 @@ button *,
   .icon-picker-preview {
     width: 70px;
     height: 70px;
+    padding: 7px;
+    border-radius: 18px;
   }
   .icon-picker-preview img {
-    width: 64px;
-    height: 64px;
+    border-radius: 10px;
   }
 }
 /* Workout sound controls */

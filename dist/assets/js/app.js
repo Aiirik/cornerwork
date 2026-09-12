@@ -441,7 +441,7 @@ import {
     format: 'numbers',
     displayMode: 'standard',
     appIconTheme: 'default',
-    headerIconShape: 'rounded',
+    headerIconShape: 'square',
     brandLayout: 'default',
     compactRoundLabels: false,
     shortcutLabels: true,
@@ -2535,8 +2535,12 @@ import {
     settings.appIconTheme = 'default';
     saveSettings();
   }
-  if (!['rounded', 'circle'].includes(settings.headerIconShape)) {
-    settings.headerIconShape = 'rounded';
+  if (settings.headerIconShape === 'rounded') {
+    settings.headerIconShape = 'square';
+    saveSettings();
+  }
+  if (!['square', 'circle'].includes(settings.headerIconShape)) {
+    settings.headerIconShape = 'square';
     saveSettings();
   }
   if (settings.brandLayout === 'large') {
