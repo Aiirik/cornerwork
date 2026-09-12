@@ -495,19 +495,6 @@ body.high-contrast {
 body.high-contrast .stage {
   background: #050608;
 }
-.mirror-video {
-  width: 100%;
-  max-height: 58dvh;
-  border-radius: 14px;
-  background: #050608;
-  transform: scaleX(-1);
-}
-.mirror-controls {
-  display: flex;
-  justify-content: center;
-  gap: 9px;
-  margin-top: 10px;
-}
 .install-banner {
   display: none;
   margin-top: 10px;
@@ -792,13 +779,6 @@ body[data-phase='ready'] .combo-wrap > .combo-numbers {
 .preset-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
-}
-.mirror-actions {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 10px;
 }
 .install-button {
   display: none;

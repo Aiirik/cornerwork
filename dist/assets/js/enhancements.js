@@ -32,10 +32,7 @@
   };
   const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
   let api,
-    installPrompt = null,
-    mirrorStream = null,
-    recorder = null,
-    recorded = [];
+    installPrompt = null;
   const focusSessions = (focus) => [
     ['10-minute class drill', focus, 10],
     ['15-minute block drill', focus, 15],
@@ -1579,58 +1576,7 @@
         '</div><p class="feature-note">Session complete. Your workout has been added to your history.</p></div><div class="completion-stats" id="completionStats"></div><div class="feature-actions"><button class="feature-secondary" id="completionHistory">View history</button><button class="feature-secondary" id="completionSave">Save setup</button><button class="feature-primary" id="completionRepeat">Repeat workout</button></div>',
     );
   }
-  // Camera, backup, coaching, sharing, and saved workout tools.
-  function buildMirror() {
-    const el = modal(
-      'mirrorDialog',
-      'Mirror and Record',
-      '<p class="feature-note">Use your camera as a mirror to check form. Recording stays on your device and is downloaded only when you choose.</p><video class="mirror-video" id="mirrorVideo" autoplay playsinline muted></video><div class="mirror-actions"><button class="feature-primary" id="startCamera">Start camera</button><button class="feature-secondary" id="recordCamera" disabled>Record</button><button class="feature-secondary" id="stopCamera" disabled>Stop camera</button></div>',
-    );
-    el.addEventListener('close', stopMirror);
-    el.querySelector('#startCamera').onclick = async () => {
-      try {
-        mirrorStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user' },
-          audio: false,
-        });
-        el.querySelector('#mirrorVideo').srcObject = mirrorStream;
-        el.querySelector('#recordCamera').disabled = false;
-        el.querySelector('#stopCamera').disabled = false;
-      } catch (e) {
-        alert('Camera access was not available. Check your browser permissions.');
-      }
-    };
-    el.querySelector('#recordCamera').onclick = () => {
-      if (!mirrorStream) return;
-      if (recorder?.state === 'recording') {
-        recorder.stop();
-        return;
-      }
-      recorded = [];
-      recorder = new MediaRecorder(mirrorStream);
-      recorder.ondataavailable = (e) => recorded.push(e.data);
-      recorder.onstop = () => {
-        const url = URL.createObjectURL(new Blob(recorded, { type: recorder.mimeType })),
-          a = document.createElement('a');
-        a.href = url;
-        a.download = 'cornerwork-form-review.webm';
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-        el.querySelector('#recordCamera').textContent = 'Record';
-      };
-      recorder.start();
-      el.querySelector('#recordCamera').textContent = 'Stop recording';
-    };
-    el.querySelector('#stopCamera').onclick = stopMirror;
-    return el;
-  }
-  function stopMirror() {
-    if (recorder?.state === 'recording') recorder.stop();
-    mirrorStream?.getTracks().forEach((t) => t.stop());
-    mirrorStream = null;
-    const video = $('#mirrorVideo');
-    if (video) video.srcObject = null;
-  }
+  // Backup, coaching, sharing, and saved workout tools.
   function buildBackup() {
     const el = modal(
       'backupDialog',
@@ -1669,7 +1615,7 @@
     return modal(
       'privacyDialog',
       'Privacy Policy',
-      '<div class="info-copy"><p class="info-summary"><strong>The short version:</strong> Most Cornerwork data stays in your browser. If you sign in with Google, only your saved workouts and program progress are synced so they can appear on your other devices. Cornerwork does not sell your data or use advertising or analytics trackers.</p><h3>Data saved on this device</h3><p>Your settings, custom combinations, workout history, saved workouts, and program progress are stored in your browser. This information stays on that browser unless you sign in, export a backup, or share a workout.</p><p>Clearing Cornerwork\'s browser data can remove this local information. Data stored in another browser or device does not automatically appear unless it was synced through your account or restored from a backup.</p><h3>When you sign in with Google</h3><p>Google verifies your identity and Firebase keeps you signed in. Cornerwork uses your Google account identifier and email address to connect your account. Your saved workouts and program progress are stored in Firebase Cloud Firestore so they can sync between devices. Your other settings, custom combinations, and workout history remain local to each browser.</p><p>Cornerwork never receives your Google password. Google and Firebase may process normal technical information, such as your IP address and browser details, under their own privacy policies.</p><h3>Backups and shared workouts</h3><p>An exported backup is downloaded directly to your device. Cornerwork only reads a backup when you choose a file to import. Shared workouts place the workout setup inside the share link, so anyone who receives that link can view and import that workout.</p><h3>Camera and recordings</h3><p>The Mirror and Record feature only uses the camera after you give permission. Camera video is handled on your device. Recordings are downloaded to your device and are not uploaded by Cornerwork.</p><h3>Removing your data</h3><p>You can remove local information by clearing the site data for Cornerwork in your browser. If you are signed in, delete synced saved workouts inside Cornerwork before signing out. Clearing only the browser data does not remove information already synced to Firebase.</p><p class="info-updated">Last updated September 11, 2026.</p></div>',
+      '<div class="info-copy"><p class="info-summary"><strong>The short version:</strong> Most Cornerwork data stays in your browser. If you sign in with Google, only your saved workouts and program progress are synced so they can appear on your other devices. Cornerwork does not sell your data or use advertising or analytics trackers.</p><h3>Data saved on this device</h3><p>Your settings, custom combinations, workout history, saved workouts, and program progress are stored in your browser. This information stays on that browser unless you sign in, export a backup, or share a workout.</p><p>Clearing Cornerwork\'s browser data can remove this local information. Data stored in another browser or device does not automatically appear unless it was synced through your account or restored from a backup.</p><h3>When you sign in with Google</h3><p>Google verifies your identity and Firebase keeps you signed in. Cornerwork uses your Google account identifier and email address to connect your account. Your saved workouts and program progress are stored in Firebase Cloud Firestore so they can sync between devices. Your other settings, custom combinations, and workout history remain local to each browser.</p><p>Cornerwork never receives your Google password. Google and Firebase may process normal technical information, such as your IP address and browser details, under their own privacy policies.</p><h3>Backups and shared workouts</h3><p>An exported backup is downloaded directly to your device. Cornerwork only reads a backup when you choose a file to import. Shared workouts place the workout setup inside the share link, so anyone who receives that link can view and import that workout.</p><h3>Removing your data</h3><p>You can remove local information by clearing the site data for Cornerwork in your browser. If you are signed in, delete synced saved workouts inside Cornerwork before signing out. Clearing only the browser data does not remove information already synced to Firebase.</p><p class="info-updated">Last updated September 12, 2026.</p></div>',
       'info-dialog',
     );
   }

@@ -106,7 +106,6 @@ Use these labels consistently in the interface and documentation:
 ### Additional tools
 
 - Technique catalogue
-- Camera mirror and optional local recording download
 - Workout history and streak statistics
 - PWA installation and offline support
 - Appearance, accessibility, audio, and display preferences
