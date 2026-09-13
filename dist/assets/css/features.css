@@ -1906,7 +1906,7 @@ select {
 /* Program categories and session details */
 .program-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
   margin: 0 0 10px;
   padding: 4px;
@@ -2036,6 +2036,9 @@ select {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
+.studio-detail .program-session-list {
+  grid-template-columns: 1fr;
+}
 .program-session {
   min-width: 0;
   display: grid;
@@ -2103,6 +2106,171 @@ select {
 .program-load-session {
   width: 100%;
 }
+.program-create-card {
+  min-height: 132px;
+  border-style: dashed;
+}
+.program-create-mark {
+  width: 32px;
+  height: 32px;
+  display: grid !important;
+  place-items: center;
+  margin-bottom: 10px;
+  border: 1px solid var(--red-border);
+  border-radius: 50%;
+  background: var(--red-soft);
+  color: var(--red-text) !important;
+  font-size: 22px !important;
+  font-weight: 700;
+}
+.program-empty {
+  align-self: center;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.program-variation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 12px;
+}
+.program-variation strong,
+.program-variation span {
+  display: block;
+}
+.program-variation strong {
+  margin-bottom: 3px;
+  color: var(--button-text);
+  font-size: 12px;
+}
+.program-variation span {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.program-variation-actions,
+.program-manage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.program-variation-actions button {
+  white-space: nowrap;
+}
+.program-variation-actions button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.program-studio-form {
+  margin-bottom: 16px;
+}
+.studio-round-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 3px 0 9px;
+}
+.studio-round-heading strong {
+  color: var(--button-text);
+  font-size: 13px;
+}
+.studio-round-heading span {
+  color: var(--muted);
+  font-size: 10px;
+}
+.studio-round-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.studio-round {
+  display: grid;
+  grid-template-columns: 55px minmax(0, 1fr) 105px;
+  align-items: end;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 7px;
+}
+.studio-round > span {
+  align-self: center;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+.studio-round label {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.studio-round label > span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.studio-round .custom-select {
+  min-width: 0;
+}
+.studio-round select {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel2);
+  padding: 7px 8px;
+  color: var(--button-text);
+  font-size: 11px;
+}
+.studio-program-plan {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 12px;
+}
+.studio-program-plan > strong {
+  color: var(--button-text);
+  font-size: 12px;
+}
+.studio-program-plan > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.studio-program-plan span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 7px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.studio-program-plan b {
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--red-soft);
+  color: var(--red-text);
+  font-size: 9px;
+}
 @media (max-width: 620px) {
   .program-detail-head {
     display: grid;
@@ -2112,5 +2280,25 @@ select {
   }
   .program-session-list {
     grid-template-columns: 1fr;
+  }
+  .program-variation {
+    grid-template-columns: 1fr;
+  }
+  .program-variation-actions,
+  .program-manage-actions {
+    justify-content: stretch;
+  }
+  .program-variation-actions button,
+  .program-manage-actions button {
+    flex: 1 1 auto;
+  }
+  .studio-round-grid {
+    grid-template-columns: 1fr;
+  }
+  .studio-round {
+    grid-template-columns: 48px minmax(0, 1fr) 92px;
+  }
+  .studio-program-plan > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

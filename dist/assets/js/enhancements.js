@@ -31,6 +31,37 @@
     }
   };
   const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const createVariationSeed = () => {
+    if (globalThis.crypto?.getRandomValues) {
+      const values = new Uint32Array(2);
+      globalThis.crypto.getRandomValues(values);
+      return values[0].toString(36) + values[1].toString(36);
+    }
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  };
+  const studioFocuses = [
+    ['mixed', 'All-around boxing'],
+    ['jabs', 'Jabs'],
+    ['straight', 'Straight punches'],
+    ['hooks', 'Hooks'],
+    ['uppercuts', 'Uppercuts'],
+    ['body', 'Body work'],
+    ['defense', 'Defense and counters'],
+    ['footwork', 'Footwork and angles'],
+    ['enterexit', 'Enter and exit'],
+    ['speed', 'Speed'],
+    ['power', 'Power (bag / general)'],
+    ['high', 'High output'],
+    ['explosive', 'Explosive bursts'],
+    ['punchout15', '15-second punch-out'],
+    ['punchout30', '30-second punch-out'],
+    ['inside', 'Inside fighting'],
+    ['kicks', 'Kicks'],
+    ['kickmix', 'Punch to kick'],
+    ['freestyle', 'Freestyle'],
+  ];
+  const studioFocusLabel = (value) =>
+    studioFocuses.find(([focus]) => focus === value)?.[1] || value;
   let api,
     installPrompt = null;
   const focusSessions = (focus) => [
@@ -807,6 +838,8 @@
       focusedDrill: null,
       progressiveCombos: false,
       technicalThemes: false,
+      roundFocusPlan: null,
+      variationSeed: '',
       ...overrides,
       workout,
       allowedCombos: null,
@@ -1081,9 +1114,214 @@
       'Practice the session theme through compatible combinations and guided round focuses.'
     );
   }
+  function studioProgramView(saved) {
+    if (
+      !saved ||
+      typeof saved !== 'object' ||
+      !saved.id ||
+      !saved.name ||
+      !saved.config?.workout ||
+      !Array.isArray(saved.config.roundFocusPlan)
+    )
+      return null;
+    return {
+      ...saved,
+      studio: true,
+      sessions: [
+        [
+          saved.name,
+          'mixed',
+          saved.config.workout.rounds +
+            ' rounds · ' +
+            fmt(saved.config.workout.roundTime) +
+            ' each · ' +
+            describeRest(saved.config.workout),
+        ],
+      ],
+      sessionConfigs: [saved.config],
+    };
+  }
+  function buildProgramStudio(onSaved) {
+    const focusOptions = studioFocuses
+        .map(([value, label]) => '<option value="' + value + '">' + label + '</option>')
+        .join(''),
+      roundRows = Array.from(
+        { length: 12 },
+        (_, index) =>
+          '<div class="studio-round" data-studio-round="' +
+          index +
+          '"><span>Round ' +
+          (index + 1) +
+          '</span><label><span>Focus</span><select data-studio-focus aria-label="Round ' +
+          (index + 1) +
+          ' focus">' +
+          focusOptions +
+          '</select></label><label class="studio-round-rest"><span>Rest after</span><select data-studio-rest aria-label="Rest after round ' +
+          (index + 1) +
+          '"><option value="15">0:15</option><option value="30" selected>0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option></select></label></div>',
+      ).join(''),
+      el = modal(
+        'programStudioDialog',
+        'Program Studio',
+        '<p class="feature-note">Build a locked, multi-round program with a clear focus for every round. Cornerwork handles the callouts while preserving your round order.</p><div class="feature-form program-studio-form"><label class="wide">Program name<input id="studioName" maxlength="48" placeholder="My boxing program"></label><label class="wide">What is this program for?<textarea id="studioDescription" maxlength="180" rows="2" placeholder="Explain the goal so it is clear before starting."></textarea></label><label>Equipment<select id="studioEquipment"><option value="bag">Heavy bag</option><option value="shadow">Shadowboxing</option><option value="general">General / flexible</option></select></label><label>Skill level<select id="studioSkill"><option value="basic">Basic</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option></select></label><label>Rounds<select id="studioRounds">' +
+          Array.from({ length: 11 }, (_, index) => {
+            const value = index + 2;
+            return (
+              '<option value="' +
+              value +
+              '"' +
+              (value === 6 ? ' selected' : '') +
+              '>' +
+              value +
+              '</option>'
+            );
+          }).join('') +
+          '</select></label><label>Round length<select id="studioRoundTime"><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="150">2:30</option><option value="180" selected>3:00</option><option value="240">4:00</option></select></label><label>Default rest<select id="studioRest"><option value="15">0:15</option><option value="30" selected>0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option></select></label><label>Warmup<select id="studioWarmup"><option value="0">None</option><option value="30">0:30</option><option value="45" selected>0:45</option><option value="60">1:00</option><option value="90">1:30</option></select></label><label>Combo timing<select id="studioPace"><option value="4">Fast · about 4 sec</option><option value="6" selected>Balanced · about 6 sec</option><option value="8">Technical · about 8 sec</option><option value="10">Slow · about 10 sec</option></select></label><label>Combo complexity<select id="studioComplexity"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label></div><div class="studio-round-heading"><strong>Round plan</strong><span>Choose a focus and adjust the rest after any round.</span></div><div class="studio-round-grid">' +
+          roundRows +
+          '</div><div class="feature-actions"><button class="feature-secondary" id="studioCancel" type="button">Cancel</button><button class="feature-primary" id="studioSave" type="button">Save program</button></div>',
+        'program-studio-dialog',
+      );
+    let editingId = '';
+    const starterPlan = [
+      'jabs',
+      'straight',
+      'hooks',
+      'body',
+      'defense',
+      'mixed',
+      'footwork',
+      'speed',
+      'power',
+      'inside',
+      'explosive',
+      'freestyle',
+    ];
+    const roundElements = [...el.querySelectorAll('[data-studio-round]')];
+    const syncRounds = () => {
+      const count = +el.querySelector('#studioRounds').value;
+      roundElements.forEach((row, index) => {
+        row.classList.toggle('hidden-feature', index >= count);
+        row
+          .querySelector('.studio-round-rest')
+          .classList.toggle('hidden-feature', index === count - 1);
+      });
+    };
+    const setValue = (selector, value) => {
+      const field = el.querySelector(selector);
+      field.value = String(value);
+      field._syncCustomSelect?.();
+    };
+    el.openFor = (saved = null) => {
+      editingId = saved?.id || '';
+      el.querySelector('.feature-head h2').textContent = saved ? 'Edit Program' : 'Program Studio';
+      setValue('#studioName', saved?.name || '');
+      setValue('#studioDescription', saved?.detail || '');
+      setValue('#studioEquipment', saved?.equipment || 'bag');
+      setValue('#studioSkill', saved?.config?.skill || 'intermediate');
+      setValue('#studioRounds', saved?.config?.workout?.rounds || 6);
+      setValue('#studioRoundTime', saved?.config?.workout?.roundTime || 180);
+      setValue('#studioRest', saved?.config?.workout?.restTime || 30);
+      setValue('#studioWarmup', saved?.config?.workout?.warmupTime ?? 45);
+      setValue('#studioPace', saved?.config?.workout?.pace || 6);
+      setValue('#studioComplexity', saved?.config?.complexity || 'medium');
+      roundElements.forEach((row, index) => {
+        const focus = saved?.config?.roundFocusPlan?.[index]?.[0] || starterPlan[index];
+        const focusSelect = row.querySelector('[data-studio-focus]'),
+          restSelect = row.querySelector('[data-studio-rest]'),
+          savedRest = saved?.config?.workout?.restSchedule?.[index],
+          rest = Number.isFinite(+savedRest) ? +savedRest : saved?.config?.workout?.restTime || 30;
+        focusSelect.value = focus;
+        restSelect.value = String(rest);
+        focusSelect._syncCustomSelect?.();
+        restSelect._syncCustomSelect?.();
+      });
+      syncRounds();
+      open(el);
+    };
+    el.querySelector('#studioRounds').onchange = syncRounds;
+    el.querySelector('#studioRest').onchange = (event) => {
+      roundElements.forEach((row) => {
+        const select = row.querySelector('[data-studio-rest]');
+        select.value = event.target.value;
+        select._syncCustomSelect?.();
+      });
+    };
+    el.querySelector('#studioCancel').onclick = () => el.close();
+    el.querySelector('#studioSave').onclick = () => {
+      const name = el.querySelector('#studioName').value.trim();
+      if (!name) {
+        el.querySelector('#studioName').focus();
+        return;
+      }
+      const rounds = +el.querySelector('#studioRounds').value,
+        equipment = el.querySelector('#studioEquipment').value,
+        roundFocusPlan = roundElements.slice(0, rounds).map((row) => {
+          const focus = row.querySelector('[data-studio-focus]').value;
+          return [focus === 'power' && equipment === 'shadow' ? 'mixed' : focus];
+        }),
+        restSchedule = roundElements
+          .slice(0, Math.max(0, rounds - 1))
+          .map((row) => +row.querySelector('[data-studio-rest]').value),
+        focuses = [...new Set(roundFocusPlan.flat())],
+        includeTypes = new Set(['punch']);
+      if (focuses.some((focus) => ['body', 'inside'].includes(focus))) includeTypes.add('body');
+      if (focuses.some((focus) => ['defense', 'counterdefense'].includes(focus)))
+        includeTypes.add('defense');
+      if (focuses.some((focus) => ['footwork', 'movement', 'enterexit'].includes(focus)))
+        includeTypes.add('footwork');
+      if (focuses.some((focus) => ['kicks', 'kickmix'].includes(focus))) includeTypes.add('kick');
+      const savedPrograms = read('cornerwork-studio-programs', []),
+        existing = savedPrograms.find((program) => program.id === editingId),
+        program = {
+          id: editingId || 'studio-' + Date.now().toString(36),
+          name: name.slice(0, 48),
+          detail:
+            el.querySelector('#studioDescription').value.trim() ||
+            'A custom multi-round program built in Program Studio.',
+          equipment,
+          createdAt: existing?.createdAt || Date.now(),
+          updatedAt: Date.now(),
+          config: workoutTemplate({
+            trainingMode: equipment,
+            skill: el.querySelector('#studioSkill').value,
+            complexity: el.querySelector('#studioComplexity').value,
+            focusEnabled: 'yes',
+            focuses,
+            roundFocusPlan,
+            includeTypes: [...includeTypes],
+            coachCues: true,
+            workout: {
+              rounds,
+              warmupTime: +el.querySelector('#studioWarmup').value,
+              roundTime: +el.querySelector('#studioRoundTime').value,
+              restTime: +el.querySelector('#studioRest').value,
+              restSchedule,
+              pace: +el.querySelector('#studioPace').value,
+            },
+          }),
+        },
+        nextPrograms = existing
+          ? savedPrograms.map((item) => (item.id === program.id ? program : item))
+          : [program, ...savedPrograms];
+      write('cornerwork-studio-programs', nextPrograms);
+      if (existing) {
+        const variations = read('cornerwork-program-variations', {});
+        delete variations[program.id + ':0'];
+        write('cornerwork-program-variations', variations);
+      }
+      el.close();
+      onSaved(program);
+    };
+    syncRounds();
+    return el;
+  }
   // Program, preset, technique, and history interfaces.
   function buildPrograms() {
     const categories = {
+      studio: {
+        label: 'Studio',
+        description: 'Build, edit, and repeat your own structured multi-round programs.',
+      },
       focus: {
         label: 'Focus drills',
         description: 'Repeat one clearly explained assignment until the coach changes it.',
@@ -1117,30 +1355,58 @@
     let active = read('cornerwork-program-tab', 'focus');
     if (!categories[active]) active = 'focus';
     const browser = el.querySelector('.program-browser'),
-      detail = el.querySelector('.program-detail');
+      detail = el.querySelector('.program-detail'),
+      studio = buildProgramStudio(() => {
+        active = 'studio';
+        write('cornerwork-program-tab', active);
+        showBrowser();
+      });
     const showBrowser = () => {
       detail.classList.add('hidden-feature');
+      detail.classList.remove('studio-detail');
       browser.classList.remove('hidden-feature');
       el.querySelector('.feature-head h2').textContent = 'Training Programs';
       render();
     };
     const showProgram = (program) => {
       const progress = read('cornerwork-program-progress', {}),
-        completed = completedProgramSessions(progress, program),
+        completed = program.studio ? new Set() : completedProgramSessions(progress, program),
         suggested = program.sessions.findIndex((session, index) => !completed.has(index)),
         defaultIndex = suggested < 0 ? program.sessions.length - 1 : suggested;
       browser.classList.add('hidden-feature');
       detail.classList.remove('hidden-feature');
+      detail.classList.toggle('studio-detail', !!program.studio);
       el.querySelector('.feature-head h2').textContent = 'Program Details';
       const renderDetail = (selectedIndex) => {
         const focused = focusedDrills[program.id],
           selected = program.sessions[selectedIndex],
           config = programConfig(program, selected[1], selectedIndex),
-          done = completed.size;
+          done = completed.size,
+          variationKey = program.id + ':' + selectedIndex,
+          variationSeeds = read('cornerwork-program-variations', {}),
+          replaySeed = variationSeeds[variationKey] || '';
         const itemLabel = (session, index) =>
-            focused ? session[0] : 'Session ' + (index + 1) + ': ' + session[0],
+            focused
+              ? session[0]
+              : program.studio
+                ? 'Program timing'
+                : 'Session ' + (index + 1) + ': ' + session[0],
           progressLabel = focused ? 'versions' : 'sessions';
         const overview = focused ? focused.drill.instructions : program.detail;
+        const progressMarkup = program.studio
+            ? ''
+            : '<strong>' +
+              done +
+              ' of ' +
+              program.sessions.length +
+              ' ' +
+              progressLabel +
+              ' completed</strong>',
+          progressBar = program.studio
+            ? ''
+            : '<div class="program-progress program-detail-progress"><i style="width:' +
+              Math.round((done / program.sessions.length) * 100) +
+              '%"></i></div>';
         detail.innerHTML =
           '<button class="program-back" type="button">' +
           uiIcon('arrow-left') +
@@ -1149,18 +1415,14 @@
           '<span class="equipment-badge">' +
           equipmentLabel(program.equipment) +
           '</span><h3>' +
-          program.name +
+          safe(program.name) +
           '</h3><p>' +
-          overview +
-          '</p></div><strong>' +
-          done +
-          ' of ' +
-          program.sessions.length +
-          ' ' +
-          progressLabel +
-          ' completed</strong></div><div class="program-progress program-detail-progress"><i style="width:' +
-          Math.round((done / program.sessions.length) * 100) +
-          '%"></i></div><div class="program-session-list">' +
+          safe(overview) +
+          '</p></div>' +
+          progressMarkup +
+          '</div>' +
+          progressBar +
+          '<div class="program-session-list">' +
           program.sessions
             .map(
               (session, index) =>
@@ -1172,22 +1434,42 @@
                 '"><span class="program-session-state">' +
                 (completed.has(index) ? uiIcon('check', 'program-check') : index + 1) +
                 '</span><span><strong>' +
-                itemLabel(session, index) +
+                safe(itemLabel(session, index)) +
                 '</strong><small>' +
-                programSessionDescription(program, session) +
+                safe(programSessionDescription(program, session)) +
                 '</small></span></button>',
             )
             .join('') +
-          '</div><button class="feature-primary program-load-session" type="button">' +
-          (focused ? 'Start ' + selected[2] + '-minute drill' : 'Start selected session') +
-          '</button>';
+          '</div>' +
+          (program.studio
+            ? '<div class="studio-program-plan"><strong>Round plan</strong><div>' +
+              config.roundFocusPlan
+                .map(
+                  (focuses, index) =>
+                    '<span><b>' +
+                    (index + 1) +
+                    '</b>' +
+                    safe(studioFocusLabel(focuses[0])) +
+                    '</span>',
+                )
+                .join('') +
+              '</div></div>'
+            : '') +
+          '<div class="program-variation"><div><strong>Session variation</strong><span>Fresh creates a new valid sequence. Replay exact uses the same coaching and combo order as your last start.</span></div><div class="program-variation-actions"><button class="feature-secondary program-replay-session" type="button"' +
+          (replaySeed ? '' : ' disabled') +
+          '>Replay exact</button><button class="feature-primary program-load-session" type="button">Start fresh</button></div></div>' +
+          (program.studio
+            ? '<div class="program-manage-actions"><button class="feature-secondary program-edit" type="button">Edit program</button><button class="feature-secondary program-share" type="button">Share setup</button><button class="feature-danger program-delete" type="button">Delete</button></div>'
+            : '');
         detail.querySelector('.program-back').onclick = showBrowser;
         detail
           .querySelectorAll('[data-program-session]')
           .forEach(
             (button) => (button.onclick = () => renderDetail(+button.dataset.programSession)),
           );
-        detail.querySelector('.program-load-session').onclick = () => {
+        const startSession = (seed) => {
+          variationSeeds[variationKey] = seed;
+          write('cornerwork-program-variations', variationSeeds);
           sessionStorage.setItem(
             'cornerwork-active-program',
             JSON.stringify({
@@ -1197,7 +1479,7 @@
               session: selected[0],
             }),
           );
-          apply(config, 'program', {
+          apply({ ...config, variationSeed: seed }, 'program', {
             kind: focused ? 'Focus Drill' : 'Training Program',
             name:
               program.name +
@@ -1213,69 +1495,143 @@
                   : ''),
           });
         };
+        detail.querySelector('.program-load-session').onclick = () =>
+          startSession(createVariationSeed());
+        const replayButton = detail.querySelector('.program-replay-session');
+        if (replaySeed) replayButton.onclick = () => startSession(replaySeed);
+        if (program.studio) {
+          detail.querySelector('.program-edit').onclick = () => studio.openFor(program);
+          detail.querySelector('.program-delete').onclick = () => {
+            if (!confirm('Delete "' + program.name + '"?')) return;
+            write(
+              'cornerwork-studio-programs',
+              read('cornerwork-studio-programs', []).filter((item) => item.id !== program.id),
+            );
+            const variations = read('cornerwork-program-variations', {});
+            delete variations[program.id + ':0'];
+            write('cornerwork-program-variations', variations);
+            showBrowser();
+          };
+          detail.querySelector('.program-share').onclick = async () => {
+            const payload = btoa(
+                unescape(
+                  encodeURIComponent(
+                    JSON.stringify({ name: program.name, config: program.config }),
+                  ),
+                ),
+              )
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, ''),
+              url = location.origin + location.pathname + '#workout=' + payload;
+            try {
+              await navigator.clipboard.writeText(url);
+              showUndoMessage('Program setup link copied');
+            } catch (error) {
+              prompt('Copy this program setup link', url);
+            }
+          };
+        }
       };
       renderDetail(defaultIndex);
     };
     const render = () => {
       const progress = read('cornerwork-program-progress', {}),
         grid = el.querySelector('.program-grid'),
-        list = programs.filter((program) =>
-          active === 'focus'
-            ? !!focusedDrills[program.id]
-            : !focusedDrills[program.id] && program.equipment === active,
-        );
+        studioPrograms = read('cornerwork-studio-programs', [])
+          .map(studioProgramView)
+          .filter(Boolean),
+        list =
+          active === 'studio'
+            ? studioPrograms
+            : programs.filter((program) =>
+                active === 'focus'
+                  ? !!focusedDrills[program.id]
+                  : !focusedDrills[program.id] && program.equipment === active,
+              );
       el.querySelectorAll('[data-program-tab]').forEach((button) => {
         const selected = button.dataset.programTab === active;
         button.classList.toggle('active', selected);
         button.setAttribute('aria-selected', String(selected));
       });
       el.querySelector('.program-category-note').textContent = categories[active].description;
-      grid.innerHTML = list
-        .map((program) => {
-          const focused = focusedDrills[program.id],
-            completed = completedProgramSessions(progress, program),
-            done = completed.size,
-            nextIndex = program.sessions.findIndex((session, index) => !completed.has(index)),
-            next = program.sessions[nextIndex < 0 ? program.sessions.length - 1 : nextIndex],
-            progressLabel = focused ? 'versions' : 'sessions',
-            status =
-              done === program.sessions.length
-                ? 'All ' + program.sessions.length + ' ' + progressLabel + ' completed'
-                : 'Next: ' +
-                  next[0] +
-                  ' · ' +
-                  done +
-                  ' of ' +
-                  program.sessions.length +
-                  ' completed',
-            badges =
-              (focused ? '<span class="equipment-badge focus-badge">Focus drill</span>' : '') +
-              '<span class="equipment-badge">' +
-              equipmentLabel(program.equipment) +
-              '</span>';
-          return (
-            '<button class="program-card" data-program="' +
-            program.id +
-            '">' +
-            badges +
-            '<strong>' +
-            program.name +
-            '</strong><span>' +
-            program.detail +
-            '</span><span>' +
-            status +
-            '</span><div class="program-progress"><i style="width:' +
-            Math.round((done / program.sessions.length) * 100) +
-            '%"></i></div></button>'
-          );
-        })
-        .join('');
+      grid.innerHTML =
+        (active === 'studio'
+          ? '<button class="program-card program-create-card" data-create-program><span class="program-create-mark">+</span><strong>Create a program</strong><span>Choose the timing and give every round a purpose.</span></button>'
+          : '') +
+        (list.length
+          ? list
+              .map((program) => {
+                if (program.studio)
+                  return (
+                    '<button class="program-card" data-program="' +
+                    safe(program.id) +
+                    '"><span class="equipment-badge">Your program</span><span class="equipment-badge">' +
+                    equipmentLabel(program.equipment) +
+                    '</span><strong>' +
+                    safe(program.name) +
+                    '</strong><span>' +
+                    safe(program.detail) +
+                    '</span><span>' +
+                    safe(programSessionDescription(program, program.sessions[0])) +
+                    '</span></button>'
+                  );
+                const focused = focusedDrills[program.id],
+                  completed = completedProgramSessions(progress, program),
+                  done = completed.size,
+                  nextIndex = program.sessions.findIndex((session, index) => !completed.has(index)),
+                  next = program.sessions[nextIndex < 0 ? program.sessions.length - 1 : nextIndex],
+                  progressLabel = focused ? 'versions' : 'sessions',
+                  status =
+                    done === program.sessions.length
+                      ? 'All ' + program.sessions.length + ' ' + progressLabel + ' completed'
+                      : 'Next: ' +
+                        next[0] +
+                        ' · ' +
+                        done +
+                        ' of ' +
+                        program.sessions.length +
+                        ' completed',
+                  badges =
+                    (focused
+                      ? '<span class="equipment-badge focus-badge">Focus drill</span>'
+                      : '') +
+                    '<span class="equipment-badge">' +
+                    equipmentLabel(program.equipment) +
+                    '</span>';
+                return (
+                  '<button class="program-card" data-program="' +
+                  program.id +
+                  '">' +
+                  badges +
+                  '<strong>' +
+                  program.name +
+                  '</strong><span>' +
+                  program.detail +
+                  '</span><span>' +
+                  status +
+                  '</span><div class="program-progress"><i style="width:' +
+                  Math.round((done / program.sessions.length) * 100) +
+                  '%"></i></div></button>'
+                );
+              })
+              .join('')
+          : active === 'studio'
+            ? '<p class="program-empty">Your programs will appear here after you create one.</p>'
+            : '');
+      grid
+        .querySelector('[data-create-program]')
+        ?.addEventListener('click', () => studio.openFor());
       grid
         .querySelectorAll('[data-program]')
         .forEach(
           (button) =>
             (button.onclick = () =>
-              showProgram(programs.find((program) => program.id === button.dataset.program))),
+              showProgram(
+                [...programs, ...studioPrograms].find(
+                  (program) => program.id === button.dataset.program,
+                ),
+              )),
         );
     };
     el.querySelectorAll('[data-program-tab]').forEach(
@@ -1581,7 +1937,7 @@
     const el = modal(
       'backupDialog',
       'Backup and Restore',
-      '<p class="feature-note">Export all local settings, workouts, custom combos, and history. The file can restore Cornerwork in another browser.</p><div class="backup-grid"><button class="feature-primary" id="exportCornerwork">Export backup</button><label class="feature-secondary" style="text-align:center;cursor:pointer">Import backup<input id="importCornerwork" type="file" accept="application/json" hidden></label></div>',
+      '<p class="feature-note">Export all local settings, workouts, Studio programs, custom combos, repeatable variations, and history. The file can restore Cornerwork in another browser.</p><div class="backup-grid"><button class="feature-primary" id="exportCornerwork">Export backup</button><label class="feature-secondary" style="text-align:center;cursor:pointer">Import backup<input id="importCornerwork" type="file" accept="application/json" hidden></label></div>',
     );
     el.querySelector('#exportCornerwork').onclick = () => {
       const blob = new Blob([JSON.stringify(api.exportData(), null, 2)], {
@@ -1615,7 +1971,7 @@
     return modal(
       'privacyDialog',
       'Privacy Policy',
-      '<div class="info-copy"><p class="info-summary"><strong>The short version:</strong> Most Cornerwork data stays in your browser. If you sign in with Google, only your saved workouts and program progress are synced so they can appear on your other devices. Cornerwork does not sell your data or use advertising or analytics trackers.</p><h3>Data saved on this device</h3><p>Your settings, custom combinations, workout history, saved workouts, and program progress are stored in your browser. This information stays on that browser unless you sign in, export a backup, or share a workout.</p><p>Clearing Cornerwork\'s browser data can remove this local information. Data stored in another browser or device does not automatically appear unless it was synced through your account or restored from a backup.</p><h3>When you sign in with Google</h3><p>Google verifies your identity and Firebase keeps you signed in. Cornerwork uses your Google account identifier and email address to connect your account. Your saved workouts and program progress are stored in Firebase Cloud Firestore so they can sync between devices. Your other settings, custom combinations, and workout history remain local to each browser.</p><p>Cornerwork never receives your Google password. Google and Firebase may process normal technical information, such as your IP address and browser details, under their own privacy policies.</p><h3>Backups and shared workouts</h3><p>An exported backup is downloaded directly to your device. Cornerwork only reads a backup when you choose a file to import. Shared workouts place the workout setup inside the share link, so anyone who receives that link can view and import that workout.</p><h3>Removing your data</h3><p>You can remove local information by clearing the site data for Cornerwork in your browser. If you are signed in, delete synced saved workouts inside Cornerwork before signing out. Clearing only the browser data does not remove information already synced to Firebase.</p><p class="info-updated">Last updated September 12, 2026.</p></div>',
+      '<div class="info-copy"><p class="info-summary"><strong>The short version:</strong> Most Cornerwork data stays in your browser. If you sign in with Google, only your saved workouts and program progress are synced so they can appear on your other devices. Cornerwork does not sell your data or use advertising or analytics trackers.</p><h3>Data saved on this device</h3><p>Your settings, custom combinations, Studio programs, repeatable session variations, workout history, saved workouts, and program progress are stored in your browser. This information stays on that browser unless you sign in, export a backup, or share a workout.</p><p>Clearing Cornerwork\'s browser data can remove this local information. Data stored in another browser or device does not automatically appear unless it was synced through your account or restored from a backup.</p><h3>When you sign in with Google</h3><p>Google verifies your identity and Firebase keeps you signed in. Cornerwork uses your Google account identifier and email address to connect your account. Your saved workouts and program progress are stored in Firebase Cloud Firestore so they can sync between devices. Your other settings, Studio programs, repeatable variations, custom combinations, and workout history remain local to each browser.</p><p>Cornerwork never receives your Google password. Google and Firebase may process normal technical information, such as your IP address and browser details, under their own privacy policies.</p><h3>Backups and shared workouts</h3><p>An exported backup is downloaded directly to your device. Cornerwork only reads a backup when you choose a file to import. Shared workouts place the workout setup inside the share link, so anyone who receives that link can view and import that workout.</p><h3>Removing your data</h3><p>You can remove local information by clearing the site data for Cornerwork in your browser. If you are signed in, delete synced saved workouts inside Cornerwork before signing out. Clearing only the browser data does not remove information already synced to Firebase.</p><p class="info-updated">Last updated September 13, 2026.</p></div>',
       'info-dialog',
     );
   }
