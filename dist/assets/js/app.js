@@ -434,6 +434,8 @@ import {
     movementBetween: 'off',
     progressiveCombos: false,
     technicalThemes: false,
+    roundFocusPlan: null,
+    variationSeed: '',
     unique: 'yes',
     focusEnabled: 'no',
     focuses: ['jabs', 'short', 'mixed'],
@@ -518,6 +520,33 @@ import {
     workoutStartedAt = 0,
     activeSeconds = 0,
     completionReported = false;
+  let sessionRandomState = 0;
+  function createVariationSeed() {
+    if (globalThis.crypto?.getRandomValues) {
+      const values = new Uint32Array(2);
+      globalThis.crypto.getRandomValues(values);
+      return values[0].toString(36) + values[1].toString(36);
+    }
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+  function seedNumber(value) {
+    let hash = 2166136261;
+    for (const character of String(value)) {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0 || 1;
+  }
+  function resetSessionRandom() {
+    sessionRandomState = seedNumber(settings.variationSeed || createVariationSeed());
+  }
+  function sessionRandom() {
+    sessionRandomState += 0x6d2b79f5;
+    let value = sessionRandomState;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  }
   function val(id) {
     const el = $('#' + id);
     return el.classList.contains('time-input') ? +(el.dataset.seconds || 0) : +el.value;
@@ -552,6 +581,8 @@ import {
     'movementBetween',
     'progressiveCombos',
     'technicalThemes',
+    'roundFocusPlan',
+    'variationSeed',
     'unique',
     'focusEnabled',
     'stance',
@@ -620,6 +651,11 @@ import {
     presetFields.forEach((k) => (config[k] = settings[k]));
     config.focuses = [...settings.focuses];
     config.includeTypes = [...settings.includeTypes];
+    config.roundFocusPlan = Array.isArray(settings.roundFocusPlan)
+      ? settings.roundFocusPlan.map((focuses) =>
+          Array.isArray(focuses) ? [...focuses] : [focuses],
+        )
+      : null;
     config.workout = { ...settings.workout };
     config.allowedCombos = Array.isArray(settings.allowedCombos)
       ? [...settings.allowedCombos]
@@ -629,10 +665,18 @@ import {
   function applyWorkout(config) {
     if (!config || typeof config !== 'object') return false;
     if (!('focusedDrill' in config)) settings.focusedDrill = null;
+    if (!('roundFocusPlan' in config)) settings.roundFocusPlan = null;
+    if (!('variationSeed' in config)) settings.variationSeed = '';
     presetFields.forEach((k) => {
       if (k in config) settings[k] = config[k];
     });
     if (Array.isArray(config.focuses)) settings.focuses = [...config.focuses];
+    if (config.roundFocusPlan === null || Array.isArray(config.roundFocusPlan))
+      settings.roundFocusPlan = Array.isArray(config.roundFocusPlan)
+        ? config.roundFocusPlan.map((focuses) =>
+            Array.isArray(focuses) ? [...focuses] : [focuses],
+          )
+        : null;
     if (config.punchOuts) {
       settings.focuses = [
         ...new Set([
@@ -1092,12 +1136,12 @@ import {
       ),
       other = pool.filter((c) => !preferred.includes(c));
     if (preferred.length < 2 || !other.length) return pool;
-    return Math.random() < 0.75 ? preferred : other;
+    return sessionRandom() < 0.75 ? preferred : other;
   }
   function weightedPick(pool) {
     const weights = pool.map(equipmentWeight),
       total = weights.reduce((sum, value) => sum + value, 0);
-    let roll = Math.random() * total;
+    let roll = sessionRandom() * total;
     for (let i = 0; i < pool.length; i++) {
       roll -= weights[i];
       if (roll <= 0) return pool[i];
@@ -1367,14 +1411,14 @@ import {
         { off: 0, occasional: 0.2, balanced: 0.4, often: 0.65 }[settings.movementBetween] || 0,
       canSpeak = isOn('voice') && settings.volume > 0 && 'speechSynthesis' in window,
       movement =
-        canSpeak && Math.random() < probability
-          ? movementCues[Math.floor(Math.random() * movementCues.length)]
+        canSpeak && sessionRandom() < probability
+          ? movementCues[Math.floor(sessionRandom() * movementCues.length)]
           : null,
       cueDue = !movement && settings.coachCues && combosSinceCue >= frequency && canSpeak,
       post = movement
         ? movement[0]
         : cueDue
-          ? cuePool[Math.floor(Math.random() * cuePool.length)]
+          ? cuePool[Math.floor(sessionRandom() * cuePool.length)]
           : '';
     if (movement) pendingMovement = movement[1];
     if (cueDue) combosSinceCue = 0;
@@ -1395,7 +1439,7 @@ import {
   }
   function shuffle(list) {
     for (let i = list.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(sessionRandom() * (i + 1));
       [list[i], list[j]] = [list[j], list[i]];
     }
     return list;
@@ -1410,7 +1454,7 @@ import {
       max = { low: 3, medium: 5, high: 9 }[settings.complexity],
       valid = settings.focuses.filter(
         (f) =>
-          (f !== 'power' || settings.trainingMode === 'bag') &&
+          (f !== 'power' || settings.trainingMode !== 'shadow') &&
           (f === 'freestyle' ||
             combos.some(
               (c) =>
@@ -1423,6 +1467,16 @@ import {
       );
     if (!valid.length) return;
     const total = Math.max(1, val('rounds'));
+    if (Array.isArray(settings.roundFocusPlan) && settings.roundFocusPlan.length) {
+      for (let r = 1; r <= total; r++) {
+        const requested = Array.isArray(settings.roundFocusPlan[r - 1])
+          ? settings.roundFocusPlan[r - 1]
+          : [settings.roundFocusPlan[r - 1]];
+        const planned = requested.filter((focus) => valid.includes(focus));
+        if (planned.length) focusPlan[r] = planned;
+      }
+      return;
+    }
     if (settings.technicalThemes) {
       const themes = shuffle([...valid]);
       for (let r = 1; r <= total; r++) focusPlan[r] = [themes[(r - 1) % themes.length]];
@@ -1440,10 +1494,10 @@ import {
         blockPlan[r][b] = [f];
       });
       slots.slice(valid.length).forEach((slot) => {
-        if (Math.random() < 0.35) {
+        if (sessionRandom() < 0.35) {
           const r = Math.floor(slot / count) + 1,
             b = slot % count;
-          blockPlan[r][b] = [valid[Math.floor(Math.random() * valid.length)]];
+          blockPlan[r][b] = [valid[Math.floor(sessionRandom() * valid.length)]];
         }
       });
       for (let r = 1; r <= total; r++) {
@@ -1467,7 +1521,7 @@ import {
     const drill = activeFocusedDrill(),
       min = Math.max(20, +drill?.minInterval || 27),
       max = Math.max(min, +drill?.maxInterval || 35);
-    return min + Math.floor(Math.random() * (max - min + 1));
+    return min + Math.floor(sessionRandom() * (max - min + 1));
   }
   function announceFocusedAssignment() {
     if (!focusedAssignment || !running || phase !== 'work') return;
@@ -1544,7 +1598,11 @@ import {
     lastKey = keyOf(current);
     roundUsed.add(pick.id);
     repeatLeft =
-      settings.repeats === 'more' ? 2 : settings.repeats === 'some' && Math.random() < 0.5 ? 1 : 0;
+      settings.repeats === 'more'
+        ? 2
+        : settings.repeats === 'some' && sessionRandom() < 0.5
+          ? 1
+          : 0;
     renderCombo();
     if (speak && running && phase === 'work') deliverCombo(current, { schedule: !punchOutActive });
   }
@@ -1753,7 +1811,7 @@ import {
       duration = Math.min(requested, Math.max(5, val('roundTime') - 10));
     punchOutAt =
       requested && val('roundTime') > duration + 20
-        ? Math.floor(val('roundTime') * (0.42 + Math.random() * 0.25))
+        ? Math.floor(val('roundTime') * (0.42 + sessionRandom() * 0.25))
         : -1;
     newCombo(false);
     vibrate([100, 60, 100]);
@@ -2231,8 +2289,14 @@ import {
       workoutStartedAt = Date.now();
       activeSeconds = 0;
       combosSinceCue = 0;
+      lastKey = '';
+      focusedAssignment = null;
+      focusedAssignmentIndex = -1;
       focusedAssignmentDeck = [];
       focusedAssignmentDrillId = '';
+      betweenCue = '';
+      pendingMovement = '';
+      resetSessionRandom();
       buildFocusPlan();
       roundUsed.clear();
       repeatLeft = 0;
@@ -2331,7 +2395,7 @@ import {
           roundEndBell(() =>
             say(restCall, () => {
               if (settings.recoveryInstructions && running && phase === 'rest')
-                say(recoveryCues[Math.floor(Math.random() * recoveryCues.length)]);
+                say(recoveryCues[Math.floor(sessionRandom() * recoveryCues.length)]);
             }),
           );
           tick = setInterval(step, 1000);
@@ -2404,7 +2468,10 @@ import {
     blockPlan = {};
     blockIndex = 0;
     focusedAssignmentDeck = [];
+    focusedAssignment = null;
+    focusedAssignmentIndex = -1;
     focusedAssignmentDrillId = '';
+    lastKey = '';
     betweenCue = '';
     pendingMovement = '';
     comboVisible = true;
@@ -3374,12 +3441,16 @@ import {
     },
     exportData() {
       return {
-        version: 1,
+        version: 2,
         settings,
         workouts: presets,
         customCombos,
         history: JSON.parse(localStorage.getItem('cornerwork-history') || '[]'),
         programProgress: readProgramProgressLocal(),
+        studioPrograms: JSON.parse(localStorage.getItem('cornerwork-studio-programs') || '[]'),
+        programVariations: JSON.parse(
+          localStorage.getItem('cornerwork-program-variations') || '{}',
+        ),
       };
     },
     importData(data) {
@@ -3393,6 +3464,13 @@ import {
       if (data.programProgress)
         saveProgramProgressLocal(
           mergeProgramProgress(readProgramProgressLocal(), data.programProgress),
+        );
+      if (Array.isArray(data.studioPrograms))
+        localStorage.setItem('cornerwork-studio-programs', JSON.stringify(data.studioPrograms));
+      if (data.programVariations && typeof data.programVariations === 'object')
+        localStorage.setItem(
+          'cornerwork-program-variations',
+          JSON.stringify(data.programVariations),
         );
       location.reload();
     },
