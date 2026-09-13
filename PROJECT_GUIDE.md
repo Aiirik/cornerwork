@@ -57,10 +57,12 @@ Use these labels consistently in the interface and documentation:
 ### Workout setup
 
 - Workout type: Custom workout, Quick Start, Presets, and Programs
-- Programs are grouped into Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse by training purpose and equipment.
+- Programs are grouped into Studio, Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse by training purpose and equipment.
+- Program Studio creates browser-local, locked programs with shared workout timing and an authored focus for each round. Studio programs can be edited, deleted, shared as a workout link, and restored through a Cornerwork backup.
 - Selecting a program opens its details before loading a workout. Show every session, its teaching goal, individually completed sessions, the next suggested session, and allow the user to select any session.
 - Keep program details compact: shared drill instructions belong in the program header, each selectable card contains only its own session details, and the selected card is the summary above the Start button.
 - Program progress records exact completed sessions. Selecting or skipping ahead does not complete earlier sessions; completion is recorded only after the chosen workout finishes.
+- Every program session can start with a fresh valid variation or replay the exact last-started variation. A stored variation seed reproduces focus placement, callout choices, coaching choices, and combo order while leaving generated bell noise unseeded.
 - Programs are authored, focused workouts with a deliberate training method, progression, interval protocol, or fight structure. After loading one, lock its workout, combo, coaching, and focus controls while leaving the Workout Type section available so the user can switch away.
 - Progressive Combinations, Technical Round Themes, Tabata Boxing, Punch-Out Intervals, and Fight Simulation belong in Programs rather than Presets.
 - Presets are generic editable starting configurations built from the normal Cornerwork controls and combo library. Selecting one always reloads its complete default configuration; users must save the workout to keep their edits. Quick Start and Presets remain editable after loading.
@@ -95,12 +97,12 @@ Use these labels consistently in the interface and documentation:
 
 ### Saving and continuity
 
-- Browser-local settings, custom combos, presets, history, program progress, and panel state
+- Browser-local settings, custom combos, presets, Studio programs, repeatable variation seeds, history, program progress, and panel state
 - Saved workouts and account controls remain visible at the bottom of the Workout panel and are not part of its collapsible tab state
 - Optional Google sign-in and Firebase syncing for saved workout presets and completed program sessions
 - Coaching reminders, cue frequency, recovery instructions, and guided-beginner choices are included in saved and shared workouts
 - Saved-workout notes, favourites, duplication, search, links, and QR sharing
-- Backup and restore for local settings, workouts, custom combos, history, and program progress
+- Backup and restore for local settings, workouts, Studio programs, repeatable variations, custom combos, history, and program progress
 - Share links import a workout only after the user chooses Save or Use
 
 ### Additional tools
@@ -209,6 +211,8 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 | `cornerwork-custom-combos`      | User-created combinations                                     |
 | `cornerwork-history`            | Completed workout records                                     |
 | `cornerwork-program-progress`   | Completed program sessions                                    |
+| `cornerwork-studio-programs`    | User-created Program Studio definitions                       |
+| `cornerwork-program-variations` | Last-started repeatable seed for each program session         |
 | `cornerwork-setup-mode`         | Current custom, quick, program, or mode selection             |
 | `cornerwork-active-selection`   | Selected preset description                                   |
 | `cornerwork-custom-workout`     | Last custom setup before loading a preset                     |
