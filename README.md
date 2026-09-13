@@ -15,6 +15,8 @@ Cornerwork builds varied workouts from practical combinations instead of repeati
 - Punches, body shots, defense, footwork, kicks, knees, and elbows
 - Optional round focuses and structured training blocks
 - Sustained focused bag drills with randomized coach callouts
+- Program Studio for building locked multi-round plans with a focus for every round
+- Fresh program variations and exact replays of the last-started callout sequence
 - Customizable allowed combinations
 - Numbers or full punch-name callouts
 - Adjustable voice timing, warning sounds, and boxing bells
@@ -36,7 +38,7 @@ Shortcuts can be changed in Cornerwork's settings.
 
 ## Saved workouts and privacy
 
-Cornerwork works without an account. Workout settings are stored locally in the browser.
+Cornerwork works without an account. Workout settings, Program Studio plans, and repeatable program variations are stored locally in the browser.
 
 Google sign-in is optional and is used only to sync saved workout presets through Firebase. General display, audio, and workout preferences remain specific to each browser or device.
 
