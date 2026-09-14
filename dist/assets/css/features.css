@@ -1992,6 +1992,50 @@ select {
 .program-detail-head > div {
   min-width: 0;
 }
+.studio-detail-overview {
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 13px;
+}
+.studio-detail-overview > div:first-child {
+  flex: 1 1 auto;
+  align-self: center;
+}
+.studio-detail-stats {
+  flex: 0 0 240px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.studio-detail-stats span {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel2);
+  padding: 8px 5px;
+  text-align: center;
+}
+.studio-detail-stats b,
+.studio-detail-stats small {
+  display: block;
+}
+.studio-detail-stats b {
+  color: var(--button-text);
+  font-size: 15px;
+}
+.studio-detail-stats small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .program-detail-head .equipment-badge {
   display: inline-flex;
   width: auto;
@@ -2173,6 +2217,14 @@ select {
   opacity: 0.42;
   cursor: not-allowed;
 }
+.program-studio-detail .program-manage-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+}
+.program-studio-detail .program-manage-actions button {
+  min-height: 42px;
+}
 .program-studio-form {
   margin-bottom: 16px;
 }
@@ -2348,6 +2400,9 @@ select {
   }
   .program-detail-head > strong {
     justify-self: start;
+  }
+  .studio-detail-stats {
+    width: 100%;
   }
   .program-session-list {
     grid-template-columns: 1fr;
