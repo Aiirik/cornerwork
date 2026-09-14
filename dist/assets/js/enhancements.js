@@ -1114,7 +1114,7 @@
       'Practice the session theme through compatible combinations and guided round focuses.'
     );
   }
-  function buildProgramStudio() {
+  function buildProgramStudio(coaching) {
     const parseStudioTime = (value) => {
       const text = String(value || '').trim();
       if (/^\d+$/.test(text)) return Number(text);
@@ -1224,13 +1224,19 @@
           stepper({ id: 'studioWarmup', value: 45, min: 0, max: 600, step: 5, label: 'warmup' }) +
           '</label><label>Combo timing' +
           stepper({ id: 'studioPace', value: 6, min: 2, max: 60, step: 1, label: 'combo timing' }) +
-          '</label></div><div class="studio-option-grid wide"><label>Equipment<select id="studioEquipment"><option value="bag">Heavy bag</option><option value="shadow">Shadowboxing</option><option value="general">General / flexible</option></select></label><label>Skill level<select id="studioSkill"><option value="basic">Basic</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option></select></label><label>Combo complexity<select id="studioComplexity"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label></div></div><div class="studio-round-heading"><strong>Round plan</strong><span>Choose a focus and adjust the rest after any round.</span></div><div class="studio-round-grid">' +
+          '</label><label>Coaching<button class="studio-coaching-button" id="studioEditCoaching" type="button">Edit coaching</button></label></div><div class="studio-option-grid wide"><label>Equipment<select id="studioEquipment"><option value="bag">Heavy bag</option><option value="shadow">Shadowboxing</option><option value="general">General / flexible</option></select></label><label>Skill level<select id="studioSkill"><option value="basic">Basic</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option></select></label><label>Combo complexity<select id="studioComplexity"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label></div></div><div class="studio-round-heading"><strong>Round plan</strong><span>Choose a focus and adjust the rest after any round.</span></div><div class="studio-round-grid">' +
           roundRows +
           '</div><div class="feature-actions"><button class="feature-secondary studio-editor-back" type="button">Cancel</button><button class="feature-primary" id="studioSave" type="button">Save program</button></div></section><section class="program-studio-detail program-detail hidden-feature" aria-live="polite"></section>',
         'program-studio-dialog',
       );
     let editingId = '',
-      librarySignature = '';
+      librarySignature = '',
+      studioCoaching = {
+        coachCues: true,
+        cueFrequency: 5,
+        recoveryInstructions: false,
+        guidedBeginner: false,
+      };
     const starterPlan = [
       'jabs',
       'straight',
@@ -1356,6 +1362,14 @@
       setValue('#studioWarmup', saved?.config?.workout?.warmupTime ?? 45);
       setValue('#studioPace', saved?.config?.workout?.pace || 6);
       setValue('#studioComplexity', saved?.config?.complexity || 'medium');
+      const coachingSource = saved?.config || api.settings;
+      studioCoaching = {
+        coachCues: coachingSource.coachCues ?? true,
+        cueFrequency: Number(coachingSource.cueFrequency) || 5,
+        recoveryInstructions: !!coachingSource.recoveryInstructions,
+        guidedBeginner: !!coachingSource.guidedBeginner,
+      };
+      updateStudioCoachingButton();
       roundElements.forEach((row, index) => {
         const focus = saved?.config?.roundFocusPlan?.[index]?.[0] || starterPlan[index];
         const focusSelect = row.querySelector('[data-studio-focus]'),
@@ -1375,6 +1389,13 @@
       showLibrary();
       if (!el.open) open(el);
     };
+    const updateStudioCoachingButton = () => {
+      const button = el.querySelector('#studioEditCoaching'),
+        frequency = { 3: 'Often', 5: 'Balanced', 8: 'Occasional' }[studioCoaching.cueFrequency];
+      button.textContent = studioCoaching.coachCues
+        ? 'On · ' + (frequency || 'Custom')
+        : 'Off';
+    };
     el.querySelector('#studioRounds').onchange = syncRounds;
     el.querySelector('#studioRest').onchange = (event) => {
       roundElements.forEach((row) => {
@@ -1382,6 +1403,8 @@
       });
     };
     el.querySelector('#studioCreate').onclick = () => el.openFor();
+    el.querySelector('#studioEditCoaching').onclick = () =>
+      coaching.openFor(studioCoaching, updateStudioCoachingButton);
     el.querySelectorAll('.studio-editor-back').forEach((button) => (button.onclick = showLibrary));
     el.querySelector('#studioSave').onclick = () => {
       const name = el.querySelector('#studioName').value.trim();
@@ -1426,7 +1449,7 @@
             focuses,
             roundFocusPlan,
             includeTypes: [...includeTypes],
-            coachCues: true,
+            ...studioCoaching,
             workout: {
               rounds,
               warmupTime: inputSeconds(el.querySelector('#studioWarmup')),
@@ -2089,28 +2112,37 @@
       'Coaching',
       '<p class="feature-note">Choose how much guidance the coach adds around your combinations. These choices are included when you save or share the workout.</p><div class="coaching-dialog-options"><div class="enhanced-row"><label>Coach reminders</label><button class="enhanced-switch" data-coaching-setting="coachCues" aria-label="Toggle coach reminders"><i></i></button></div><div class="enhanced-row"><label>Cue frequency</label><select id="coachingCueFrequency" aria-label="Coach reminder frequency"><option value="3">Often</option><option value="5">Balanced</option><option value="8">Occasional</option></select></div><div class="enhanced-row"><label>Recovery instructions during rest</label><button class="enhanced-switch" data-coaching-setting="recoveryInstructions" aria-label="Toggle recovery instructions"><i></i></button></div><div class="enhanced-row"><label>Guided beginner</label><button class="enhanced-switch" data-coaching-setting="guidedBeginner" aria-label="Toggle guided beginner coaching"><i></i></button></div></div>',
     );
+    let target = api.settings,
+      onUpdate = () => write('cornerwork-settings', api.settings);
     const frequency = el.querySelector('#coachingCueFrequency');
     el.refresh = () => {
       el.querySelectorAll('[data-coaching-setting]').forEach((button) => {
-        const on = !!api.settings[button.dataset.coachingSetting];
+        const on = !!target[button.dataset.coachingSetting];
         button.classList.toggle('on', on);
         button.setAttribute('aria-pressed', String(on));
       });
-      frequency.value = String(api.settings.cueFrequency || 5);
+      frequency.value = String(target.cueFrequency || 5);
       frequency._syncCustomSelect?.();
+    };
+    el.openFor = (settings = api.settings, update) => {
+      target = settings;
+      onUpdate =
+        typeof update === 'function' ? update : () => write('cornerwork-settings', api.settings);
+      el.refresh();
+      if (!el.open) open(el);
     };
     el.querySelectorAll('[data-coaching-setting]').forEach(
       (button) =>
         (button.onclick = () => {
           const key = button.dataset.coachingSetting;
-          api.settings[key] = !api.settings[key];
-          write('cornerwork-settings', api.settings);
+          target[key] = !target[key];
+          onUpdate(target);
           el.refresh();
         }),
     );
     frequency.onchange = () => {
-      api.settings.cueFrequency = +frequency.value;
-      write('cornerwork-settings', api.settings);
+      target.cueFrequency = +frequency.value;
+      onUpdate(target);
     };
     el.refresh();
     return el;
@@ -2769,7 +2801,8 @@
     $('#setup').prepend(launch);
     launch.after($('#rounds').closest('section'));
     const quick = buildQuickStart(),
-      studio = buildProgramStudio(),
+      coaching = buildCoaching(),
+      studio = buildProgramStudio(coaching),
       program = buildPrograms(),
       presetBrowser = buildPresets(),
       techniquesEl = buildTechniques(),
@@ -2779,7 +2812,6 @@
       backup = buildBackup(),
       about = buildAbout(),
       privacy = buildPrivacy(),
-      coaching = buildCoaching(),
       qr = buildQr();
     window.addEventListener('cornerwork-program-progress-sync', () => program.refresh());
     const selectedWorkout = read('cornerwork-active-selection', null),
@@ -2876,10 +2908,7 @@
       open(program);
     };
     $('#workoutPresets').onclick = () => open(presetBrowser);
-    $('#editCoaching').onclick = () => {
-      coaching.refresh();
-      open(coaching);
-    };
+    $('#editCoaching').onclick = () => coaching.openFor(api.settings);
     const customizeButton = $('#customize'),
       allowedHead = customizeButton.parentElement,
       wrap = document.createElement('div');
