@@ -785,6 +785,21 @@ import {
       return { programs: [], deletions: {} };
     }
   }
+  function readStudioStateCloud(value) {
+    if (typeof value?.payload === 'string') {
+      try {
+        const parsed = JSON.parse(value.payload);
+        return {
+          programs: parsed?.programs,
+          deletions: parsed?.deletions,
+        };
+      } catch (e) {}
+    }
+    return {
+      programs: value?.programs,
+      deletions: value?.deletions,
+    };
+  }
   function mergeStudioState(local, remote) {
     const deletions = { ...normalizeStudioDeletions(local?.deletions) };
     Object.entries(normalizeStudioDeletions(remote?.deletions)).forEach(([id, timestamp]) => {
@@ -872,8 +887,11 @@ import {
       const normalized = mergeStudioState(state, {});
       await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', studioProgramsDocument), {
         type: 'studio-programs',
-        programs: normalized.programs,
-        deletions: normalized.deletions,
+        formatVersion: 1,
+        payload: JSON.stringify({
+          programs: normalized.programs,
+          deletions: normalized.deletions,
+        }),
         updatedAt: Date.now(),
       });
       cloudStatus(
@@ -911,10 +929,7 @@ import {
           studioSnapshot = snapshot.docs.find((item) => item.id === studioProgramsDocument),
           remoteProgress = normalizeProgramProgress(progressSnapshot?.data()?.progress),
           mergedProgress = mergeProgramProgress(readProgramProgressLocal(), remoteProgress),
-          remoteStudioState = {
-            programs: studioSnapshot?.data()?.programs,
-            deletions: studioSnapshot?.data()?.deletions,
-          },
+          remoteStudioState = readStudioStateCloud(studioSnapshot?.data()),
           mergedStudioState = mergeStudioState(readStudioStateLocal(), remoteStudioState),
           cloud = snapshot.docs
             .filter(

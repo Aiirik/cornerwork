@@ -102,6 +102,7 @@ Use these labels consistently in the interface and documentation:
 - Browser-local settings, custom combos, presets, Studio programs, repeatable variation seeds, history, program progress, and panel state
 - Saved workouts and account controls remain visible at the bottom of the Workout panel and are not part of its collapsible tab state
 - Optional Google sign-in and Firebase syncing for saved workout presets, Studio programs and their last repeatable versions, and completed built-in program sessions
+- Studio cloud sync uses a versioned JSON payload so authored round-focus arrays remain compatible with Standard edition Firestore. The cloud reader also accepts the earlier object-field shape for migration safety.
 - Coaching reminders, cue frequency, recovery instructions, and guided-beginner choices are included in saved and shared workouts
 - Saved-workout notes, favourites, duplication, search, links, and QR sharing
 - Backup and restore for local settings, workouts, Studio programs, repeatable variations, custom combos, history, and program progress
