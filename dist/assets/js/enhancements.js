@@ -2246,16 +2246,9 @@
         star.title = p.favorite ? 'Remove from favourites' : 'Add to favourites';
         star.setAttribute('aria-label', star.title);
         star.onclick = () => {
-          p.favorite = !p.favorite;
-          write(
-            'cornerwork-presets',
-            presets.sort(
-              (a, b) =>
-                (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0) ||
-                (b.updatedAt || 0) - (a.updatedAt || 0),
-            ),
-          );
-          location.reload();
+          const favorite = !p.favorite;
+          api.upsertPreset({ ...p, favorite });
+          showUndoMessage(favorite ? 'Added to favourites' : 'Removed from favourites');
         };
         const duplicate = document.createElement('button');
         duplicate.className = 'preset-duplicate';
