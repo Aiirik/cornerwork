@@ -2230,9 +2230,16 @@ select {
 }
 .studio-timing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 180px));
+  grid-template-columns: repeat(auto-fit, minmax(118px, 132px));
   justify-content: start;
-  gap: 10px;
+  gap: 10px 12px;
+}
+.studio-timing-grid label {
+  min-width: 0;
+}
+.studio-timing-grid .studio-stepper {
+  width: 100%;
+  grid-template-columns: 30px minmax(5.5ch, 1fr) 30px;
 }
 .studio-library-intro,
 .studio-library-heading {
@@ -2286,7 +2293,9 @@ select {
   margin: 0;
 }
 .studio-stepper-compact {
-  grid-template-columns: 26px minmax(38px, 1fr) 26px;
+  width: 106px;
+  max-width: 100%;
+  grid-template-columns: 26px minmax(5.5ch, 1fr) 26px;
   margin-top: 0;
   border-radius: 8px;
 }
@@ -2319,7 +2328,7 @@ select {
 }
 .studio-round {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 86px;
+  grid-template-columns: minmax(0, 1fr) 106px;
   align-items: end;
   gap: 6px 8px;
   min-width: 0;
@@ -2444,17 +2453,13 @@ select {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .studio-timing-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 9px 8px;
   }
   .studio-timing-grid label {
     gap: 4px;
-    min-width: 0;
     font-size: 11px;
   }
   .studio-timing-grid .studio-stepper {
-    grid-template-columns: 30px minmax(0, 1fr) 30px;
     margin-top: 0;
     border-radius: 9px;
   }
