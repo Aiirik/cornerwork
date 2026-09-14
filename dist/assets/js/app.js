@@ -645,7 +645,10 @@ import {
     cloudUnsubscribe = null,
     googleButtonReady = false;
   const cloudDeletes = new Set(),
-    programProgressDocument = '__program_progress__';
+    programProgressDocument = '__program_progress__',
+    studioProgramsDocument = '__studio_programs__',
+    studioProgramsKey = 'cornerwork-studio-programs',
+    studioDeletionsKey = 'cornerwork-studio-program-deletions';
   function workoutSnapshot() {
     const config = {};
     presetFields.forEach((k) => (config[k] = settings[k]));
@@ -746,6 +749,83 @@ import {
     } catch (e) {}
     return normalized;
   }
+  function normalizeStudioPrograms(value) {
+    if (!Array.isArray(value)) return [];
+    return value
+      .filter(
+        (program) =>
+          program &&
+          typeof program === 'object' &&
+          program.id &&
+          program.name &&
+          program.config?.workout,
+      )
+      .map((program) => ({
+        ...program,
+        id: String(program.id),
+        name: String(program.name).slice(0, 48),
+        updatedAt: Number(program.updatedAt) || 0,
+      }));
+  }
+  function normalizeStudioDeletions(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value)
+        .map(([id, timestamp]) => [String(id), Number(timestamp) || 0])
+        .filter(([, timestamp]) => timestamp > 0),
+    );
+  }
+  function readStudioStateLocal() {
+    try {
+      return {
+        programs: normalizeStudioPrograms(JSON.parse(localStorage.getItem(studioProgramsKey))),
+        deletions: normalizeStudioDeletions(JSON.parse(localStorage.getItem(studioDeletionsKey))),
+      };
+    } catch (e) {
+      return { programs: [], deletions: {} };
+    }
+  }
+  function mergeStudioState(local, remote) {
+    const deletions = { ...normalizeStudioDeletions(local?.deletions) };
+    Object.entries(normalizeStudioDeletions(remote?.deletions)).forEach(([id, timestamp]) => {
+      deletions[id] = Math.max(deletions[id] || 0, timestamp);
+    });
+    const programs = new Map();
+    [
+      ...normalizeStudioPrograms(remote?.programs),
+      ...normalizeStudioPrograms(local?.programs),
+    ].forEach((program) => {
+      const current = programs.get(program.id);
+      if (!current || program.updatedAt >= current.updatedAt) programs.set(program.id, program);
+    });
+    return {
+      programs: [...programs.values()]
+        .filter((program) => (deletions[program.id] || 0) < program.updatedAt)
+        .sort((a, b) => b.updatedAt - a.updatedAt),
+      deletions,
+    };
+  }
+  function saveStudioStateLocal(state) {
+    const normalized = mergeStudioState(state, {});
+    try {
+      localStorage.setItem(studioProgramsKey, JSON.stringify(normalized.programs));
+      localStorage.setItem(studioDeletionsKey, JSON.stringify(normalized.deletions));
+    } catch (e) {}
+    window.dispatchEvent(
+      new CustomEvent('cornerwork-studio-programs-sync', { detail: normalized.programs }),
+    );
+    return normalized;
+  }
+  function sameStudioState(left, right) {
+    const normalize = (state) => {
+      const merged = mergeStudioState(state, {});
+      return JSON.stringify({
+        programs: [...merged.programs].sort((a, b) => a.id.localeCompare(b.id)),
+        deletions: Object.fromEntries(Object.entries(merged.deletions).sort()),
+      });
+    };
+    return normalize(left) === normalize(right);
+  }
   function cloudStatus(title, detail, error = false) {
     const el = $('#cloudStatus');
     el.classList.toggle('cloud-error', error);
@@ -762,7 +842,10 @@ import {
         favorite: !!preset.favorite,
         updatedAt: preset.updatedAt || Date.now(),
       });
-      cloudStatus('Workouts and progress synced', cloudUser.email || 'Google account connected');
+      cloudStatus(
+        'Workouts, programs, and progress synced',
+        cloudUser.email || 'Google account connected',
+      );
     } catch (e) {
       cloudStatus('Sync needs setup', 'Check Firebase configuration', true);
     }
@@ -775,9 +858,30 @@ import {
         progress: normalizeProgramProgress(progress),
         updatedAt: Date.now(),
       });
-      cloudStatus('Workouts and progress synced', cloudUser.email || 'Google account connected');
+      cloudStatus(
+        'Workouts, programs, and progress synced',
+        cloudUser.email || 'Google account connected',
+      );
     } catch (e) {
       cloudStatus('Progress saved on this device', 'Cloud progress sync is unavailable', true);
+    }
+  }
+  async function saveStudioProgramsToCloud(state) {
+    if (!cloudUser || !db) return;
+    try {
+      const normalized = mergeStudioState(state, {});
+      await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', studioProgramsDocument), {
+        type: 'studio-programs',
+        programs: normalized.programs,
+        deletions: normalized.deletions,
+        updatedAt: Date.now(),
+      });
+      cloudStatus(
+        'Workouts, programs, and progress synced',
+        cloudUser.email || 'Google account connected',
+      );
+    } catch (e) {
+      cloudStatus('Programs saved on this device', 'Cloud program sync is unavailable', true);
     }
   }
   async function deletePresetFromCloud(id) {
@@ -795,16 +899,27 @@ import {
     if (cloudUnsubscribe) cloudUnsubscribe();
     cloudUser = user;
     cloudReady = false;
-    cloudStatus('Syncing workouts and progress…', user.email || 'Google account connected');
+    cloudStatus(
+      'Syncing workouts, programs, and progress…',
+      user.email || 'Google account connected',
+    );
     const ref = collection(db, 'users', user.uid, 'workouts');
     cloudUnsubscribe = onSnapshot(
       ref,
       (snapshot) => {
         const progressSnapshot = snapshot.docs.find((item) => item.id === programProgressDocument),
+          studioSnapshot = snapshot.docs.find((item) => item.id === studioProgramsDocument),
           remoteProgress = normalizeProgramProgress(progressSnapshot?.data()?.progress),
           mergedProgress = mergeProgramProgress(readProgramProgressLocal(), remoteProgress),
+          remoteStudioState = {
+            programs: studioSnapshot?.data()?.programs,
+            deletions: studioSnapshot?.data()?.deletions,
+          },
+          mergedStudioState = mergeStudioState(readStudioStateLocal(), remoteStudioState),
           cloud = snapshot.docs
-            .filter((item) => item.id !== programProgressDocument)
+            .filter(
+              (item) => item.id !== programProgressDocument && item.id !== studioProgramsDocument,
+            )
             .map((item) => ({
               id: item.id,
               ...item.data(),
@@ -821,22 +936,28 @@ import {
         savePresets();
         renderPresets();
         saveProgramProgressLocal(mergedProgress);
+        saveStudioStateLocal(mergedStudioState);
         window.dispatchEvent(
           new CustomEvent('cornerwork-program-progress-sync', { detail: mergedProgress }),
         );
         cloudReady = true;
-        cloudStatus('Workouts and progress synced', user.email || 'Google account connected');
+        cloudStatus(
+          'Workouts, programs, and progress synced',
+          user.email || 'Google account connected',
+        );
         const remoteIds = new Set(cloud.map((preset) => preset.id));
         presets.filter((preset) => !remoteIds.has(preset.id)).forEach(savePresetToCloud);
         if (!sameProgramProgress(remoteProgress, mergedProgress))
           saveProgramProgressToCloud(mergedProgress);
+        if (!sameStudioState(remoteStudioState, mergedStudioState))
+          saveStudioProgramsToCloud(mergedStudioState);
       },
       () => cloudStatus('Cloud sync unavailable', 'Workouts and progress still save here', true),
     );
   }
   async function acceptGoogleCredential(response) {
     if (!response?.credential || !auth) return;
-    cloudStatus('Signing in…', 'Connecting workouts and program progress');
+    cloudStatus('Signing in…', 'Connecting workouts, Studio programs, and progress');
     try {
       const result = await signInWithCredential(
         auth,
@@ -3373,6 +3494,9 @@ import {
     get customCombos() {
       return customCombos.map((combo) => ({ ...combo, m: [...combo.m], types: [...combo.types] }));
     },
+    get studioPrograms() {
+      return readStudioStateLocal().programs.map((program) => ({ ...program }));
+    },
     snapshot: workoutSnapshot,
     applyConfig(config) {
       if (applyWorkout(config)) location.reload();
@@ -3397,6 +3521,32 @@ import {
       const normalized = saveProgramProgressLocal(progress);
       saveProgramProgressToCloud(normalized);
       return normalized;
+    },
+    upsertStudioProgram(program) {
+      const now = Date.now(),
+        local = readStudioStateLocal(),
+        existing = local.programs.find((item) => item.id === program.id),
+        clean = {
+          ...program,
+          id: program.id || 'studio-' + now.toString(36),
+          createdAt: existing?.createdAt || program.createdAt || now,
+          updatedAt: now,
+        };
+      local.deletions[clean.id] = 0;
+      local.programs = existing
+        ? local.programs.map((item) => (item.id === clean.id ? clean : item))
+        : [clean, ...local.programs];
+      const saved = saveStudioStateLocal(local);
+      saveStudioProgramsToCloud(saved);
+      return clean;
+    },
+    removeStudioProgram(id) {
+      const local = readStudioStateLocal(),
+        timestamp = Date.now();
+      local.programs = local.programs.filter((program) => program.id !== id);
+      local.deletions[id] = timestamp;
+      const saved = saveStudioStateLocal(local);
+      saveStudioProgramsToCloud(saved);
     },
     addCustomCombo(combo) {
       const clean = {
@@ -3447,7 +3597,7 @@ import {
         customCombos,
         history: JSON.parse(localStorage.getItem('cornerwork-history') || '[]'),
         programProgress: readProgramProgressLocal(),
-        studioPrograms: JSON.parse(localStorage.getItem('cornerwork-studio-programs') || '[]'),
+        studioPrograms: readStudioStateLocal().programs,
         programVariations: JSON.parse(
           localStorage.getItem('cornerwork-program-variations') || '{}',
         ),
@@ -3466,7 +3616,9 @@ import {
           mergeProgramProgress(readProgramProgressLocal(), data.programProgress),
         );
       if (Array.isArray(data.studioPrograms))
-        localStorage.setItem('cornerwork-studio-programs', JSON.stringify(data.studioPrograms));
+        saveStudioStateLocal(
+          mergeStudioState(readStudioStateLocal(), { programs: data.studioPrograms }),
+        );
       if (data.programVariations && typeof data.programVariations === 'object')
         localStorage.setItem(
           'cornerwork-program-variations',
