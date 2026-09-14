@@ -976,7 +976,8 @@ import {
           if (!remote || Number(local.updatedAt) >= Number(remote.updatedAt))
             merged.set(local.id, local);
         });
-        presets = [...merged.values()].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        presets = [...merged.values()];
+        sortPresets();
         savePresets();
         renderPresets();
         saveProgramProgressLocal(mergedProgress);
@@ -1106,8 +1107,17 @@ import {
       settings.volume === 0 ? 'volume-off' : settings.volume < 50 ? 'volume-low' : 'volume-high';
     $('#volumeIcon').innerHTML = uiIcon(name);
   }
+  function sortPresets() {
+    presets.sort(
+      (a, b) =>
+        Number(Boolean(b.favorite)) - Number(Boolean(a.favorite)) ||
+        (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0),
+    );
+    return presets;
+  }
   function renderPresets() {
     const list = $('#presetList');
+    sortPresets();
     if (!presets.length) {
       list.innerHTML = '<div class="preset-empty">Your saved workouts will appear here.</div>';
       return;
@@ -3555,10 +3565,7 @@ import {
       const index = presets.findIndex((p) => p.id === clean.id);
       if (index >= 0) presets[index] = clean;
       else presets.unshift(clean);
-      presets.sort(
-        (a, b) =>
-          (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0) || (b.updatedAt || 0) - (a.updatedAt || 0),
-      );
+      sortPresets();
       savePresets();
       savePresetToCloud(clean);
       renderPresets();
