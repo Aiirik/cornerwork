@@ -573,6 +573,26 @@ body.high-contrast .stage {
   max-width: 100%;
   height: auto !important;
 }
+.qr-fallback {
+  width: min(100%, 300px);
+  padding: 22px 14px;
+  color: #202733;
+  text-align: center;
+}
+.qr-fallback p {
+  margin: 0 0 14px;
+  line-height: 1.45;
+}
+.qr-fallback button {
+  width: 100%;
+  border: 1px solid #aeb7c4;
+  border-radius: 10px;
+  background: #eef1f5;
+  padding: 11px 14px;
+  color: #10151d;
+  font: inherit;
+  font-weight: 700;
+}
 .hidden-feature {
   display: none !important;
 }

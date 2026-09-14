@@ -54,7 +54,7 @@
     document.addEventListener('DOMContentLoaded', addAccessibilitySetting, { once: true });
   else addAccessibilitySetting();
   const core = document.createElement('script');
-  core.src = 'assets/js/enhancements.js?v=202';
+  core.src = 'assets/js/enhancements.js?v=203';
   core.defer = true;
   document.head.appendChild(core);
 })();
