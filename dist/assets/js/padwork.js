@@ -4,6 +4,7 @@
   const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
   const POSE_MODEL =
     'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+  const FRAMING_KEY = 'cornerwork-padwork-framing';
   const CONNECTORS = [
     [11, 12],
     [11, 13],
@@ -45,6 +46,8 @@
   let streak = 0;
   let hits = 0;
   let misses = 0;
+  let framingMode = 'fit';
+  let cameraZoom = 1;
   const arms = {
     left: { armed: false, minAngle: 180, lastHitAt: 0 },
     right: { armed: false, minAngle: 180, lastHitAt: 0 },
@@ -87,6 +90,7 @@
       '<div class="padwork-callout" id="padworkCallout">Jab · Cross</div>' +
       '<div class="padwork-target" id="padworkTarget" aria-live="polite"><i></i><span id="padworkSide">Next</span><strong id="padworkPunch">Get ready</strong></div>' +
       '<div class="padwork-queue" id="padworkQueue" aria-label="Current punch sequence"></div>' +
+      '<div class="padwork-camera-controls" aria-label="Camera framing controls"><div class="padwork-framing-toggle" role="group" aria-label="Camera view"><button id="padworkFit" type="button">Fit</button><button id="padworkFill" type="button">Fill</button></div><div class="padwork-zoom-controls"><button id="padworkZoomOut" type="button" aria-label="Zoom camera out">−</button><output id="padworkZoomValue" aria-live="polite">1.0×</output><button id="padworkZoomIn" type="button" aria-label="Zoom camera in">+</button></div></div>' +
       '<div class="padwork-bottom"><div class="padwork-accuracy"><span>Accuracy</span><strong id="padworkAccuracy">100%</strong></div>' +
       '<div class="padwork-meter"><i id="padworkMeter"></i></div><small>Keep your upper body and hands in frame</small></div>' +
       '</div>';
@@ -96,6 +100,11 @@
     canvas = $('#padworkCanvas', stage);
     context = canvas.getContext('2d');
     $('#padworkExit', stage).addEventListener('click', disable);
+    $('#padworkFit', stage).addEventListener('click', () => setFramingMode('fit'));
+    $('#padworkFill', stage).addEventListener('click', () => setFramingMode('fill'));
+    $('#padworkZoomOut', stage).addEventListener('click', () => setCameraZoom(cameraZoom - 0.1));
+    $('#padworkZoomIn', stage).addEventListener('click', () => setCameraZoom(cameraZoom + 0.1));
+    restoreFraming();
     window.addEventListener('pagehide', stopCamera);
     document.addEventListener('visibilitychange', () => {
       if (!active) return;
@@ -224,6 +233,44 @@
       canvas.width = width;
       canvas.height = height;
     }
+  }
+
+  function restoreFraming() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(FRAMING_KEY));
+      if (['fit', 'fill'].includes(saved?.mode)) framingMode = saved.mode;
+      if (Number.isFinite(saved?.zoom)) cameraZoom = Math.min(1.8, Math.max(1, saved.zoom));
+    } catch (error) {}
+    applyFraming();
+  }
+
+  function setFramingMode(mode) {
+    framingMode = mode;
+    if (mode === 'fit') cameraZoom = 1;
+    applyFraming();
+    saveFraming();
+  }
+
+  function setCameraZoom(value) {
+    cameraZoom = Math.round(Math.min(1.8, Math.max(1, value)) * 10) / 10;
+    applyFraming();
+    saveFraming();
+  }
+
+  function applyFraming() {
+    stage.dataset.framing = framingMode;
+    stage.style.setProperty('--padwork-camera-zoom', cameraZoom);
+    $('#padworkFit', stage).classList.toggle('active', framingMode === 'fit');
+    $('#padworkFill', stage).classList.toggle('active', framingMode === 'fill');
+    $('#padworkFit', stage).setAttribute('aria-pressed', String(framingMode === 'fit'));
+    $('#padworkFill', stage).setAttribute('aria-pressed', String(framingMode === 'fill'));
+    $('#padworkZoomOut', stage).disabled = cameraZoom <= 1;
+    $('#padworkZoomIn', stage).disabled = cameraZoom >= 1.8;
+    $('#padworkZoomValue', stage).textContent = `${cameraZoom.toFixed(1)}×`;
+  }
+
+  function saveFraming() {
+    localStorage.setItem(FRAMING_KEY, JSON.stringify({ mode: framingMode, zoom: cameraZoom }));
   }
 
   function processPose(landmarks, now) {

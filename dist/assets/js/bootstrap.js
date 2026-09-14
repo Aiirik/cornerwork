@@ -54,11 +54,11 @@
     document.addEventListener('DOMContentLoaded', addAccessibilitySetting, { once: true });
   else addAccessibilitySetting();
   const core = document.createElement('script');
-  core.src = 'assets/js/enhancements.js?v=207';
+  core.src = 'assets/js/enhancements.js?v=208';
   core.defer = true;
   core.addEventListener('load', () => {
     const padwork = document.createElement('script');
-    padwork.src = 'assets/js/padwork.js?v=1';
+    padwork.src = 'assets/js/padwork.js?v=2';
     padwork.defer = true;
     document.head.appendChild(padwork);
   });

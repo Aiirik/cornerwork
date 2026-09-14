@@ -84,7 +84,7 @@ Use these labels consistently in the interface and documentation:
 
 ### Workout execution
 
-- An opt-in Padwork beta combines the current workout timer and generated combinations with a front-camera view, an on-device pose skeleton, jab/cross targets, scoring, streak, and accuracy feedback. Camera access is never automatic, and camera frames are not recorded, uploaded, or stored.
+- An opt-in Padwork beta combines the current workout timer and generated combinations with a front-camera view, on-device pose skeleton, camera Fit/Fill and zoom controls, jab/cross targets, scoring, streak, and accuracy feedback. Camera access is never automatic, and camera frames are not recorded, uploaded, or stored.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
