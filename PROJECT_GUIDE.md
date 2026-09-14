@@ -40,7 +40,8 @@ Use these labels consistently in the interface and documentation:
 
 | Concept                          | Preferred label      |
 | -------------------------------- | -------------------- |
-| User-created configuration       | Custom workout       |
+| User-created configuration       | Custom               |
+| User-created multi-round workout | Program Studio       |
 | Guided one-time generator        | Quick Start          |
 | Multi-session progression        | Training Program     |
 | Editable starting configuration  | Workout Preset       |
@@ -56,9 +57,10 @@ Use these labels consistently in the interface and documentation:
 
 ### Workout setup
 
-- Workout type: Custom workout, Quick Start, Presets, and Programs
-- Programs are grouped into Studio, Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse by training purpose and equipment.
-- Program Studio creates browser-local, locked programs with shared workout timing and an authored focus for each round. Studio programs can be edited, deleted, shared as a workout link, and restored through a Cornerwork backup.
+- Workout type: Custom, Program Studio, Quick Start, Presets, and Programs
+- Programs are grouped into Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse predefined workouts by training purpose and equipment.
+- Program Studio is a separate first-class workspace beside Custom. It creates locked programs with shared workout timing and an authored focus for each round, and includes its own saved-program library. Studio programs can be edited, deleted, shared as a workout link, restored through a Cornerwork backup, and synced when signed in.
+- Program Studio timing and round-count controls use the same directly editable steppers as Custom, including five-second timing adjustments and one-second combo-timing adjustments.
 - Selecting a program opens its details before loading a workout. Show every session, its teaching goal, individually completed sessions, the next suggested session, and allow the user to select any session.
 - Keep program details compact: shared drill instructions belong in the program header, each selectable card contains only its own session details, and the selected card is the summary above the Start button.
 - Program progress records exact completed sessions. Selecting or skipping ahead does not complete earlier sessions; completion is recorded only after the chosen workout finishes.
@@ -99,7 +101,7 @@ Use these labels consistently in the interface and documentation:
 
 - Browser-local settings, custom combos, presets, Studio programs, repeatable variation seeds, history, program progress, and panel state
 - Saved workouts and account controls remain visible at the bottom of the Workout panel and are not part of its collapsible tab state
-- Optional Google sign-in and Firebase syncing for saved workout presets and completed program sessions
+- Optional Google sign-in and Firebase syncing for saved workout presets, Studio programs and their last repeatable versions, and completed built-in program sessions
 - Coaching reminders, cue frequency, recovery instructions, and guided-beginner choices are included in saved and shared workouts
 - Saved-workout notes, favourites, duplication, search, links, and QR sharing
 - Backup and restore for local settings, workouts, Studio programs, repeatable variations, custom combos, history, and program progress
@@ -204,20 +206,21 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 
 ### Persistent storage
 
-| Key                             | Purpose                                                       |
-| ------------------------------- | ------------------------------------------------------------- |
-| `cornerwork-settings`           | Workout, display, audio, accessibility, and shortcut settings |
-| `cornerwork-presets`            | Locally saved workout presets                                 |
-| `cornerwork-custom-combos`      | User-created combinations                                     |
-| `cornerwork-history`            | Completed workout records                                     |
-| `cornerwork-program-progress`   | Completed program sessions                                    |
-| `cornerwork-studio-programs`    | User-created Program Studio definitions                       |
-| `cornerwork-program-variations` | Last-started repeatable seed for each program session         |
-| `cornerwork-setup-mode`         | Current custom, quick, program, or mode selection             |
-| `cornerwork-active-selection`   | Selected preset description                                   |
-| `cornerwork-custom-workout`     | Last custom setup before loading a preset                     |
-| `cornerwork-workout-fold-state` | Last open Workout panel groups                                |
-| `cornerwork-allow-page-zoom`    | Mobile zoom accessibility preference                          |
+| Key                                   | Purpose                                                       |
+| ------------------------------------- | ------------------------------------------------------------- |
+| `cornerwork-settings`                 | Workout, display, audio, accessibility, and shortcut settings |
+| `cornerwork-presets`                  | Locally saved workout presets                                 |
+| `cornerwork-custom-combos`            | User-created combinations                                     |
+| `cornerwork-history`                  | Completed workout records                                     |
+| `cornerwork-program-progress`         | Completed program sessions                                    |
+| `cornerwork-studio-programs`          | User-created Program Studio definitions                       |
+| `cornerwork-studio-program-deletions` | Cross-device Studio deletion timestamps                       |
+| `cornerwork-program-variations`       | Last-started repeatable seed for each program session         |
+| `cornerwork-setup-mode`               | Current custom, Studio, quick, program, or preset selection   |
+| `cornerwork-active-selection`         | Selected preset description                                   |
+| `cornerwork-custom-workout`           | Last custom setup before loading a preset                     |
+| `cornerwork-workout-fold-state`       | Last open Workout panel groups                                |
+| `cornerwork-allow-page-zoom`          | Mobile zoom accessibility preference                          |
 
 Session storage is used for pending shared workouts, active program sessions, and service-worker update coordination.
 
