@@ -1452,17 +1452,29 @@
       detail.classList.remove('hidden-feature');
       el.querySelector('.feature-head h2').textContent = 'Program Details';
       const config = program.config,
+        workout = config.workout || {},
+        rounds = Math.max(1, Number(workout.rounds) || 1),
+        totalTime =
+          Math.max(0, Number(workout.warmupTime) || 0) +
+          rounds * Math.max(0, Number(workout.roundTime) || 0) +
+          workoutRestTotal(workout),
         replaySeed = program.lastVariationSeed || '';
       detail.innerHTML =
         '<button class="program-back studio-detail-back" type="button">' +
         uiIcon('arrow-left') +
-        'Saved programs</button><div class="program-detail-head"><div><span class="equipment-badge">Your program</span><span class="equipment-badge">' +
+        'Saved programs</button><div class="program-detail-head studio-detail-overview"><div><span class="equipment-badge">Your program</span><span class="equipment-badge">' +
         equipmentLabel(program.equipment) +
         '</span><h3>' +
         safe(program.name) +
         '</h3><p>' +
         safe(program.detail) +
-        '</p></div></div><div class="studio-program-plan"><strong>Round plan</strong><div>' +
+        '</p></div><div class="studio-detail-stats"><span><b>' +
+        rounds +
+        '</b><small>Rounds</small></span><span><b>' +
+        fmt(workout.roundTime) +
+        '</b><small>Work</small></span><span><b>' +
+        fmt(totalTime) +
+        '</b><small>Total</small></span></div></div><div class="studio-program-plan"><strong>Round plan</strong><div>' +
         config.roundFocusPlan
           .map(
             (focuses, index) =>
