@@ -10,7 +10,6 @@
 }
 .custom-workout {
   width: 100%;
-  margin-bottom: 7px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #222832;
@@ -18,6 +17,12 @@
   color: #eef1f4;
   font-size: 12px;
   font-weight: 900;
+}
+.workout-authoring-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 7px;
 }
 .custom-workout.active,
 .feature-grid button.active {
@@ -2171,6 +2176,69 @@ select {
 .program-studio-form {
   margin-bottom: 16px;
 }
+.studio-library-intro,
+.studio-library-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.studio-library-intro {
+  margin-bottom: 18px;
+}
+.studio-library-intro .feature-note {
+  margin: 0;
+}
+.studio-library-intro button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.studio-library-heading {
+  align-items: baseline;
+  margin-bottom: 9px;
+}
+.studio-library-heading strong {
+  color: var(--button-text);
+  font-size: 13px;
+}
+.studio-library-heading span {
+  color: var(--muted);
+  font-size: 10px;
+}
+.studio-saved-grid .program-card {
+  min-height: 132px;
+}
+.studio-stepper {
+  margin-top: 5px;
+}
+.studio-stepper input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 9px 2px;
+  color: var(--button-text);
+  text-align: center;
+  appearance: textfield;
+}
+.studio-stepper input::-webkit-inner-spin-button,
+.studio-stepper input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.studio-stepper-compact {
+  grid-template-columns: 26px minmax(38px, 1fr) 26px;
+  margin-top: 0;
+  border-radius: 8px;
+}
+.studio-stepper-compact input {
+  padding: 7px 1px;
+  font-size: 10px;
+}
+.studio-stepper-compact .step-btn {
+  font-size: 14px;
+}
 .studio-round-heading {
   display: flex;
   align-items: baseline;
@@ -2193,7 +2261,7 @@ select {
 }
 .studio-round {
   display: grid;
-  grid-template-columns: 55px minmax(0, 1fr) 105px;
+  grid-template-columns: 55px minmax(0, 1fr) 128px;
   align-items: end;
   gap: 8px;
   border: 1px solid var(--line);
@@ -2296,7 +2364,15 @@ select {
     grid-template-columns: 1fr;
   }
   .studio-round {
-    grid-template-columns: 48px minmax(0, 1fr) 92px;
+    grid-template-columns: 44px minmax(0, 1fr) 116px;
+  }
+  .studio-library-intro,
+  .studio-library-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .studio-library-intro button {
+    width: 100%;
   }
   .studio-program-plan > div {
     grid-template-columns: repeat(2, minmax(0, 1fr));
