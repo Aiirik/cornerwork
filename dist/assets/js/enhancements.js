@@ -1226,7 +1226,7 @@
           stepper({ id: 'studioPace', value: 6, min: 2, max: 60, step: 1, label: 'combo timing' }) +
           '</label></div><label class="wide">Combo complexity<select id="studioComplexity"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label></div><div class="studio-round-heading"><strong>Round plan</strong><span>Choose a focus and adjust the rest after any round.</span></div><div class="studio-round-grid">' +
           roundRows +
-          '</div><div class="feature-actions"><button class="feature-secondary studio-editor-back" type="button">Cancel</button><button class="feature-primary" id="studioSave" type="button">Save program</button></div></section><section class="program-studio-detail hidden-feature" aria-live="polite"></section>',
+          '</div><div class="feature-actions"><button class="feature-secondary studio-editor-back" type="button">Cancel</button><button class="feature-primary" id="studioSave" type="button">Save program</button></div></section><section class="program-studio-detail program-detail hidden-feature" aria-live="polite"></section>',
         'program-studio-dialog',
       );
     let editingId = '';
