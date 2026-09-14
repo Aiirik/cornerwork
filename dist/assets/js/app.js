@@ -2207,6 +2207,40 @@ import {
     playRoundEndSequence(onend);
   }
   // Workout rendering and phase control.
+  const renderedMarkup = new WeakMap();
+  function setHtmlIfChanged(element, markup) {
+    if (renderedMarkup.get(element) === markup) return;
+    element.innerHTML = markup;
+    renderedMarkup.set(element, markup);
+  }
+  function renderClock(clockText) {
+    const timer = $('#timer'),
+      characters = [...clockText],
+      slots = [...timer.children],
+      validSlots =
+        slots.length === characters.length &&
+        slots.every(
+          (slot, index) =>
+            slot.classList.contains(characters[index] === ':' ? 'timer-colon' : 'timer-digit'),
+        );
+    if (!validSlots) {
+      timer.innerHTML = characters
+        .map(
+          (character) =>
+            '<span class="' +
+            (character === ':' ? 'timer-colon' : 'timer-digit') +
+            '">' +
+            character +
+            '</span>',
+        )
+        .join('');
+    } else {
+      slots.forEach((slot, index) => {
+        if (slot.textContent !== characters[index]) slot.textContent = characters[index];
+      });
+    }
+    timer.setAttribute('aria-label', clockText);
+  }
   function render() {
     syncWakeLock();
     document.body.dataset.phase = phase;
@@ -2248,17 +2282,7 @@ import {
       (el) => (el.disabled = workoutLocked || !!el.closest('.config-locked')),
     );
     const clockText = fmt(time);
-    $('#timer').innerHTML = [...clockText]
-      .map(
-        (character) =>
-          '<span class="' +
-          (character === ':' ? 'timer-colon' : 'timer-digit') +
-          '">' +
-          character +
-          '</span>',
-      )
-      .join('');
-    $('#timer').setAttribute('aria-label', clockText);
+    renderClock(clockText);
     $('#comboTotal').textContent = comboTotal;
     $('#moveTotal').textContent = moveTotal;
     $('#workoutLeft').textContent = 'Workout time left: ' + totalFmt(workoutRemaining());
@@ -2310,11 +2334,13 @@ import {
       meta =
         (showKeys ? '<span class="keycap">' + displayKey(sc.start) + '</span>' : '') +
         (canHoldRestart ? '<span class="hold-restart">Hold to restart</span>' : '');
-    $('#start').innerHTML =
+    setHtmlIfChanged(
+      $('#start'),
       '<span>' +
-      action +
-      '</span>' +
-      (meta ? '<span class="primary-meta">' + meta + '</span>' : '');
+        action +
+        '</span>' +
+        (meta ? '<span class="primary-meta">' + meta + '</span>' : ''),
+    );
     $('#start').classList.toggle('restart-ready', canHoldRestart);
     $('#start').classList.toggle('is-pause', running);
     $('#start').classList.toggle('is-resume', canHoldRestart);
@@ -2322,22 +2348,28 @@ import {
       'aria-label',
       canHoldRestart ? 'Resume workout. Hold to restart workout' : action,
     );
-    $('#restart').innerHTML =
+    setHtmlIfChanged(
+      $('#restart'),
       uiIcon('arrow-left', 'control-icon') +
-      (showKeys ? '<span class="keycap">' + displayKey(sc.restart) + '</span>' : '');
-    $('#skip').innerHTML =
+        (showKeys ? '<span class="keycap">' + displayKey(sc.restart) + '</span>' : ''),
+    );
+    setHtmlIfChanged(
+      $('#skip'),
       (showKeys ? '<span class="keycap">' + displayKey(sc.next) + '</span>' : '') +
-      uiIcon('arrow-right', 'control-icon');
-    $('.keys').innerHTML =
+        uiIcon('arrow-right', 'control-icon'),
+    );
+    setHtmlIfChanged(
+      $('.keys'),
       '<kbd>' +
-      displayKey(sc.start) +
-      '</kbd><span>Start or pause</span><kbd>' +
-      displayKey(sc.next) +
-      '</kbd><span>Next phase</span><kbd>' +
-      displayKey(sc.restart) +
-      '</kbd><span>Previous phase</span><kbd>' +
-      displayKey(sc.mute) +
-      '</kbd><span>Mute voice</span>';
+        displayKey(sc.start) +
+        '</kbd><span>Start or pause</span><kbd>' +
+        displayKey(sc.next) +
+        '</kbd><span>Next phase</span><kbd>' +
+        displayKey(sc.restart) +
+        '</kbd><span>Previous phase</span><kbd>' +
+        displayKey(sc.mute) +
+        '</kbd><span>Mute voice</span>',
+    );
     if (phase === 'ready') {
       $('#combo').textContent = 'Workout ready';
       $('#comboNumbers').style.display = 'none';
@@ -2372,16 +2404,19 @@ import {
         );
       }
     }
-    $('#summary').innerHTML = summary
-      .map(
-        (x) =>
-          '<span class="summary-pill ' +
-          (summary.indexOf(x) > 2 ? 'focus-label' : '') +
-          '">' +
-          x +
-          '</span>',
-      )
-      .join('');
+    setHtmlIfChanged(
+      $('#summary'),
+      summary
+        .map(
+          (x) =>
+            '<span class="summary-pill ' +
+            (summary.indexOf(x) > 2 ? 'focus-label' : '') +
+            '">' +
+            x +
+            '</span>',
+        )
+        .join(''),
+    );
     const total = val('rounds'),
       planVisible = phase !== 'ready' && Object.keys(focusPlan).length > 0,
       warmupPip =
@@ -2391,7 +2426,8 @@ import {
             '" aria-label="Warmup"></span>'
           : '';
     $('#timeline').style.gridTemplateColumns = '';
-    $('#timeline').innerHTML =
+    setHtmlIfChanged(
+      $('#timeline'),
       warmupPip +
       Array.from({ length: total }, (_, i) => {
         const r = i + 1,
@@ -2415,7 +2451,8 @@ import {
             ? '<span class="phase-pip rest-pip current" aria-label="Rest period"></span>'
             : '')
         );
-      }).join('');
+      }).join(''),
+    );
     if (phase === 'complete' && !completionReported) {
       completionReported = true;
       setTimeout(
