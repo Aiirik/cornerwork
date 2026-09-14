@@ -2239,6 +2239,14 @@ select {
 .studio-timing-grid label {
   min-width: 0;
 }
+.studio-option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.studio-option-grid label {
+  min-width: 0;
+}
 .studio-timing-grid .studio-stepper {
   width: 100%;
   grid-template-columns: 30px minmax(5.5ch, 1fr) 30px;
@@ -2456,6 +2464,13 @@ select {
   }
   .studio-timing-grid {
     gap: 9px 8px;
+  }
+  .studio-option-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px 8px;
+  }
+  .studio-option-grid label:last-child {
+    grid-column: 1 / -1;
   }
   .studio-timing-grid label {
     gap: 4px;
