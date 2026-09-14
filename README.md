@@ -22,7 +22,7 @@ Cornerwork builds varied workouts from practical combinations instead of repeati
 - Adjustable voice timing, warning sounds, and boxing bells
 - Keyboard shortcuts and glove-friendly controls
 - Saved workout presets with shareable links
-- Optional Google sign-in for syncing saved workouts between devices
+- Optional Google sign-in for syncing saved workouts, Studio programs, and program progress between devices
 - Responsive desktop and mobile layouts
 
 ## Controls
@@ -40,7 +40,7 @@ Shortcuts can be changed in Cornerwork's settings.
 
 Cornerwork works without an account. Workout settings, Program Studio plans, and repeatable program variations are stored locally in the browser.
 
-Google sign-in is optional and is used only to sync saved workout presets through Firebase. General display, audio, and workout preferences remain specific to each browser or device.
+Google sign-in is optional and syncs saved workout presets, Studio programs, and built-in program progress through Firebase. General display, audio, and workout preferences remain specific to each browser or device.
 
 ## Development
 
