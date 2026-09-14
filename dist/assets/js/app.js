@@ -786,9 +786,10 @@ import {
     }
   }
   function readStudioStateCloud(value) {
-    if (typeof value?.payload === 'string') {
+    const payload = value?.config?.payload ?? value?.payload;
+    if (typeof payload === 'string') {
       try {
-        const parsed = JSON.parse(value.payload);
+        const parsed = JSON.parse(payload);
         return {
           programs: parsed?.programs,
           deletions: parsed?.deletions,
@@ -886,12 +887,17 @@ import {
     try {
       const normalized = mergeStudioState(state, {});
       await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', studioProgramsDocument), {
-        type: 'studio-programs',
-        formatVersion: 1,
-        payload: JSON.stringify({
-          programs: normalized.programs,
-          deletions: normalized.deletions,
-        }),
+        name: 'Cornerwork Studio programs',
+        config: {
+          type: 'studio-programs',
+          formatVersion: 1,
+          payload: JSON.stringify({
+            programs: normalized.programs,
+            deletions: normalized.deletions,
+          }),
+        },
+        note: '',
+        favorite: false,
         updatedAt: Date.now(),
       });
       cloudStatus(
@@ -956,16 +962,18 @@ import {
           new CustomEvent('cornerwork-program-progress-sync', { detail: mergedProgress }),
         );
         cloudReady = true;
-        cloudStatus(
-          'Workouts, programs, and progress synced',
-          user.email || 'Google account connected',
-        );
-        const remoteIds = new Set(cloud.map((preset) => preset.id));
-        presets.filter((preset) => !remoteIds.has(preset.id)).forEach(savePresetToCloud);
-        if (!sameProgramProgress(remoteProgress, mergedProgress))
-          saveProgramProgressToCloud(mergedProgress);
-        if (!sameStudioState(remoteStudioState, mergedStudioState))
-          saveStudioProgramsToCloud(mergedStudioState);
+        const remoteIds = new Set(cloud.map((preset) => preset.id)),
+          pendingPresets = presets.filter((preset) => !remoteIds.has(preset.id)),
+          needsProgressSync = !sameProgramProgress(remoteProgress, mergedProgress),
+          needsStudioSync = !sameStudioState(remoteStudioState, mergedStudioState);
+        if (!pendingPresets.length && !needsProgressSync && !needsStudioSync)
+          cloudStatus(
+            'Workouts, programs, and progress synced',
+            user.email || 'Google account connected',
+          );
+        pendingPresets.forEach(savePresetToCloud);
+        if (needsProgressSync) saveProgramProgressToCloud(mergedProgress);
+        if (needsStudioSync) saveStudioProgramsToCloud(mergedStudioState);
       },
       () => cloudStatus('Cloud sync unavailable', 'Workouts and progress still save here', true),
     );
