@@ -2176,6 +2176,9 @@ select {
 .program-studio-form {
   margin-bottom: 16px;
 }
+.studio-timing-grid {
+  display: contents;
+}
 .studio-library-intro,
 .studio-library-heading {
   display: flex;
@@ -2362,6 +2365,29 @@ select {
   }
   .studio-round-grid {
     grid-template-columns: 1fr;
+  }
+  .studio-timing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px 8px;
+  }
+  .studio-timing-grid label {
+    gap: 4px;
+    min-width: 0;
+    font-size: 11px;
+  }
+  .studio-timing-grid .studio-stepper {
+    grid-template-columns: 30px minmax(0, 1fr) 30px;
+    margin-top: 0;
+    border-radius: 9px;
+  }
+  .studio-timing-grid .studio-stepper input {
+    padding: 7px 1px;
+    font-size: 14px;
+  }
+  .studio-timing-grid .step-btn {
+    min-height: 34px;
+    font-size: 16px;
   }
   .studio-round {
     grid-template-columns: 44px minmax(0, 1fr) 116px;
