@@ -2980,11 +2980,9 @@
       write('cornerwork-setup-mode', 'custom');
       localStorage.removeItem('cornerwork-active-selection');
       sessionStorage.removeItem('cornerwork-active-program');
-      if (saved) api.applyConfig(saved);
-      else {
-        selectionCard.classList.add('hidden-feature');
-        setSetupMode('custom');
-      }
+      selectionCard.classList.add('hidden-feature');
+      setSetupMode('custom');
+      if (saved) api.applyConfig(saved, { reload: false });
     };
     $('#quickStart').onclick = () => open(quick);
     $('#programStudio').onclick = () => studio.openLibrary();
