@@ -60,7 +60,7 @@ Use these labels consistently in the interface and documentation:
 - Workout type: Custom, Program Studio, Quick Start, Presets, and Programs
 - Programs are grouped into Focus drills, Heavy bag, Shadowboxing, and Foundations tabs so users can browse predefined workouts by training purpose and equipment.
 - Program Studio is a separate first-class workspace beside Custom. It creates locked programs with shared workout timing and an authored focus for each round, and includes its own saved-program library. Studio programs can be edited, deleted, shared as a workout link, restored through a Cornerwork backup, and synced when signed in.
-- Program Studio timing and round-count controls use the same directly editable steppers as Custom, including five-second timing adjustments and one-second combo-timing adjustments.
+- Program Studio timing and round-count controls use the same directly editable steppers as Custom, including five-second timing adjustments and one-second combo-timing adjustments. On phones, these controls use a compact two-column grid while preserving direct typed entry and usable step buttons.
 - Selecting a program opens its details before loading a workout. Show every session, its teaching goal, individually completed sessions, the next suggested session, and allow the user to select any session.
 - Keep program details compact: shared drill instructions belong in the program header, each selectable card contains only its own session details, and the selected card is the summary above the Start button.
 - Program progress records exact completed sessions. Selecting or skipping ahead does not complete earlier sessions; completion is recorded only after the chosen workout finishes.
