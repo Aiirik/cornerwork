@@ -2151,8 +2151,66 @@
     return modal(
       'qrDialog',
       'Share Workout',
-      '<p class="feature-note">Scan this code on another device to open the shared workout.</p><div class="qr-wrap"><canvas id="qrCanvas"></canvas></div>',
+      '<p class="feature-note">Scan this code on another device to open the shared workout.</p><div class="qr-wrap"><canvas id="qrCanvas"></canvas><div class="qr-fallback hidden-feature"><p></p><button type="button">Copy share link</button></div></div>',
     );
+  }
+  function waitForQrCode(timeout = 5000) {
+    return new Promise((resolve, reject) => {
+      const started = Date.now();
+      const check = () => {
+        if (window.QRCode?.toCanvas) {
+          resolve(window.QRCode);
+          return;
+        }
+        if (Date.now() - started >= timeout) {
+          reject(new Error('QR code library unavailable'));
+          return;
+        }
+        setTimeout(check, 100);
+      };
+      check();
+    });
+  }
+  async function renderWorkoutQr(qr, url) {
+    const canvas = qr.querySelector('#qrCanvas'),
+      fallback = qr.querySelector('.qr-fallback'),
+      fallbackText = fallback.querySelector('p'),
+      copyButton = fallback.querySelector('button');
+    canvas.classList.remove('hidden-feature');
+    fallback.classList.add('hidden-feature');
+    copyButton.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        const previous = copyButton.textContent;
+        copyButton.textContent = 'Link copied';
+        setTimeout(() => (copyButton.textContent = previous), 1400);
+      } catch (e) {
+        prompt('Copy this workout link', url);
+      }
+    };
+    try {
+      const library = await waitForQrCode();
+      await new Promise((resolve, reject) => {
+        library.toCanvas(
+          canvas,
+          url,
+          {
+            width: 260,
+            margin: 2,
+            errorCorrectionLevel: 'L',
+            color: { dark: '#0b1017', light: '#ffffff' },
+          },
+          (error) => (error ? reject(error) : resolve()),
+        );
+      });
+    } catch (error) {
+      canvas.classList.add('hidden-feature');
+      fallbackText.textContent =
+        error?.message === 'QR code library unavailable'
+          ? 'The QR generator could not load. You can still copy the share link.'
+          : 'This workout contains too much detail for a QR code. You can still copy its share link.';
+      fallback.classList.remove('hidden-feature');
+    }
   }
   function enhanceSavedWorkouts(qr) {
     const list = $('#presetList'),
@@ -2204,14 +2262,14 @@
         duplicate.textContent = 'Duplicate';
         duplicate.setAttribute('aria-label', 'Duplicate ' + p.name);
         duplicate.onclick = () => {
-          presets.unshift({
+          const copy = api.upsertPreset({
             ...p,
             id: Date.now().toString(36),
             name: (p.name + ' copy').slice(0, 36),
-            updatedAt: Date.now(),
+            favorite: false,
+            config: JSON.parse(JSON.stringify(p.config)),
           });
-          write('cornerwork-presets', presets);
-          location.reload();
+          showUndoMessage('Saved “' + copy.name + '”');
         };
         const qrButton = document.createElement('button');
         qrButton.className = 'preset-qr';
@@ -2227,8 +2285,7 @@
               .replace(/\//g, '_')
               .replace(/=+$/, '');
           open(qr);
-          if (window.QRCode)
-            QRCode.toCanvas($('#qrCanvas'), url, { width: 260, margin: 1 }, () => {});
+          requestAnimationFrame(() => renderWorkoutQr(qr, url));
         };
         actions.prepend(star, duplicate, qrButton);
         if (p.note) {
