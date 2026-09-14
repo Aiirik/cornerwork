@@ -78,6 +78,7 @@
   color: var(--text);
   box-shadow: 0 28px 90px #000c;
   outline: none;
+  overflow: hidden;
 }
 .feature-dialog:focus,
 .feature-dialog:focus-visible {
@@ -88,6 +89,7 @@
   backdrop-filter: blur(4px);
 }
 .feature-shell {
+  box-sizing: border-box;
   padding: 20px;
   max-height: inherit;
   overflow: auto;

@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v203';
+const CACHE = 'cornerwork-v204';
 const CORE = [
   './',
   './index.html',
