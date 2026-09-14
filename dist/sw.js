@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v211';
+const CACHE = 'cornerwork-v212';
 const CORE = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const CORE = [
   './assets/js/app.js',
   './assets/js/bootstrap.js',
   './assets/js/enhancements.js',
+  './assets/js/padwork.js',
   './assets/js/icon-themes.js',
   './assets/icons/catalog.json',
   './assets/fonts/league-spartan-clock.woff',
@@ -77,7 +78,12 @@ self.addEventListener('fetch', (event) => {
         url.pathname.endsWith('/assets/icons/catalog.json')),
     cacheable =
       sameOrigin ||
-      ['www.gstatic.com', 'cdn.jsdelivr.net', 'accounts.google.com'].includes(url.hostname);
+      [
+        'www.gstatic.com',
+        'cdn.jsdelivr.net',
+        'accounts.google.com',
+        'storage.googleapis.com',
+      ].includes(url.hostname);
   if (networkFirst) {
     event.respondWith(
       fetch(event.request)

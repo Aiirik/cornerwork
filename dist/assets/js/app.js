@@ -496,6 +496,7 @@ import {
     speechSequence = 0,
     soundTimers = [],
     current = [],
+    comboRevision = 0,
     focusedAssignment = null,
     focusedAssignmentIndex = -1,
     focusedAssignmentDeck = [],
@@ -1729,6 +1730,7 @@ import {
     focusedAssignmentIndex = focusedAssignmentDeck.shift();
     focusedAssignment = drill.assignments[focusedAssignmentIndex];
     current = [];
+    comboRevision++;
     betweenCue = '';
     renderCombo();
     if (speak) announceFocusedAssignment();
@@ -1741,6 +1743,7 @@ import {
     betweenCue = '';
     if (activeFocuses().includes('freestyle')) {
       current = ['freestyle'];
+      comboRevision++;
       repeatLeft = 0;
       renderCombo();
       if (speak && running && phase === 'work')
@@ -1749,12 +1752,14 @@ import {
     }
     if (!available().length) {
       current = [];
+      comboRevision++;
       $('#combo').textContent = 'Select at least one combo';
       $('#comboNumbers').style.display = 'none';
       return;
     }
     if (repeatLeft > 0 && !pendingMovement) {
       repeatLeft--;
+      comboRevision++;
       renderCombo();
       if (speak && running && phase === 'work')
         deliverCombo(current, { schedule: !punchOutActive });
@@ -1772,6 +1777,7 @@ import {
       pick = weightedPick(others);
     }
     current = pick.m;
+    comboRevision++;
     pendingMovement = '';
     lastKey = keyOf(current);
     roundUsed.add(pick.id);
@@ -2219,9 +2225,8 @@ import {
       slots = [...timer.children],
       validSlots =
         slots.length === characters.length &&
-        slots.every(
-          (slot, index) =>
-            slot.classList.contains(characters[index] === ':' ? 'timer-colon' : 'timer-digit'),
+        slots.every((slot, index) =>
+          slot.classList.contains(characters[index] === ':' ? 'timer-colon' : 'timer-digit'),
         );
     if (!validSlots) {
       timer.innerHTML = characters
@@ -2278,7 +2283,7 @@ import {
     );
     const workoutLocked = !['ready', 'complete'].includes(phase);
     $('#setup').classList.toggle('workout-locked', workoutLocked);
-    $$('#setup button:not(.close),#setup input,#setup select').forEach(
+    $$('#setup button:not(.close):not(#padworkToggle),#setup input,#setup select').forEach(
       (el) => (el.disabled = workoutLocked || !!el.closest('.config-locked')),
     );
     const clockText = fmt(time);
@@ -2429,29 +2434,29 @@ import {
     setHtmlIfChanged(
       $('#timeline'),
       warmupPip +
-      Array.from({ length: total }, (_, i) => {
-        const r = i + 1,
-          roundFocuses = planVisible && focusPlan[r] ? focusPlan[r] : [],
-          focus = roundFocuses.map(focusName).join(' + '),
-          shortFocus = roundFocuses.map(shortFocusName).join(' + '),
-          done = r < round || (r === round && (phase === 'rest' || phase === 'complete')),
-          current = r === round && phase === 'work',
-          resting = r === round && phase === 'rest' && r < total;
-        return (
-          '<span class="round-marker"><span class="round-pip ' +
-          (done ? 'done' : current ? 'current' : '') +
-          '"><span class="round-focus-label" title="' +
-          focus +
-          '"><span class="round-focus-full">' +
-          focus +
-          '</span><span class="round-focus-short">' +
-          shortFocus +
-          '</span></span></span></span>' +
-          (resting
-            ? '<span class="phase-pip rest-pip current" aria-label="Rest period"></span>'
-            : '')
-        );
-      }).join(''),
+        Array.from({ length: total }, (_, i) => {
+          const r = i + 1,
+            roundFocuses = planVisible && focusPlan[r] ? focusPlan[r] : [],
+            focus = roundFocuses.map(focusName).join(' + '),
+            shortFocus = roundFocuses.map(shortFocusName).join(' + '),
+            done = r < round || (r === round && (phase === 'rest' || phase === 'complete')),
+            current = r === round && phase === 'work',
+            resting = r === round && phase === 'rest' && r < total;
+          return (
+            '<span class="round-marker"><span class="round-pip ' +
+            (done ? 'done' : current ? 'current' : '') +
+            '"><span class="round-focus-label" title="' +
+            focus +
+            '"><span class="round-focus-full">' +
+            focus +
+            '</span><span class="round-focus-short">' +
+            shortFocus +
+            '</span></span></span></span>' +
+            (resting
+              ? '<span class="phase-pip rest-pip current" aria-label="Rest period"></span>'
+              : '')
+          );
+        }).join(''),
     );
     if (phase === 'complete' && !completionReported) {
       completionReported = true;
@@ -3403,12 +3408,14 @@ import {
       button.classList.toggle('active', settings.includeTypes.includes(button.dataset.type)),
     );
     $('.segmented[data-setting]').forEach((group) => {
-      group.querySelectorAll('[data-value]').forEach((button) =>
-        button.classList.toggle(
-          'active',
-          String(button.dataset.value) === String(settings[group.dataset.setting]),
-        ),
-      );
+      group
+        .querySelectorAll('[data-value]')
+        .forEach((button) =>
+          button.classList.toggle(
+            'active',
+            String(button.dataset.value) === String(settings[group.dataset.setting]),
+          ),
+        );
     });
     $('#focusChoices .check').forEach((button) =>
       button.classList.toggle('active', settings.focuses.includes(button.dataset.focus)),
@@ -3644,6 +3651,25 @@ import {
     },
     get phase() {
       return phase;
+    },
+    get activeCombo() {
+      return current.map((move) => ({
+        raw: move,
+        number: numbered(move),
+        label: phrase(move),
+      }));
+    },
+    get workoutState() {
+      return {
+        running,
+        phase,
+        round,
+        rounds: val('rounds'),
+        seconds: time,
+        clock: fmt(time),
+        comboVisible,
+        comboRevision,
+      };
     },
     get presets() {
       return presets.map((p) => ({ ...p }));

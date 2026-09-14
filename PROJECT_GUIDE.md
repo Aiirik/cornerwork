@@ -17,7 +17,7 @@ Cornerwork should remain:
 - Clear enough to operate while wearing boxing gloves
 - Reliable when installed as a mobile PWA
 - Private by default, with normal preferences stored on the device
-- Practical and training-focused rather than game-like
+- Practical and training-focused, with optional game-like feedback that supports real technique
 - Visually consistent with the established dark boxing-gym interface
 
 Cornerwork is not intended to become a social network, competitive leaderboard, video-streaming platform, or replacement for qualified coaching. New features should directly improve workout setup, coaching, execution, review, or continuity.
@@ -84,6 +84,7 @@ Use these labels consistently in the interface and documentation:
 
 ### Workout execution
 
+- An opt-in Padwork beta combines the current workout timer and generated combinations with a front-camera view, an on-device pose skeleton, jab/cross targets, scoring, streak, and accuracy feedback. Camera access is never automatic, and camera frames are not recorded, uploaded, or stored.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
@@ -189,6 +190,7 @@ cornerwork/
         │   ├── app.js        Timer, combos, audio, settings, persistence, and sync
         │   ├── bootstrap.js  Early mobile behavior and enhancement loader
         │   ├── enhancements.js Additional workout types, tools, history, and UI
+        │   ├── padwork.js     Optional camera pose tracking and padwork scoring
         │   └── icon-themes.js App icon discovery and gallery rendering
         └── icons/            Browser and installable-app icons plus addition guide
 ```
