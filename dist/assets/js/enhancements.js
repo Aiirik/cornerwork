@@ -2216,19 +2216,53 @@
     const list = $('#presetList'),
       modalEl = $('#loadPresetModal');
     if (!list || !modalEl) return;
+    let favoriteOnly = false;
+    const applyFilters = () => {
+      const input = modalEl.querySelector('#presetSearch'),
+        favourites = new Map(
+          read('cornerwork-presets', []).map((preset) => [preset.id, Boolean(preset.favorite)]),
+        ),
+        query = input?.value.trim().toLowerCase() || '';
+      let visible = 0;
+      list.querySelectorAll('.preset-item').forEach((item) => {
+        const id = item.querySelector('[data-load]')?.dataset.load,
+          name = item.querySelector('.preset-name')?.textContent.toLowerCase() || '',
+          show = (!query || name.includes(query)) && (!favoriteOnly || favourites.get(id));
+        item.classList.toggle('hidden-feature', !show);
+        if (show) visible += 1;
+      });
+      modalEl
+        .querySelector('.preset-filter-empty')
+        ?.classList.toggle('hidden-feature', visible > 0 || !list.querySelector('.preset-item'));
+    };
     if (!modalEl.querySelector('#presetSearch')) {
-      const input = document.createElement('input');
+      const controls = document.createElement('div'),
+        input = document.createElement('input'),
+        favoriteFilter = document.createElement('button'),
+        empty = document.createElement('p');
+      controls.className = 'preset-search-controls';
       input.id = 'presetSearch';
       input.className = 'history-search';
       input.placeholder = 'Search saved workouts';
-      modalEl.querySelector('.preset-list').before(input);
-      input.oninput = () => {
-        const q = input.value.toLowerCase();
-        list
-          .querySelectorAll('.preset-item')
-          .forEach((item) =>
-            item.classList.toggle('hidden-feature', !item.textContent.toLowerCase().includes(q)),
-          );
+      favoriteFilter.type = 'button';
+      favoriteFilter.className = 'preset-filter-favourites';
+      favoriteFilter.innerHTML = uiIcon('star');
+      favoriteFilter.title = 'Show favourites only';
+      favoriteFilter.setAttribute('aria-label', favoriteFilter.title);
+      favoriteFilter.setAttribute('aria-pressed', 'false');
+      empty.className = 'preset-filter-empty hidden-feature';
+      empty.textContent = 'No matching saved workouts.';
+      controls.append(input, favoriteFilter);
+      modalEl.querySelector('.preset-list').before(controls, empty);
+      input.oninput = applyFilters;
+      favoriteFilter.onclick = () => {
+        favoriteOnly = !favoriteOnly;
+        favoriteFilter.classList.toggle('active', favoriteOnly);
+        favoriteFilter.innerHTML = uiIcon(favoriteOnly ? 'star-filled' : 'star');
+        favoriteFilter.title = favoriteOnly ? 'Show all workouts' : 'Show favourites only';
+        favoriteFilter.setAttribute('aria-label', favoriteFilter.title);
+        favoriteFilter.setAttribute('aria-pressed', String(favoriteOnly));
+        applyFilters();
       };
     }
     const decorate = () => {
@@ -2288,6 +2322,7 @@
           item.querySelector('.preset-name').after(note);
         }
       });
+      applyFilters();
     };
     new MutationObserver(decorate).observe(list, { childList: true });
     decorate();

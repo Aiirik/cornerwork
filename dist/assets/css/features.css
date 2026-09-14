@@ -180,6 +180,41 @@
 .feature-form .wide {
   grid-column: 1/-1;
 }
+.preset-search-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 8px;
+}
+.preset-search-controls .history-search {
+  min-width: 0;
+}
+.preset-filter-favourites {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel2);
+  color: var(--text);
+}
+.preset-filter-favourites:hover,
+.preset-filter-favourites:focus-visible,
+.preset-filter-favourites.active {
+  border-color: var(--red);
+  color: var(--red-text);
+}
+.preset-filter-favourites.active {
+  background: var(--red-soft);
+}
+.preset-filter-favourites .ui-icon {
+  width: 19px;
+  height: 19px;
+}
+.preset-filter-empty {
+  margin: 12px 0 0;
+  color: var(--muted);
+  text-align: center;
+}
 .feature-primary {
   border: 1px solid var(--red);
   border-radius: 11px;
