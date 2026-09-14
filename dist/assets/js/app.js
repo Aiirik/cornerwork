@@ -3390,13 +3390,76 @@ import {
         : enabled + ' of ' + shown.length + ' ' + level + ' combos enabled.';
   }
   function refreshShortcutInputs() {
-    $$('.shortcut-input').forEach(
+    $('.shortcut-input').forEach(
       (i) => (i.value = displayKey(settings.shortcuts[i.dataset.action])),
     );
     const keys = ['start', 'next', 'restart', 'mute'];
-    $$('#sidebarShortcuts kbd').forEach(
+    $('#sidebarShortcuts kbd').forEach(
       (kbd, i) => (kbd.textContent = displayKey(settings.shortcuts[keys[i]])),
     );
+  }
+  function syncConfigurationControls() {
+    $('#include .check').forEach((button) =>
+      button.classList.toggle('active', settings.includeTypes.includes(button.dataset.type)),
+    );
+    $('.segmented[data-setting]').forEach((group) => {
+      group.querySelectorAll('[data-value]').forEach((button) =>
+        button.classList.toggle(
+          'active',
+          String(button.dataset.value) === String(settings[group.dataset.setting]),
+        ),
+      );
+    });
+    $('#focusChoices .check').forEach((button) =>
+      button.classList.toggle('active', settings.focuses.includes(button.dataset.focus)),
+    );
+    Object.entries(settings.workout).forEach(([id, value]) => {
+      const input = $('#' + id);
+      if (!input) return;
+      if (input.classList.contains('time-input')) {
+        input.dataset.seconds = value;
+        input.value = fmt(value);
+      } else input.value = value;
+    });
+    locked = Array.isArray(settings.allowedCombos)
+      ? new Set(settings.allowedCombos.filter((id) => combos.some((combo) => combo.id === id)))
+      : new Set(combos.map((combo) => combo.id));
+    [
+      ['shortcutLabels', settings.shortcutLabels],
+      ['sidebarShortcutToggle', settings.sidebarShortcuts],
+      ['showFullscreen', settings.showFullscreen],
+      ['compactRoundLabels', settings.compactRoundLabels],
+      ['voice', settings.voice],
+      ['clapperEnabled', settings.clapperEnabled],
+      ['showTimeLeft', settings.showTimeLeft],
+      ['secondary', settings.secondary],
+    ].forEach(([id, on]) => {
+      const button = $('#' + id);
+      if (!button) return;
+      button.classList.toggle('on', Boolean(on));
+      button.setAttribute('aria-pressed', String(Boolean(on)));
+    });
+    $('#sidebarShortcuts').classList.toggle('hidden', !settings.sidebarShortcuts);
+    $('#focusChoices').classList.toggle('show', settings.focusEnabled === 'yes');
+    $('#structuredOptions').classList.toggle('show', settings.focusEnabled === 'yes');
+    $('#warningOptions').classList.toggle('hidden', !settings.clapperEnabled);
+    $('#speechRate').value = settings.speechRate;
+    $('#speechRateValue').textContent = settings.speechRate;
+    $('#wordSpeechRate').value = settings.wordSpeechRate;
+    $('#wordSpeechRateValue').textContent = settings.wordSpeechRate;
+    $('#targetGap').value = settings.targetGap;
+    $('#targetGapValue').textContent = targetGapLabels[settings.targetGap] || 'Tight';
+    $('#wordMoveGap').value = settings.wordMoveGap;
+    $('#wordMoveGapValue').textContent = settings.wordMoveGap + ' ms';
+    $('#volume').value = settings.volume;
+    $('#volumeValue').textContent = settings.volume + '%';
+    renderVolumeIcon();
+    applyDisplaySizes();
+    syncSoundControls('warning');
+    syncSoundControls('roundStart');
+    syncSoundControls('roundEnd');
+    refreshShortcutInputs();
+    renderComboList();
   }
   function normalizedKey(e) {
     if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab'].includes(e.key)) return null;
@@ -3592,8 +3655,17 @@ import {
       return readStudioStateLocal().programs.map((program) => ({ ...program }));
     },
     snapshot: workoutSnapshot,
-    applyConfig(config) {
-      if (applyWorkout(config)) location.reload();
+    applyConfig(config, options = {}) {
+      if (!applyWorkout(config)) return false;
+      if (options.reload !== false) {
+        location.reload();
+        return true;
+      }
+      syncConfigurationControls();
+      resetWorkout();
+      requestAnimationFrame(fitWorkoutToViewport);
+      window.dispatchEvent(new CustomEvent('cornerwork-config-applied'));
+      return true;
     },
     startWorkout: start,
     resetWorkout,
