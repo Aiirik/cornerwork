@@ -1229,7 +1229,8 @@
           '</div><div class="feature-actions"><button class="feature-secondary studio-editor-back" type="button">Cancel</button><button class="feature-primary" id="studioSave" type="button">Save program</button></div></section><section class="program-studio-detail program-detail hidden-feature" aria-live="polite"></section>',
         'program-studio-dialog',
       );
-    let editingId = '';
+    let editingId = '',
+      librarySignature = '';
     const starterPlan = [
       'jabs',
       'straight',
@@ -1312,7 +1313,10 @@
       library.classList.remove('hidden-feature');
       el.querySelector('.feature-head h2').textContent = 'Program Studio';
       const saved = studioPrograms(),
-        grid = el.querySelector('.studio-saved-grid');
+        grid = el.querySelector('.studio-saved-grid'),
+        signature = JSON.stringify(saved);
+      if (signature === librarySignature) return;
+      librarySignature = signature;
       grid.innerHTML = saved.length
         ? saved
             .map(
