@@ -2231,7 +2231,7 @@ select {
 .studio-timing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(118px, 132px));
-  justify-content: start;
+  justify-content: space-between;
   gap: 10px 12px;
 }
 .studio-timing-grid label {
