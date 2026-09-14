@@ -643,10 +643,14 @@ import {
     cloudUser = null,
     cloudReady = false,
     cloudUnsubscribe = null,
-    googleButtonReady = false;
+    googleButtonReady = false,
+    studioCloudWritePending = false,
+    studioCloudRetryBlocked = false,
+    studioCloudQueuedState = null;
   const cloudDeletes = new Set(),
     programProgressDocument = '__program_progress__',
-    studioProgramsDocument = '__studio_programs__',
+    studioProgramsDocument = 'cornerwork-studio-programs',
+    legacyStudioProgramsDocument = '__studio_programs__',
     studioProgramsKey = 'cornerwork-studio-programs',
     studioDeletionsKey = 'cornerwork-studio-program-deletions';
   function workoutSnapshot() {
@@ -882,10 +886,15 @@ import {
       cloudStatus('Progress saved on this device', 'Cloud progress sync is unavailable', true);
     }
   }
-  async function saveStudioProgramsToCloud(state) {
+  async function saveStudioProgramsToCloud(state, force = false) {
     if (!cloudUser || !db) return;
+    studioCloudQueuedState = mergeStudioState(state, {});
+    if (force) studioCloudRetryBlocked = false;
+    if (studioCloudWritePending || studioCloudRetryBlocked) return;
+    studioCloudWritePending = true;
+    const normalized = studioCloudQueuedState;
+    studioCloudQueuedState = null;
     try {
-      const normalized = mergeStudioState(state, {});
       await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', studioProgramsDocument), {
         name: 'Cornerwork Studio programs',
         config: {
@@ -900,12 +909,18 @@ import {
         favorite: false,
         updatedAt: Date.now(),
       });
+      studioCloudRetryBlocked = false;
       cloudStatus(
         'Workouts, programs, and progress synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
+      studioCloudRetryBlocked = true;
       cloudStatus('Programs saved on this device', 'Cloud program sync is unavailable', true);
+    } finally {
+      studioCloudWritePending = false;
+      if (studioCloudQueuedState && !studioCloudRetryBlocked)
+        saveStudioProgramsToCloud(studioCloudQueuedState);
     }
   }
   async function deletePresetFromCloud(id) {
@@ -923,6 +938,9 @@ import {
     if (cloudUnsubscribe) cloudUnsubscribe();
     cloudUser = user;
     cloudReady = false;
+    studioCloudWritePending = false;
+    studioCloudRetryBlocked = false;
+    studioCloudQueuedState = null;
     cloudStatus(
       'Syncing workouts, programs, and progress…',
       user.email || 'Google account connected',
@@ -932,14 +950,19 @@ import {
       ref,
       (snapshot) => {
         const progressSnapshot = snapshot.docs.find((item) => item.id === programProgressDocument),
-          studioSnapshot = snapshot.docs.find((item) => item.id === studioProgramsDocument),
+          studioSnapshot =
+            snapshot.docs.find((item) => item.id === studioProgramsDocument) ||
+            snapshot.docs.find((item) => item.id === legacyStudioProgramsDocument),
           remoteProgress = normalizeProgramProgress(progressSnapshot?.data()?.progress),
           mergedProgress = mergeProgramProgress(readProgramProgressLocal(), remoteProgress),
           remoteStudioState = readStudioStateCloud(studioSnapshot?.data()),
           mergedStudioState = mergeStudioState(readStudioStateLocal(), remoteStudioState),
           cloud = snapshot.docs
             .filter(
-              (item) => item.id !== programProgressDocument && item.id !== studioProgramsDocument,
+              (item) =>
+                item.id !== programProgressDocument &&
+                item.id !== studioProgramsDocument &&
+                item.id !== legacyStudioProgramsDocument,
             )
             .map((item) => ({
               id: item.id,
@@ -973,7 +996,8 @@ import {
           );
         pendingPresets.forEach(savePresetToCloud);
         if (needsProgressSync) saveProgramProgressToCloud(mergedProgress);
-        if (needsStudioSync) saveStudioProgramsToCloud(mergedStudioState);
+        if (needsStudioSync && !studioCloudWritePending && !studioCloudRetryBlocked)
+          saveStudioProgramsToCloud(mergedStudioState);
       },
       () => cloudStatus('Cloud sync unavailable', 'Workouts and progress still save here', true),
     );
@@ -3560,7 +3584,7 @@ import {
         ? local.programs.map((item) => (item.id === clean.id ? clean : item))
         : [clean, ...local.programs];
       const saved = saveStudioStateLocal(local);
-      saveStudioProgramsToCloud(saved);
+      saveStudioProgramsToCloud(saved, true);
       return clean;
     },
     removeStudioProgram(id) {
@@ -3569,7 +3593,7 @@ import {
       local.programs = local.programs.filter((program) => program.id !== id);
       local.deletions[id] = timestamp;
       const saved = saveStudioStateLocal(local);
-      saveStudioProgramsToCloud(saved);
+      saveStudioProgramsToCloud(saved, true);
     },
     addCustomCombo(combo) {
       const clean = {
