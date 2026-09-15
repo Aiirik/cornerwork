@@ -9,8 +9,14 @@
     [11, 12],
     [11, 13],
     [13, 15],
+    [15, 17],
+    [15, 19],
+    [15, 21],
     [12, 14],
     [14, 16],
+    [16, 18],
+    [16, 20],
+    [16, 22],
     [11, 23],
     [12, 24],
     [23, 24],
@@ -220,7 +226,7 @@
       '<canvas id="padworkCanvas" aria-hidden="true"></canvas>' +
       '<div class="padwork-vignette" aria-hidden="true"></div>' +
       '<div class="padwork-hud">' +
-      '<div class="padwork-topline"><div class="padwork-stat"><span>Score</span><strong id="padworkScore">0</strong></div><div class="padwork-clock"><span id="padworkPhase">Ready</span><strong id="padworkClock">3:00</strong></div><div class="padwork-stat padwork-streak"><span>Streak</span><strong id="padworkStreak">0</strong></div><button class="padwork-control" id="padworkControl" type="button">Start</button></div>' +
+      '<div class="padwork-topline"><div class="padwork-stat"><span>Score</span><strong id="padworkScore">0</strong></div><div class="padwork-clock"><span id="padworkPhase">Ready</span><strong id="padworkClock">3:00</strong></div><div class="padwork-stat padwork-streak"><span>Streak</span><strong id="padworkStreak">0</strong></div><div class="padwork-actions"><button class="padwork-control" id="padworkControl" type="button">Start</button><button class="padwork-reset" id="padworkReset" type="button">Reset</button></div></div>' +
       '<div class="padwork-message" id="padworkMessage" data-state="loading">Camera model loading…</div>' +
       '<div class="padwork-arena" id="padworkArena"></div>' +
       '<div class="padwork-bottom"><div class="padwork-accuracy"><span>Accuracy</span><strong id="padworkAccuracy">—</strong></div><div class="padwork-meter"><i id="padworkMeter"></i></div></div>' +
@@ -230,6 +236,7 @@
     canvas = $('#padworkCanvas', stage);
     context = canvas.getContext('2d');
     $('#padworkControl', stage).addEventListener('click', () => api.startWorkout());
+    $('#padworkReset', stage).addEventListener('click', resetSession);
   }
 
   async function enable() {
@@ -508,6 +515,41 @@
       context.arc(point.x * width, point.y * height, Math.max(3, width * 0.006), 0, Math.PI * 2);
       context.fill();
     });
+    drawHandMarker(landmarks, [15, 17, 19, 21], 13);
+    drawHandMarker(landmarks, [16, 18, 20, 22], 14);
+  }
+
+  function drawHandMarker(landmarks, handIndexes, elbowIndex) {
+    const wrist = landmarks[handIndexes[0]];
+    const elbow = landmarks[elbowIndex];
+    if (!wrist || !elbow || (wrist.visibility ?? 1) < 0.25) return;
+    const width = canvas.width;
+    const height = canvas.height;
+    const handPoints = handIndexes
+      .map((index) => landmarks[index])
+      .filter((point) => point && (point.visibility ?? 1) > 0.2);
+    let centerX;
+    let centerY;
+    if (handPoints.length > 1) {
+      centerX = handPoints.reduce((sum, point) => sum + point.x, 0) / handPoints.length;
+      centerY = handPoints.reduce((sum, point) => sum + point.y, 0) / handPoints.length;
+    } else {
+      centerX = wrist.x + (wrist.x - elbow.x) * 0.18;
+      centerY = wrist.y + (wrist.y - elbow.y) * 0.18;
+    }
+    const forearmLength = Math.hypot((wrist.x - elbow.x) * width, (wrist.y - elbow.y) * height);
+    const radius = Math.max(width * 0.02, Math.min(width * 0.05, forearmLength * 0.2));
+    context.save();
+    context.beginPath();
+    context.arc(centerX * width, centerY * height, radius, 0, Math.PI * 2);
+    context.fillStyle = 'rgba(255, 55, 48, .16)';
+    context.fill();
+    context.lineWidth = Math.max(4, width * 0.006);
+    context.strokeStyle = 'rgba(255, 90, 82, .98)';
+    context.shadowColor = 'rgba(255, 35, 35, .7)';
+    context.shadowBlur = 12;
+    context.stroke();
+    context.restore();
   }
 
   function detectArm(side, landmarks, now) {
@@ -565,6 +607,7 @@
   function syncWorkout(now) {
     const state = api.workoutState;
     stage.dataset.sessionState = state.phase;
+    stage.dataset.paused = String(!state.running && !['ready', 'complete'].includes(state.phase));
     setText($('#padworkClock', stage), state.clock);
     setText($('#padworkPhase', stage), phaseLabel(state));
     const control = $('#padworkControl', stage);
@@ -755,6 +798,13 @@
     Object.assign(arms.left, armState());
     Object.assign(arms.right, armState());
     updateScoreboard();
+  }
+
+  function resetSession() {
+    api.resetWorkout();
+    resetGame();
+    stage.dataset.paused = 'false';
+    setMessage('Workout reset. Open Workout to adjust your settings.', 'ready');
   }
 
   function readSettings() {

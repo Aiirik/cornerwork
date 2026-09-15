@@ -3332,6 +3332,26 @@ body.padwork-active .workout > .center {
   pointer-events: auto;
   backdrop-filter: blur(10px);
 }
+.padwork-actions {
+  display: flex;
+  gap: 5px;
+  pointer-events: auto;
+}
+.padwork-reset {
+  display: none;
+  min-height: 46px;
+  border: 1px solid var(--red);
+  border-radius: 13px;
+  padding: 0 12px;
+  background: #13090bd9;
+  color: var(--red-text);
+  font-size: 10px;
+  font-weight: 900;
+  backdrop-filter: blur(10px);
+}
+.padwork-stage[data-paused='true'] .padwork-reset {
+  display: block;
+}
 .padwork-control.is-pause {
   background: #f0a31be8;
   color: #111820;
@@ -3529,6 +3549,18 @@ body.padwork-active .workout > .center {
     min-height: 48px;
     border-radius: 11px;
     padding: 0 4px;
+    font-size: 10px;
+  }
+  .padwork-stage[data-paused='true'] .padwork-topline {
+    grid-template-columns: minmax(58px, 0.8fr) minmax(92px, 1.25fr) minmax(116px, auto);
+  }
+  .padwork-stage[data-paused='true'] .padwork-streak {
+    display: none;
+  }
+  .padwork-reset {
+    min-height: 48px;
+    border-radius: 11px;
+    padding: 0 7px;
     font-size: 10px;
   }
   .padwork-message {
