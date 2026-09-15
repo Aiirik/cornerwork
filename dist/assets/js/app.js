@@ -609,8 +609,6 @@ import {
     const choices = ['endless-jabs', 'endless-crosses', 'endless-repeat'];
     if (level >= 4) choices.push('endless-hooks');
     if (level >= 5) choices.push('body');
-    if (level >= 6) choices.push('defense');
-    if (level >= 8) choices.push('footwork');
     const fresh = choices.filter((focus) => focus !== endlessPreviousFocus),
       pool = fresh.length ? fresh : choices;
     endlessRoundFocus = pool[Math.floor(sessionRandom() * pool.length)];
