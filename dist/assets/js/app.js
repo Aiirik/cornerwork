@@ -2739,6 +2739,7 @@ import {
     render();
   }
   function restart() {
+    if (settings.endlessMode) return;
     if (phase === 'ready') return;
     clear();
     cancelSpeech();
@@ -2844,6 +2845,7 @@ import {
     }, 1200);
   }
   function nextAction() {
+    if (settings.endlessMode) return;
     if (phase === 'ready' || phase === 'complete') return;
     clear();
     cancelSpeech();

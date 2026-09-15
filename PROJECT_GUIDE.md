@@ -90,7 +90,7 @@ Use these labels consistently in the interface and documentation:
 - Endless awards exactly one point for every called action, including defensive movements. `1` is worth one point, `1-2` is worth two, and `1-2-3-Slip right` is worth four. The app does not claim to detect whether the user physically performed a move.
 - Endless strongly favors one- and two-action combinations in its opening levels. As levels rise, medium and complex calls become more likely, but simple combinations always retain at least a 25% selection band so late levels remain varied rather than becoming exclusively difficult.
 - Endless has no final level or target score. Clearing a level starts its generated recovery, then the next level begins. The workout continues until the user chooses End run.
-- Endless reuses the normal Cornerwork workout engine, including speech, sounds, coaching, stance, display settings, pause/resume, phase navigation, hold-to-reset, Wake Lock, and completion history. It requires no camera, microphone, pose tracking, recording, or network opponent.
+- Endless reuses the normal Cornerwork workout engine, including speech, sounds, coaching, stance, display settings, pause/resume, hold-to-reset, Wake Lock, and completion history. Previous- and next-phase controls are hidden and disabled in Endless because levels must be completed in order. It requires no camera, microphone, pose tracking, recording, or network opponent.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
