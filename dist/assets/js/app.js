@@ -469,6 +469,7 @@ import {
     guidedBeginner: false,
     haptics: true,
     highContrast: false,
+    versusMode: false,
     buttonTextBrightness: 98,
     whiteOutlineText: false,
     accentColor: 'red',
@@ -481,7 +482,6 @@ import {
     /iP(hone|ad|od)/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   let running = false,
-    padworkMode = false,
     phase = 'ready',
     round = 1,
     time = 180,
@@ -497,7 +497,6 @@ import {
     speechSequence = 0,
     soundTimers = [],
     current = [],
-    comboRevision = 0,
     focusedAssignment = null,
     focusedAssignmentIndex = -1,
     focusedAssignmentDeck = [],
@@ -623,6 +622,7 @@ import {
     'guidedBeginner',
     'haptics',
     'highContrast',
+    'versusMode',
   ];
   let presets = [];
   try {
@@ -1731,7 +1731,6 @@ import {
     focusedAssignmentIndex = focusedAssignmentDeck.shift();
     focusedAssignment = drill.assignments[focusedAssignmentIndex];
     current = [];
-    comboRevision++;
     betweenCue = '';
     renderCombo();
     if (speak) announceFocusedAssignment();
@@ -1744,7 +1743,6 @@ import {
     betweenCue = '';
     if (activeFocuses().includes('freestyle')) {
       current = ['freestyle'];
-      comboRevision++;
       repeatLeft = 0;
       renderCombo();
       if (speak && running && phase === 'work')
@@ -1753,14 +1751,12 @@ import {
     }
     if (!available().length) {
       current = [];
-      comboRevision++;
       $('#combo').textContent = 'Select at least one combo';
       $('#comboNumbers').style.display = 'none';
       return;
     }
     if (repeatLeft > 0 && !pendingMovement) {
       repeatLeft--;
-      comboRevision++;
       renderCombo();
       if (speak && running && phase === 'work')
         deliverCombo(current, { schedule: !punchOutActive });
@@ -1778,7 +1774,6 @@ import {
       pick = weightedPick(others);
     }
     current = pick.m;
-    comboRevision++;
     pendingMovement = '';
     lastKey = keyOf(current);
     roundUsed.add(pick.id);
@@ -1933,14 +1928,13 @@ import {
   }
   function beginComboCadence() {
     clearTimeout(comboTick);
-    if (padworkMode) return;
     comboTick = setTimeout(
       () => newCombo(true),
       (activeFocusedDrill() ? focusedDelay() : cadence()) * 1000,
     );
   }
   function maybeAdvanceBlock() {
-    if (padworkMode || settings.structured === 'off' || phase !== 'work') return;
+    if (settings.structured === 'off' || phase !== 'work') return;
     const next = Math.min(
       (blockPlan[round]?.length || 1) - 1,
       Math.floor((val('roundTime') - time) / +settings.structured),
@@ -1967,18 +1961,15 @@ import {
       renderCombo();
       clearInterval(tick);
       tick = setInterval(step, 1000);
-      if (!padworkMode) {
-        if (activeFocusedDrill()) announceFocusedAssignment();
-        else deliverCombo(current, { cancel: false });
-      }
+      if (activeFocusedDrill()) announceFocusedAssignment();
+      else deliverCombo(current, { cancel: false });
     });
   }
   function announceRound() {
     const drill = activeFocusedDrill(),
       focus = activeFocuses().map(focusName).join(' and '),
-      message = padworkMode
-        ? 'Round ' + round + '.'
-        : drill && round === 1
+      message =
+        drill && round === 1
           ? 'Round 1. ' + drill.name + '. ' + drill.instructions
           : 'Round ' + round + (drill ? '' : focus ? '. ' + focus : '') + '.';
     roundAnnouncementActive = true;
@@ -2296,7 +2287,7 @@ import {
     );
     const workoutLocked = !['ready', 'complete'].includes(phase);
     $('#setup').classList.toggle('workout-locked', workoutLocked);
-    $$('#setup button:not(.close):not(#padworkToggle),#setup input,#setup select').forEach(
+    $$('#setup button:not(.close),#setup input,#setup select').forEach(
       (el) => (el.disabled = workoutLocked || !!el.closest('.config-locked')),
     );
     const clockText = fmt(time);
@@ -2504,7 +2495,7 @@ import {
   }
   function start() {
     unlockAudio();
-    if (!padworkMode && phase === 'ready' && !available().length) {
+    if (phase === 'ready' && !available().length) {
       $('#combo').textContent = 'Select at least one combo';
       $('#comboNumbers').style.display = 'none';
       return;
@@ -2552,7 +2543,7 @@ import {
       if (phase === 'work') {
         if (comboVisible) {
           tick = setInterval(step, 1000);
-          if (!padworkMode) beginComboCadence();
+          beginComboCadence();
         } else if (!roundAnnouncementActive) announceRound();
       } else tick = setInterval(step, 1000);
     } else {
@@ -2564,7 +2555,7 @@ import {
   function step() {
     activeSeconds++;
     time--;
-    if (!padworkMode && phase === 'work' && time > 0 && punchOutAt >= 0 && time === punchOutAt) {
+    if (phase === 'work' && time > 0 && punchOutAt >= 0 && time === punchOutAt) {
       const planned = focusPlan[round] || [],
         duration = planned.includes('punchout30') ? 30 : 15;
       punchOutActive = true;
@@ -3665,13 +3656,6 @@ import {
     get phase() {
       return phase;
     },
-    get activeCombo() {
-      return current.map((move) => ({
-        raw: move,
-        number: numbered(move),
-        label: phrase(move),
-      }));
-    },
     get workoutState() {
       return {
         running,
@@ -3681,17 +3665,17 @@ import {
         seconds: time,
         clock: fmt(time),
         comboVisible,
-        comboRevision,
+        comboCount: comboTotal,
+        moveCount: moveTotal,
       };
     },
-    setPadworkMode(enabled) {
-      const next = !!enabled;
-      if (next === padworkMode) return;
-      padworkMode = next;
-      clearTimeout(comboTick);
-      comboTick = null;
-      cancelSpeech();
-      if (!padworkMode && running && phase === 'work' && comboVisible) beginComboCadence();
+    setVersusMode(enabled) {
+      settings.versusMode = !!enabled;
+      saveSettings();
+      render();
+      window.dispatchEvent(
+        new CustomEvent('cornerwork-versus-mode', { detail: { enabled: settings.versusMode } }),
+      );
     },
     get presets() {
       return presets.map((p) => ({ ...p }));

@@ -84,14 +84,10 @@ Use these labels consistently in the interface and documentation:
 
 ### Workout execution
 
-- Padwork is an opt-in camera game mode with its own target generator rather than the normal spoken-combo coach. Jab, cross, and hook targets travel from a distant vanishing point into a strike window, with scoring, streak, and accuracy feedback. Padwork keeps the standard round timer and bells, replaces the normal setup groups with target-specific controls, and lets the user select target speed, included punches, and separate jab, cross, and hook colors.
-- Padwork setup follows the compact Custom Workout control style. Frequently used target and camera controls remain in the Workout panel, while target colors live in a gear-opened Padwork settings dialog. Before Start, the camera HUD shows only positioning guidance, the ready clock, and Start; score and streak appear after Start, and accuracy appears only after the first scored attempt.
-- Padwork targets continue to spawn and travel with the active round even when pose tracking is temporarily uncertain. Tracking confidence controls punch scoring and guidance only; it must never pause or remove the target stream.
-- Keep Padwork setup visually consistent with the Custom Workout panel. Primary target and camera controls stay compact in the Workout drawer, while target colors and future secondary options belong in the Padwork settings dialog. Before Start, the camera HUD shows only positioning guidance, the ready clock, and Start; score and streak appear after Start, and accuracy appears only after the first scored attempt.
-- Padwork is a selectable workout type in the shared launcher, not a closeable overlay. Its camera screen has no exit control. Choosing Custom or another workout type stops camera and tracking, resets Padwork, restores that type's normal controls, and updates the main display without reloading the page.
-- While experimental, label the launcher `Padwork game (Beta)` and place it below Custom, Program Studio, Quick Start, Presets, and Programs. Padwork target labels can show either punch names or boxing numbers; both must remain readable from training distance. Punch recognition should use a forgiving timing window and select the closest matching target when multiple target windows overlap.
-- When Padwork is paused, show a Reset action that returns the session to Ready, clears game results and targets, and allows the Workout drawer to be opened for edits. The tracking overlay should extend beyond wrist landmarks by drawing actual hand landmarks when available and a forearm-projected fist marker as a fallback.
-- Padwork requests a square camera feed to reduce unnecessary portrait cropping, lists the camera devices exposed by the browser after permission is granted, and uses the selected track's real hardware zoom range when one is available. Camera Fit/Fill remains configurable. Camera access is never automatic, and frames are processed on the device without being recorded, uploaded, or stored.
+- VS Computer is an optional presentation layer for the normal Cornerwork workout engine. It never changes combo selection, cadence, coaching, focus blocks, sounds, round timing, or controls.
+- The VS Computer toggle belongs inside the standard Workout timing section. Enabling it replaces only the main workout presentation with a virtual opponent, health bar, score, and combo chain; every original setup option remains available.
+- A real coach callout counts as a virtual attack. Move count influences points and damage, while workout progress keeps opponent health paced through the final round. Completion produces the knockout; the app does not claim to detect whether the user physically landed a punch.
+- VS Computer uses no camera, microphone, pose tracking, recording, upload, network opponent, or generative AI. It remains a private, offline-capable motivational workout display.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
@@ -198,7 +194,7 @@ cornerwork/
         │   ├── app.js        Timer, combos, audio, settings, persistence, and sync
         │   ├── bootstrap.js  Early mobile behavior and enhancement loader
         │   ├── enhancements.js Additional workout types, tools, history, and UI
-        │   ├── padwork.js     Optional camera pose tracking and padwork scoring
+        │   ├── versus.js      Optional VS Computer workout presentation and scoring
         │   └── icon-themes.js App icon discovery and gallery rendering
         └── icons/            Browser and installable-app icons plus addition guide
 ```
@@ -232,7 +228,6 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 | `cornerwork-custom-workout`           | Last custom setup before loading a preset                     |
 | `cornerwork-workout-fold-state`       | Last open Workout panel groups                                |
 | `cornerwork-allow-page-zoom`          | Mobile zoom accessibility preference                          |
-| `cornerwork-padwork-settings`         | Padwork targets, colors, speed, framing, and camera choice    |
 
 Session storage is used for pending shared workouts, active program sessions, and service-worker update coordination.
 

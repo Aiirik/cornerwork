@@ -54,13 +54,13 @@
     document.addEventListener('DOMContentLoaded', addAccessibilitySetting, { once: true });
   else addAccessibilitySetting();
   const core = document.createElement('script');
-  core.src = 'assets/js/enhancements.js?v=217';
+  core.src = 'assets/js/enhancements.js?v=218';
   core.defer = true;
   core.addEventListener('load', () => {
-    const padwork = document.createElement('script');
-    padwork.src = 'assets/js/padwork.js?v=9';
-    padwork.defer = true;
-    document.head.appendChild(padwork);
+    const versus = document.createElement('script');
+    versus.src = 'assets/js/versus.js?v=1';
+    versus.defer = true;
+    document.head.appendChild(versus);
   });
   document.head.appendChild(core);
 })();

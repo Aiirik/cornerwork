@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v222';
+const CACHE = 'cornerwork-v223';
 const CORE = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const CORE = [
   './assets/js/app.js',
   './assets/js/bootstrap.js',
   './assets/js/enhancements.js',
-  './assets/js/padwork.js',
+  './assets/js/versus.js',
   './assets/js/icon-themes.js',
   './assets/icons/catalog.json',
   './assets/fonts/league-spartan-clock.woff',
