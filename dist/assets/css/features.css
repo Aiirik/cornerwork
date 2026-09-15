@@ -2575,55 +2575,24 @@ select {
 
 /* Optional on-device camera padwork */
 .padwork-launch {
+  grid-column: 1 / -1;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 7px;
-  border: 1px solid #31506b;
-  border-radius: 11px;
-  padding: 9px 10px;
-  background: linear-gradient(135deg, #152635, #151b24);
-  color: var(--text);
-  text-align: left;
-}
-.padwork-launch > span {
-  display: grid;
-  gap: 2px;
-}
-.padwork-launch strong {
-  font-size: 12px;
-  font-weight: 900;
-}
-.padwork-launch small {
-  color: #8da7ba;
-  font-size: 9px;
-  font-weight: 700;
-}
-.padwork-launch > b {
-  flex: 0 0 auto;
-  border-radius: 99px;
-  padding: 5px 8px;
-  background: #1b76b5;
-  color: white;
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  margin: 0 !important;
+  border-color: var(--line);
+  background: #222832;
+  color: var(--button-text);
+  text-align: center;
 }
 .padwork-launch:hover,
 .padwork-launch.active {
-  border-color: #3ba8ef;
-  background: linear-gradient(135deg, #17364c, #161d27);
-}
-.padwork-launch.active > b {
-  background: #1f9c67;
+  border-color: var(--red);
+  background: var(--red-soft);
+  color: var(--red-text);
+  box-shadow: inset 0 0 0 1px var(--red-glow);
 }
 .padwork-launch.error {
   border-color: var(--red);
-}
-.padwork-launch.error > b {
-  background: var(--red);
+  color: var(--red-text);
 }
 .workout {
   position: relative;
@@ -2727,18 +2696,6 @@ body.padwork-active .padwork-stage {
   font-family: var(--clock-font, 'Cornerwork League Spartan'), sans-serif;
   font-size: 25px;
   font-variant-numeric: tabular-nums;
-}
-.padwork-exit {
-  min-height: 42px;
-  border: 1px solid #ffffff2b;
-  border-radius: 12px;
-  padding: 0 13px;
-  background: #05080bd1;
-  color: white;
-  font-size: 11px;
-  font-weight: 900;
-  pointer-events: auto;
-  backdrop-filter: blur(10px);
 }
 .padwork-message {
   position: absolute;
@@ -3053,11 +3010,6 @@ body.padwork-active .controls {
   .padwork-clock strong {
     font-size: 20px;
   }
-  .padwork-exit {
-    min-height: 36px;
-    padding: 0 9px;
-    font-size: 9px;
-  }
   .padwork-message {
     top: 75px;
     max-width: 82%;
@@ -3139,11 +3091,6 @@ body.padwork-active #setup > #sidebarShortcuts {
 }
 body.padwork-active .setup-fold[data-fold='workout'] .field:has(#pace),
 body.padwork-active .setup-fold[data-fold='workout'] .field:has(#editCoaching) {
-  display: none;
-}
-body.padwork-active .feature-launch > .eyebrow,
-body.padwork-active .feature-launch > .workout-authoring-grid,
-body.padwork-active .feature-launch > .feature-grid {
   display: none;
 }
 body.padwork-active .padwork-options {
@@ -3364,7 +3311,7 @@ body.padwork-active .workout > .center {
 }
 .padwork-topline {
   top: 16px;
-  grid-template-columns: minmax(72px, 1fr) minmax(106px, auto) minmax(72px, 1fr) auto auto;
+  grid-template-columns: minmax(72px, 1fr) minmax(106px, auto) minmax(72px, 1fr) auto;
   align-items: stretch;
   gap: 7px;
 }
@@ -3374,8 +3321,7 @@ body.padwork-active .workout > .center {
   justify-content: center;
   padding: 7px 10px;
 }
-.padwork-control,
-.padwork-exit {
+.padwork-control {
   min-height: 46px;
   border: 1px solid #ffffff2b;
   border-radius: 13px;
@@ -3390,13 +3336,6 @@ body.padwork-active .workout > .center {
 .padwork-control.is-pause {
   background: #f0a31be8;
   color: #111820;
-}
-.padwork-exit {
-  width: 46px;
-  padding: 0;
-  background: #05080bd1;
-  font-size: 24px;
-  line-height: 1;
 }
 .padwork-message {
   top: 82px;
@@ -3500,7 +3439,7 @@ body.padwork-active .workout > .center {
   display: none;
 }
 .padwork-stage[data-session-state='ready'] .padwork-topline {
-  grid-template-columns: minmax(140px, 1fr) auto auto;
+  grid-template-columns: minmax(140px, 1fr) auto;
 }
 .padwork-stage[data-session-state='ready'] .padwork-clock {
   justify-self: start;
@@ -3559,7 +3498,7 @@ body.padwork-active .workout > .center {
     top: 10px;
     right: 9px;
     left: 9px;
-    grid-template-columns: minmax(58px, 0.8fr) minmax(92px, 1.25fr) minmax(58px, 0.8fr) 52px 42px;
+    grid-template-columns: minmax(58px, 0.8fr) minmax(92px, 1.25fr) minmax(58px, 0.8fr) 56px;
     gap: 5px;
   }
   .padwork-stat,
@@ -3579,16 +3518,11 @@ body.padwork-active .workout > .center {
   .padwork-clock strong {
     font-size: 22px;
   }
-  .padwork-control,
-  .padwork-exit {
+  .padwork-control {
     min-height: 48px;
     border-radius: 11px;
     padding: 0 4px;
     font-size: 10px;
-  }
-  .padwork-exit {
-    width: 42px;
-    font-size: 22px;
   }
   .padwork-message {
     top: 70px;
@@ -3596,7 +3530,7 @@ body.padwork-active .workout > .center {
     font-size: 10px;
   }
   .padwork-stage[data-session-state='ready'] .padwork-topline {
-    grid-template-columns: minmax(105px, 1fr) 70px 42px;
+    grid-template-columns: minmax(105px, 1fr) 76px;
   }
   .padwork-stage[data-session-state='ready'] .padwork-clock {
     min-width: 105px;

@@ -64,6 +64,7 @@
   let poseReady = false;
   let playableLastFrame = false;
   let gamePausedAt = 0;
+  let previousModeButton;
   let score = 0;
   let streak = 0;
   let hits = 0;
@@ -97,11 +98,24 @@
     toggle = document.createElement('button');
     toggle.id = 'padworkToggle';
     toggle.type = 'button';
-    toggle.className = 'padwork-launch';
-    toggle.innerHTML =
-      '<span><strong>Padwork game</strong><small>Camera targets · jab, cross &amp; hook</small></span><b>Enable</b>';
-    toggle.addEventListener('click', () => (active ? disable() : enable()));
-    launch.appendChild(toggle);
+    toggle.className = 'custom-workout padwork-launch';
+    toggle.textContent = 'Padwork game';
+    toggle.setAttribute('aria-pressed', 'false');
+    toggle.addEventListener('click', () => {
+      if (!active && !loading) enable();
+    });
+    launch.querySelector('.workout-authoring-grid')?.appendChild(toggle);
+    launch
+      .querySelectorAll('#customWorkout,#programStudio,#quickStart,#programs,#workoutPresets')
+      .forEach((button) =>
+        button.addEventListener(
+          'click',
+          () => {
+            if (active || loading) disable();
+          },
+          { capture: true },
+        ),
+      );
 
     buildOptionsPanel(launch);
     buildStage(workout);
@@ -197,7 +211,7 @@
       '<canvas id="padworkCanvas" aria-hidden="true"></canvas>' +
       '<div class="padwork-vignette" aria-hidden="true"></div>' +
       '<div class="padwork-hud">' +
-      '<div class="padwork-topline"><div class="padwork-stat"><span>Score</span><strong id="padworkScore">0</strong></div><div class="padwork-clock"><span id="padworkPhase">Ready</span><strong id="padworkClock">3:00</strong></div><div class="padwork-stat padwork-streak"><span>Streak</span><strong id="padworkStreak">0</strong></div><button class="padwork-control" id="padworkControl" type="button">Start</button><button class="padwork-exit" id="padworkExit" type="button" aria-label="Exit Padwork">×</button></div>' +
+      '<div class="padwork-topline"><div class="padwork-stat"><span>Score</span><strong id="padworkScore">0</strong></div><div class="padwork-clock"><span id="padworkPhase">Ready</span><strong id="padworkClock">3:00</strong></div><div class="padwork-stat padwork-streak"><span>Streak</span><strong id="padworkStreak">0</strong></div><button class="padwork-control" id="padworkControl" type="button">Start</button></div>' +
       '<div class="padwork-message" id="padworkMessage" data-state="loading">Camera model loading…</div>' +
       '<div class="padwork-arena" id="padworkArena"></div>' +
       '<div class="padwork-bottom"><div class="padwork-accuracy"><span>Accuracy</span><strong id="padworkAccuracy">—</strong></div><div class="padwork-meter"><i id="padworkMeter"></i></div></div>' +
@@ -206,7 +220,6 @@
     video = $('#padworkVideo', stage);
     canvas = $('#padworkCanvas', stage);
     context = canvas.getContext('2d');
-    $('#padworkExit', stage).addEventListener('click', disable);
     $('#padworkControl', stage).addEventListener('click', () => api.startWorkout());
   }
 
@@ -218,12 +231,17 @@
     }
     loading = true;
     active = true;
+    previousModeButton = $('.feature-launch .active');
+    $('.feature-launch')
+      ?.querySelectorAll('#customWorkout,#programStudio,#quickStart,#programs,#workoutPresets')
+      .forEach((button) => button.classList.remove('active'));
     api.resetWorkout();
     api.setPadworkMode(true);
     resetGame();
     document.body.classList.add('padwork-active');
     stage.setAttribute('aria-hidden', 'false');
     toggle.classList.add('active');
+    toggle.setAttribute('aria-pressed', 'true');
     setLaunchLabel('Starting…');
     setMessage('Allow camera access, then step into frame.', 'loading');
 
@@ -234,7 +252,7 @@
         return;
       }
       loading = false;
-      setLaunchLabel('Exit mode');
+      setLaunchLabel('Padwork game');
       setMessage('Finding your shoulders and hands…', 'loading');
       animationFrame = requestAnimationFrame(frame);
     } catch (error) {
@@ -260,7 +278,9 @@
     document.body.classList.remove('padwork-active');
     stage?.setAttribute('aria-hidden', 'true');
     toggle?.classList.remove('active', 'error');
-    setLaunchLabel('Enable');
+    toggle?.setAttribute('aria-pressed', 'false');
+    previousModeButton?.classList.add('active');
+    setLaunchLabel('Padwork game');
   }
 
   function stopCamera() {
@@ -794,8 +814,7 @@
   }
 
   function setLaunchLabel(label) {
-    const status = toggle?.querySelector('b');
-    if (status) status.textContent = label;
+    if (toggle) toggle.textContent = label;
   }
 
   function setLaunchError(label) {
@@ -804,7 +823,7 @@
     setTimeout(() => {
       if (!active) {
         toggle?.classList.remove('error');
-        setLaunchLabel('Enable');
+        setLaunchLabel('Padwork game');
       }
     }, 3500);
   }
