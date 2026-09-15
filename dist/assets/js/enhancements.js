@@ -2656,23 +2656,6 @@
       menu.setAttribute('role', 'listbox');
       select.before(wrap);
       wrap.append(select, trigger, menu);
-      [...select.options].forEach((option) => {
-        const choice = document.createElement('button');
-        choice.type = 'button';
-        choice.className = 'custom-select-option';
-        choice.dataset.value = option.value;
-        choice.innerHTML =
-          '<span>' + safe(option.textContent) + '</span>' + uiIcon('check', 'custom-select-check');
-        choice.disabled = option.disabled;
-        choice.setAttribute('role', 'option');
-        choice.onclick = (event) => {
-          event.preventDefault();
-          select.value = option.value;
-          select.dispatchEvent(new Event('change', { bubbles: true }));
-          closeCustomSelects();
-        };
-        menu.append(choice);
-      });
       const sync = () => {
         const option = select.selectedOptions[0];
         trigger.textContent = option?.textContent || '';
@@ -2683,11 +2666,39 @@
           choice.setAttribute('aria-selected', String(active));
         });
       };
+      const populate = () => {
+        menu.replaceChildren();
+        [...select.options].forEach((option) => {
+          const choice = document.createElement('button');
+          choice.type = 'button';
+          choice.className = 'custom-select-option';
+          choice.dataset.value = option.value;
+          choice.innerHTML =
+            '<span>' +
+            safe(option.textContent) +
+            '</span>' +
+            uiIcon('check', 'custom-select-check');
+          choice.disabled = option.disabled;
+          choice.setAttribute('role', 'option');
+          choice.onclick = (event) => {
+            event.preventDefault();
+            select.value = option.value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            closeCustomSelects();
+          };
+          menu.append(choice);
+        });
+        sync();
+      };
       select._syncCustomSelect = sync;
       select.addEventListener('change', sync);
-      new MutationObserver(sync).observe(select, {
+      new MutationObserver((mutations) => {
+        if (mutations.some((mutation) => mutation.type === 'childList')) populate();
+        else sync();
+      }).observe(select, {
         attributes: true,
         attributeFilter: ['disabled'],
+        childList: true,
       });
       trigger.onclick = (event) => {
         event.preventDefault();
@@ -2724,7 +2735,7 @@
           trigger.focus();
         }
       };
-      sync();
+      populate();
     });
     if (!document.documentElement.dataset.customSelectListener) {
       document.documentElement.dataset.customSelectListener = 'true';
@@ -2739,6 +2750,9 @@
       );
     }
   }
+  window.addEventListener('cornerwork-enhance-content', (event) =>
+    installCustomSelects(event.detail?.root || document),
+  );
   function installPanelAccordions() {
     const setup = $('#setup'),
       launch = setup.querySelector('.feature-launch'),

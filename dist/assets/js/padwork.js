@@ -47,6 +47,7 @@
   let context;
   let toggle;
   let optionsPanel;
+  let settingsDialog;
   let stream;
   let cameraTrack;
   let poseLandmarker;
@@ -117,13 +118,30 @@
     optionsPanel = document.createElement('section');
     optionsPanel.className = 'padwork-options';
     optionsPanel.innerHTML =
-      '<div class="padwork-options-head"><div><div class="eyebrow">Padwork game</div><strong>Target settings</strong></div><span>On-device</span></div>' +
-      '<p class="mini-note">Targets fly into the strike zone. Match the punch as it arrives.</p>' +
+      '<div class="padwork-options-head"><div><strong>Game setup</strong><small>Choose the targets and camera view.</small></div><button class="padwork-settings-button" id="padworkSettings" type="button" aria-label="Open Padwork settings"><svg class="ui-icon" aria-hidden="true"><use href="assets/icons/ui-icons.svg#icon-settings"></use></svg></button></div>' +
       '<label class="padwork-field"><span>Target speed</span><select id="padworkSpeed"><option value="easy">Easy</option><option value="standard">Standard</option><option value="fast">Fast</option></select></label>' +
       '<fieldset class="padwork-punches"><legend>Included punches</legend><label><input type="checkbox" value="jab"><i style="--punch-color:#199ee8"></i>Jab</label><label><input type="checkbox" value="cross"><i style="--punch-color:#f3c742"></i>Cross</label><label><input type="checkbox" value="hook"><i style="--punch-color:#ef4444"></i>Hook</label></fieldset>' +
-      '<div class="padwork-colors"><div class="padwork-option-label">Target colors</div><label><span>Jab</span><input id="padworkJabColor" type="color"></label><label><span>Cross</span><input id="padworkCrossColor" type="color"></label><label><span>Hook</span><input id="padworkHookColor" type="color"></label><button id="padworkResetColors" type="button">Reset colors</button></div>' +
-      '<div class="padwork-camera-options"><div class="padwork-option-label">Camera</div><label class="padwork-field"><span>Available lens</span><select id="padworkCamera"><option value="">Front camera</option></select></label><div class="padwork-framing" role="group" aria-label="Camera framing"><button id="padworkFit" type="button">Fit</button><button id="padworkFill" type="button">Fill</button></div><label class="padwork-zoom hidden-feature" id="padworkZoomRow"><span>Camera zoom <output id="padworkZoomValue">1×</output></span><input id="padworkZoom" type="range"></label><small id="padworkCameraNote">Enable Padwork to detect the lenses and zoom controls Safari provides.</small></div>';
+      '<div class="padwork-camera-options"><div class="padwork-option-label">Camera</div><label class="padwork-field"><span>Available lens</span><select id="padworkCamera"><option value="">Front camera</option></select></label><div class="padwork-camera-row"><div class="padwork-framing" role="group" aria-label="Camera framing"><button id="padworkFit" type="button">Fit</button><button id="padworkFill" type="button">Fill</button></div><label class="padwork-zoom hidden-feature" id="padworkZoomRow"><span>Zoom <output id="padworkZoomValue">1×</output></span><input id="padworkZoom" type="range"></label></div><small id="padworkCameraNote">Enable Padwork to detect the lenses and zoom controls Safari provides.</small></div>';
     launch.after(optionsPanel);
+
+    settingsDialog = document.createElement('dialog');
+    settingsDialog.id = 'padworkSettingsDialog';
+    settingsDialog.className = 'feature-dialog padwork-settings-dialog';
+    settingsDialog.tabIndex = -1;
+    settingsDialog.innerHTML =
+      '<div class="feature-shell"><div class="feature-head"><h2>Padwork settings</h2><button class="feature-close" id="padworkSettingsClose" type="button" aria-label="Close"></button></div><p class="feature-note">Customize the target colors used during the game.</p><div class="padwork-colors"><div class="padwork-option-label">Target colors</div><label><span>Jab</span><input id="padworkJabColor" type="color"></label><label><span>Cross</span><input id="padworkCrossColor" type="color"></label><label><span>Hook</span><input id="padworkHookColor" type="color"></label><button class="feature-secondary" id="padworkResetColors" type="button">Reset colors</button></div></div>';
+    document.body.appendChild(settingsDialog);
+
+    $('#padworkSettings', optionsPanel).addEventListener('click', () => {
+      if (!settingsDialog.open) settingsDialog.showModal();
+      settingsDialog.focus({ preventScroll: true });
+    });
+    $('#padworkSettingsClose', settingsDialog).addEventListener('click', () =>
+      settingsDialog.close(),
+    );
+    settingsDialog.addEventListener('click', (event) => {
+      if (event.target === settingsDialog) settingsDialog.close();
+    });
 
     $('#padworkSpeed', optionsPanel).addEventListener('change', (event) => {
       settings.speed = event.target.value;
@@ -143,13 +161,13 @@
       });
     });
     ['jab', 'cross', 'hook'].forEach((name) => {
-      $(`#padwork${capitalize(name)}Color`, optionsPanel).addEventListener('input', (event) => {
+      $(`#padwork${capitalize(name)}Color`, settingsDialog).addEventListener('input', (event) => {
         settings.colors[name] = event.target.value;
         applyTargetColors();
         saveSettings();
       });
     });
-    $('#padworkResetColors', optionsPanel).addEventListener('click', () => {
+    $('#padworkResetColors', settingsDialog).addEventListener('click', () => {
       settings.colors = { ...DEFAULT_SETTINGS.colors };
       applySettings();
       saveSettings();
@@ -164,11 +182,15 @@
     $('#padworkZoom', optionsPanel).addEventListener('input', (event) => {
       applyHardwareZoom(Number(event.target.value));
     });
+    window.dispatchEvent(
+      new CustomEvent('cornerwork-enhance-content', { detail: { root: optionsPanel } }),
+    );
   }
 
   function buildStage(workout) {
     stage = document.createElement('section');
     stage.className = 'padwork-stage';
+    stage.dataset.sessionState = 'ready';
     stage.setAttribute('aria-hidden', 'true');
     stage.innerHTML =
       '<video id="padworkVideo" autoplay muted playsinline aria-label="Camera preview"></video>' +
@@ -178,7 +200,7 @@
       '<div class="padwork-topline"><div class="padwork-stat"><span>Score</span><strong id="padworkScore">0</strong></div><div class="padwork-clock"><span id="padworkPhase">Ready</span><strong id="padworkClock">3:00</strong></div><div class="padwork-stat padwork-streak"><span>Streak</span><strong id="padworkStreak">0</strong></div><button class="padwork-control" id="padworkControl" type="button">Start</button><button class="padwork-exit" id="padworkExit" type="button" aria-label="Exit Padwork">×</button></div>' +
       '<div class="padwork-message" id="padworkMessage" data-state="loading">Camera model loading…</div>' +
       '<div class="padwork-arena" id="padworkArena"></div>' +
-      '<div class="padwork-bottom"><div class="padwork-accuracy"><span>Accuracy</span><strong id="padworkAccuracy">100%</strong></div><div class="padwork-meter"><i id="padworkMeter"></i></div></div>' +
+      '<div class="padwork-bottom"><div class="padwork-accuracy"><span>Accuracy</span><strong id="padworkAccuracy">—</strong></div><div class="padwork-meter"><i id="padworkMeter"></i></div></div>' +
       '</div>';
     workout.prepend(stage);
     video = $('#padworkVideo', stage);
@@ -232,6 +254,7 @@
     clearTargets();
     stopCamera();
     clearCanvas();
+    if (settingsDialog?.open) settingsDialog.close();
     if (wasActive) api.resetWorkout();
     api.setPadworkMode(false);
     document.body.classList.remove('padwork-active');
@@ -512,6 +535,7 @@
 
   function syncWorkout(now) {
     const state = api.workoutState;
+    stage.dataset.sessionState = state.phase;
     setText($('#padworkClock', stage), state.clock);
     setText($('#padworkPhase', stage), phaseLabel(state));
     const control = $('#padworkControl', stage);
@@ -675,10 +699,11 @@
 
   function updateScoreboard() {
     const attempts = hits + misses;
-    const accuracy = attempts ? Math.round((hits / attempts) * 100) : 100;
+    const accuracy = attempts ? Math.round((hits / attempts) * 100) : 0;
+    stage.classList.toggle('has-attempts', attempts > 0);
     $('#padworkScore', stage).textContent = score.toLocaleString();
     $('#padworkStreak', stage).textContent = String(streak);
-    $('#padworkAccuracy', stage).textContent = `${accuracy}%`;
+    $('#padworkAccuracy', stage).textContent = attempts ? `${accuracy}%` : '—';
     $('#padworkMeter', stage).style.width = `${accuracy}%`;
   }
 
@@ -729,7 +754,7 @@
       input.checked = settings.enabled.includes(input.value);
     });
     ['jab', 'cross', 'hook'].forEach((name) => {
-      $(`#padwork${capitalize(name)}Color`, optionsPanel).value = settings.colors[name];
+      $(`#padwork${capitalize(name)}Color`, settingsDialog).value = settings.colors[name];
     });
     setFraming(settings.framing, false);
     applyTargetColors();
