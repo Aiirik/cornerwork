@@ -3408,19 +3408,19 @@ import {
         : enabled + ' of ' + shown.length + ' ' + level + ' combos enabled.';
   }
   function refreshShortcutInputs() {
-    $('.shortcut-input').forEach(
+    $$('.shortcut-input').forEach(
       (i) => (i.value = displayKey(settings.shortcuts[i.dataset.action])),
     );
     const keys = ['start', 'next', 'restart', 'mute'];
-    $('#sidebarShortcuts kbd').forEach(
+    $$('#sidebarShortcuts kbd').forEach(
       (kbd, i) => (kbd.textContent = displayKey(settings.shortcuts[keys[i]])),
     );
   }
   function syncConfigurationControls() {
-    $('#include .check').forEach((button) =>
+    $$('#include .check').forEach((button) =>
       button.classList.toggle('active', settings.includeTypes.includes(button.dataset.type)),
     );
-    $('.segmented[data-setting]').forEach((group) => {
+    $$('.segmented[data-setting]').forEach((group) => {
       group
         .querySelectorAll('[data-value]')
         .forEach((button) =>
@@ -3430,7 +3430,7 @@ import {
           ),
         );
     });
-    $('#focusChoices .check').forEach((button) =>
+    $$('#focusChoices .check').forEach((button) =>
       button.classList.toggle('active', settings.focuses.includes(button.dataset.focus)),
     );
     Object.entries(settings.workout).forEach(([id, value]) => {
