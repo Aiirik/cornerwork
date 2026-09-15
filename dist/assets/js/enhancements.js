@@ -2910,6 +2910,7 @@
       about = buildAbout(),
       privacy = buildPrivacy(),
       qr = buildQr();
+    window.addEventListener('cornerwork-open-coaching', () => coaching.openFor(api.settings));
     window.addEventListener('cornerwork-program-progress-sync', () => program.refresh());
     const selectedWorkout = read('cornerwork-active-selection', null),
       selectionKind =

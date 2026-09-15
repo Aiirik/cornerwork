@@ -34,6 +34,30 @@ import {
   };
   const combos = [
     { id: 'jab', n: 'Jab', m: [1], types: ['punch'], level: 1 },
+    {
+      id: 'endless-jab-feint',
+      n: 'Jab feint',
+      m: ['jab feint'],
+      types: ['punch'],
+      level: 1,
+      endlessOnly: true,
+    },
+    {
+      id: 'endless-jab-feint-one-two',
+      n: 'Jab feint one two',
+      m: ['jab feint', 1, 2],
+      types: ['punch'],
+      level: 1,
+      endlessOnly: true,
+    },
+    {
+      id: 'endless-cross',
+      n: 'Cross',
+      m: [2],
+      types: ['punch'],
+      level: 1,
+      endlessOnly: true,
+    },
     { id: 'double-jab-only', n: 'Double jab', m: [1, 1], types: ['punch'], level: 1 },
     { id: 'one-two', n: 'One two', m: [1, 2], types: ['punch'], level: 1 },
     { id: 'double-jab', n: 'Double jab cross', m: [1, 1, 2], types: ['punch'], level: 1 },
@@ -522,7 +546,11 @@ import {
     workoutStartedAt = 0,
     activeSeconds = 0,
     completionReported = false;
-  let endlessLevelsCompleted = 0;
+  let endlessLevelsCompleted = 0,
+    endlessRoundFocus = '',
+    endlessLastFocusRound = 0,
+    endlessPreviousFocus = '',
+    endlessRepeatCombo = null;
   let sessionRandomState = 0;
   function createVariationSeed() {
     if (globalThis.crypto?.getRandomValues) {
@@ -566,6 +594,28 @@ import {
       maxMoves: Math.min(8, 2 + Math.floor(currentLevel / 2)),
       includeTypes,
     };
+  }
+  function resetEndlessFocuses() {
+    endlessRoundFocus = '';
+    endlessLastFocusRound = 0;
+    endlessPreviousFocus = '';
+    endlessRepeatCombo = null;
+  }
+  function planEndlessRoundFocus(level = round) {
+    endlessRoundFocus = '';
+    endlessRepeatCombo = null;
+    if (!settings.endlessMode || level < 3 || level - endlessLastFocusRound < 3) return;
+    if (sessionRandom() >= 0.28) return;
+    const choices = ['endless-jabs', 'endless-crosses', 'endless-repeat'];
+    if (level >= 4) choices.push('endless-hooks');
+    if (level >= 5) choices.push('body');
+    if (level >= 6) choices.push('defense');
+    if (level >= 8) choices.push('footwork');
+    const fresh = choices.filter((focus) => focus !== endlessPreviousFocus),
+      pool = fresh.length ? fresh : choices;
+    endlessRoundFocus = pool[Math.floor(sessionRandom() * pool.length)];
+    endlessPreviousFocus = endlessRoundFocus;
+    endlessLastFocusRound = level;
   }
   function val(id) {
     if (settings.endlessMode) {
@@ -1298,7 +1348,12 @@ import {
   function visibleCombos() {
     const inc = included(),
       level = selectedLevel();
-    return combos.filter((c) => c.level <= level && c.types.every((t) => inc.has(t)));
+    return combos.filter(
+      (c) =>
+        c.level <= level &&
+        (!c.endlessOnly || settings.endlessMode) &&
+        c.types.every((t) => inc.has(t)),
+    );
   }
   const defenseMove = (x) =>
       typeof x === 'string' && /(slip|roll|pull|block|parry|check|catch)/i.test(x),
@@ -1384,11 +1439,17 @@ import {
       (c) =>
         c.level <= level &&
         c.m.length <= max &&
+        (!c.endlessOnly || settings.endlessMode) &&
         c.types.every((t) => inc.has(t)) &&
         (settings.endlessMode || locked.has(c.id)),
     );
     if (!pool.length)
-      pool = combos.filter((c) => c.types.every((t) => inc.has(t)) && locked.has(c.id));
+      pool = combos.filter(
+        (c) =>
+          (!c.endlessOnly || settings.endlessMode) &&
+          c.types.every((t) => inc.has(t)) &&
+          (settings.endlessMode || locked.has(c.id)),
+      );
     const focuses = activeFocuses();
     if (focuses.length && !focuses.includes('freestyle')) {
       const focused = pool.filter((c) => focuses.some((f) => matchesFocus(c, f)));
@@ -1411,7 +1472,7 @@ import {
     return pool;
   }
   function activeFocuses() {
-    if (settings.endlessMode) return [];
+    if (settings.endlessMode) return endlessRoundFocus ? [endlessRoundFocus] : [];
     if (settings.structured !== 'off' && phase === 'work')
       return blockPlan[round]?.[blockIndex] || [];
     return focusPlan[round] || [];
@@ -1423,6 +1484,11 @@ import {
         : c.m.map(bodyMove).lastIndexOf(true),
       firstDefense = c.m.findIndex(defenseMove),
       last = c.m[c.m.length - 1];
+    if (f === 'endless-jabs')
+      return c.m.some((x) => x === 1 || x === 'body 1' || x === 'jab feint');
+    if (f === 'endless-crosses') return c.m.some((x) => x === 2 || x === 'body 2');
+    if (f === 'endless-hooks') return c.m.some((x) => [3, 4, 'body 3', 'body 4'].includes(x));
+    if (f === 'endless-repeat') return true;
     if (f === 'jabs') return c.m.filter((x) => x === 1 || x === 'body 1').length >= 2;
     if (f === 'straight')
       return c.m.some((x) => x === 1 || x === 2 || x === 'body 1' || x === 'body 2');
@@ -1495,6 +1561,10 @@ import {
   function focusName(f) {
     return (
       {
+        'endless-jabs': 'Jab variations',
+        'endless-crosses': 'Cross focus',
+        'endless-hooks': 'Hook focus',
+        'endless-repeat': 'Repeat combination',
         jabs: 'Focus jabs',
         straight: 'Straight punches',
         hooks: 'Hooks',
@@ -1534,6 +1604,10 @@ import {
   function shortFocusName(f) {
     return (
       {
+        'endless-jabs': 'Jabs',
+        'endless-crosses': 'Crosses',
+        'endless-hooks': 'Hooks',
+        'endless-repeat': 'Repeat',
         jabs: 'Jabs',
         straight: 'Straights',
         hooks: 'Hooks',
@@ -1623,6 +1697,22 @@ import {
       'Stay loose',
       'Deep breath and recover',
       'Keep moving lightly',
+    ],
+    endlessCues = [
+      'Keep the pace',
+      'Stay sharp and keep going',
+      'Strong work. Stay with it',
+      'One combination at a time',
+      'Breathe and keep moving',
+      'Good rhythm. Do not fade',
+      'Stay composed as the level builds',
+    ],
+    endlessRecoveryCues = [
+      'Level cleared. Breathe and reset',
+      'Good work. Recover for the next level',
+      'Stay loose. The next level is coming',
+      'Control your breathing and keep moving',
+      'Reset your guard and get ready',
     ];
   // Spoken coaching, cadence, and workout audio.
   function deliverCombo(combo, options = {}) {
@@ -1634,7 +1724,11 @@ import {
           : settings.trainingMode === 'shadow'
             ? shadowCues
             : standardCues,
-      cuePool = settings.guidedBeginner ? beginnerCues : modeCues,
+      cuePool = settings.endlessMode
+        ? endlessCues
+        : settings.guidedBeginner
+          ? beginnerCues
+          : modeCues,
       probability =
         { off: 0, occasional: 0.2, balanced: 0.4, often: 0.65 }[settings.movementBetween] || 0,
       canSpeak = isOn('voice') && settings.volume > 0 && 'speechSynthesis' in window,
@@ -1817,16 +1911,22 @@ import {
         deliverCombo(current, { schedule: !punchOutActive });
       return;
     } else if (pendingMovement) repeatLeft = 0;
-    let pool = equipmentSubset(available());
-    if ((settings.endlessMode || settings.unique === 'yes') && pool.length > 1) {
-      const fresh = pool.filter((c) => !roundUsed.has(c.id));
-      if (fresh.length) pool = fresh;
-      else roundUsed.clear();
-    }
-    let pick = weightedPick(pool);
-    if (pool.length > 1 && keyOf(pick.m) === lastKey) {
-      const others = pool.filter((c) => keyOf(c.m) !== lastKey);
-      pick = weightedPick(others);
+    let pool = equipmentSubset(available()),
+      pick;
+    if (settings.endlessMode && endlessRoundFocus === 'endless-repeat' && endlessRepeatCombo) {
+      pick = endlessRepeatCombo;
+    } else {
+      if ((settings.endlessMode || settings.unique === 'yes') && pool.length > 1) {
+        const fresh = pool.filter((c) => !roundUsed.has(c.id));
+        if (fresh.length) pool = fresh;
+        else roundUsed.clear();
+      }
+      pick = weightedPick(pool);
+      if (pool.length > 1 && keyOf(pick.m) === lastKey) {
+        const others = pool.filter((c) => keyOf(c.m) !== lastKey);
+        pick = weightedPick(others);
+      }
+      if (settings.endlessMode && endlessRoundFocus === 'endless-repeat') endlessRepeatCombo = pick;
     }
     current = pick.m;
     pendingMovement = '';
@@ -2026,7 +2126,7 @@ import {
     const drill = activeFocusedDrill(),
       focus = activeFocuses().map(focusName).join(' and '),
       message = settings.endlessMode
-        ? 'Level ' + round + '.'
+        ? 'Level ' + round + (focus ? '. ' + focus : '') + '.'
         : drill && round === 1
           ? 'Round 1. ' + drill.name + '. ' + drill.instructions
           : 'Round ' + round + (drill ? '' : focus ? '. ' + focus : '') + '.';
@@ -2052,6 +2152,10 @@ import {
     pendingMovement = '';
     punchOutActive = false;
     punchOutUntil = -1;
+    if (settings.endlessMode) {
+      roundUsed.clear();
+      planEndlessRoundFocus(round);
+    }
     const planned = focusPlan[round] || [],
       requested = planned.includes('punchout30') ? 30 : planned.includes('punchout15') ? 15 : 0,
       duration = Math.min(requested, Math.max(5, val('roundTime') - 10));
@@ -2622,6 +2726,7 @@ import {
       betweenCue = '';
       pendingMovement = '';
       resetSessionRandom();
+      resetEndlessFocuses();
       buildFocusPlan();
       roundUsed.clear();
       repeatLeft = 0;
@@ -2632,6 +2737,7 @@ import {
         beep(650, 0.2);
       } else {
         comboVisible = false;
+        planEndlessRoundFocus(round);
         newCombo(false);
         phase = 'work';
         time = val('roundTime');
@@ -2721,7 +2827,14 @@ import {
           roundEndBell(() =>
             say(restCall, () => {
               if (settings.recoveryInstructions && running && phase === 'rest')
-                say(recoveryCues[Math.floor(sessionRandom() * recoveryCues.length)]);
+                say(
+                  (settings.endlessMode ? endlessRecoveryCues : recoveryCues)[
+                    Math.floor(
+                      sessionRandom() *
+                        (settings.endlessMode ? endlessRecoveryCues.length : recoveryCues.length),
+                    )
+                  ],
+                );
             }),
           );
           tick = setInterval(step, 1000);
@@ -2808,6 +2921,7 @@ import {
     activeSeconds = 0;
     completionReported = false;
     endlessLevelsCompleted = 0;
+    resetEndlessFocuses();
     newCombo(false);
     render();
   }

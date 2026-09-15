@@ -77,13 +77,15 @@ body.endless-mode #setup > .endless-setup {
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.endless-warmup {
+.endless-warmup,
+.endless-coaching {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 132px;
   align-items: center;
   gap: 10px;
 }
-.endless-warmup label {
+.endless-warmup label,
+.endless-coaching label {
   color: var(--muted);
 }
 .endless-warmup .number-control {
@@ -291,10 +293,12 @@ body.endless-mode #skip {
   }
 }
 @media (max-width: 380px) {
-  .endless-warmup {
+  .endless-warmup,
+  .endless-coaching {
     grid-template-columns: 1fr;
   }
-  .endless-warmup .number-control {
+  .endless-warmup .number-control,
+  .endless-coaching .workout-option-button {
     width: 100%;
   }
 }
@@ -1937,7 +1941,8 @@ select {
 .workout-timing-control .step-btn {
   font-size: 15px;
 }
-#workoutTiming .workout-option-button {
+#workoutTiming .workout-option-button,
+.endless-setup .workout-option-button {
   width: 100%;
   min-height: 31px;
   border: 1px solid var(--red-border);
@@ -1948,7 +1953,8 @@ select {
   font-size: 11px;
   font-weight: 850;
 }
-#workoutTiming .workout-option-button:hover {
+#workoutTiming .workout-option-button:hover,
+.endless-setup .workout-option-button:hover {
   border-color: var(--red);
   background: var(--red-soft-strong);
 }
