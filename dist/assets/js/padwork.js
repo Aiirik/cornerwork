@@ -205,6 +205,9 @@
     window.dispatchEvent(
       new CustomEvent('cornerwork-enhance-content', { detail: { root: optionsPanel } }),
     );
+    window.dispatchEvent(
+      new CustomEvent('cornerwork-enhance-content', { detail: { root: settingsDialog } }),
+    );
   }
 
   function buildStage(workout) {
