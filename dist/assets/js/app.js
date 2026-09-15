@@ -481,6 +481,7 @@ import {
     /iP(hone|ad|od)/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   let running = false,
+    padworkMode = false,
     phase = 'ready',
     round = 1,
     time = 180,
@@ -1924,13 +1925,14 @@ import {
   }
   function beginComboCadence() {
     clearTimeout(comboTick);
+    if (padworkMode) return;
     comboTick = setTimeout(
       () => newCombo(true),
       (activeFocusedDrill() ? focusedDelay() : cadence()) * 1000,
     );
   }
   function maybeAdvanceBlock() {
-    if (settings.structured === 'off' || phase !== 'work') return;
+    if (padworkMode || settings.structured === 'off' || phase !== 'work') return;
     const next = Math.min(
       (blockPlan[round]?.length || 1) - 1,
       Math.floor((val('roundTime') - time) / +settings.structured),
@@ -1957,15 +1959,18 @@ import {
       renderCombo();
       clearInterval(tick);
       tick = setInterval(step, 1000);
-      if (activeFocusedDrill()) announceFocusedAssignment();
-      else deliverCombo(current, { cancel: false });
+      if (!padworkMode) {
+        if (activeFocusedDrill()) announceFocusedAssignment();
+        else deliverCombo(current, { cancel: false });
+      }
     });
   }
   function announceRound() {
     const drill = activeFocusedDrill(),
       focus = activeFocuses().map(focusName).join(' and '),
-      message =
-        drill && round === 1
+      message = padworkMode
+        ? 'Round ' + round + '.'
+        : drill && round === 1
           ? 'Round 1. ' + drill.name + '. ' + drill.instructions
           : 'Round ' + round + (drill ? '' : focus ? '. ' + focus : '') + '.';
     roundAnnouncementActive = true;
@@ -2491,7 +2496,7 @@ import {
   }
   function start() {
     unlockAudio();
-    if (phase === 'ready' && !available().length) {
+    if (!padworkMode && phase === 'ready' && !available().length) {
       $('#combo').textContent = 'Select at least one combo';
       $('#comboNumbers').style.display = 'none';
       return;
@@ -2539,7 +2544,7 @@ import {
       if (phase === 'work') {
         if (comboVisible) {
           tick = setInterval(step, 1000);
-          beginComboCadence();
+          if (!padworkMode) beginComboCadence();
         } else if (!roundAnnouncementActive) announceRound();
       } else tick = setInterval(step, 1000);
     } else {
@@ -2551,7 +2556,7 @@ import {
   function step() {
     activeSeconds++;
     time--;
-    if (phase === 'work' && time > 0 && punchOutAt >= 0 && time === punchOutAt) {
+    if (!padworkMode && phase === 'work' && time > 0 && punchOutAt >= 0 && time === punchOutAt) {
       const planned = focusPlan[round] || [],
         duration = planned.includes('punchout30') ? 30 : 15;
       punchOutActive = true;
@@ -3670,6 +3675,15 @@ import {
         comboVisible,
         comboRevision,
       };
+    },
+    setPadworkMode(enabled) {
+      const next = !!enabled;
+      if (next === padworkMode) return;
+      padworkMode = next;
+      clearTimeout(comboTick);
+      comboTick = null;
+      cancelSpeech();
+      if (!padworkMode && running && phase === 'work' && comboVisible) beginComboCadence();
     },
     get presets() {
       return presets.map((p) => ({ ...p }));

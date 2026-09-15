@@ -84,7 +84,8 @@ Use these labels consistently in the interface and documentation:
 
 ### Workout execution
 
-- An opt-in Padwork beta combines the current workout timer and generated combinations with a front-camera view, on-device pose skeleton, camera Fit/Fill and zoom controls, jab/cross targets, scoring, streak, and accuracy feedback. Camera access is never automatic, and camera frames are not recorded, uploaded, or stored.
+- Padwork is an opt-in camera game mode with its own target generator rather than the normal spoken-combo coach. Jab, cross, and hook targets travel from a distant vanishing point into a strike window, with scoring, streak, and accuracy feedback. Padwork keeps the standard round timer and bells, replaces the normal setup groups with target-specific controls, and lets the user select target speed, included punches, and separate jab, cross, and hook colors.
+- Padwork requests a square camera feed to reduce unnecessary portrait cropping, lists the camera devices exposed by the browser after permission is granted, and uses the selected track's real hardware zoom range when one is available. Camera Fit/Fill remains configurable. Camera access is never automatic, and frames are processed on the device without being recorded, uploaded, or stored.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
@@ -224,6 +225,7 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 | `cornerwork-custom-workout`           | Last custom setup before loading a preset                     |
 | `cornerwork-workout-fold-state`       | Last open Workout panel groups                                |
 | `cornerwork-allow-page-zoom`          | Mobile zoom accessibility preference                          |
+| `cornerwork-padwork-settings`         | Padwork targets, colors, speed, framing, and camera choice    |
 
 Session storage is used for pending shared workouts, active program sessions, and service-worker update coordination.
 
