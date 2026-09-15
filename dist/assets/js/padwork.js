@@ -21,9 +21,9 @@
   ];
   const ARM_LANDMARKS = { left: [11, 13, 15], right: [12, 14, 16] };
   const PUNCHES = {
-    1: { id: 'jab', name: 'Jab', short: 'JAB', lane: 35 },
-    2: { id: 'cross', name: 'Cross', short: 'CROSS', lane: 65 },
-    3: { id: 'hook', name: 'Hook', short: 'HOOK', lane: 50 },
+    1: { id: 'jab', name: 'Jab', short: 'JAB', lane: 29, height: 33 },
+    2: { id: 'cross', name: 'Cross', short: 'CROSS', lane: 71, height: 33 },
+    3: { id: 'hook', name: 'Hook', short: 'HOOK', lane: 50, height: 45 },
   };
   const SPEEDS = {
     easy: { travel: 3200, gap: 1700 },
@@ -435,7 +435,7 @@
     clearCanvas();
     if (!landmarks || !upperBodyVisible(landmarks)) {
       poseReady = false;
-      setMessage('Step back until your shoulders and hands are visible.', 'warning');
+      setMessage('Keep your shoulders and hands in view so punches can score.', 'warning');
       return;
     }
     drawSkeleton(landmarks);
@@ -576,7 +576,7 @@
       }
       playableLastFrame = playable;
     }
-    if (canPlay() && poseReady && (!nextSpawnAt || now >= nextSpawnAt)) spawnTarget(now);
+    if (canAdvanceGame() && (!nextSpawnAt || now >= nextSpawnAt)) spawnTarget(now);
   }
 
   function canPlay() {
@@ -585,7 +585,7 @@
   }
 
   function canAdvanceGame() {
-    return canPlay() && poseReady;
+    return canPlay();
   }
 
   function phaseLabel(state) {
@@ -612,7 +612,7 @@
     const punch = PUNCHES[code];
     const speed = SPEEDS[settings.speed] || SPEEDS.standard;
     const element = document.createElement('div');
-    const sideOffset = code === 3 ? (Math.random() < 0.5 ? -14 : 14) : 0;
+    const sideOffset = code === 3 ? (Math.random() < 0.5 ? -23 : 23) : 0;
     element.className = `padwork-flying-target punch-${punch.id}`;
     element.style.setProperty('--target-color', settings.colors[punch.id]);
     element.innerHTML = `<i></i><strong>${punch.short}</strong>`;
@@ -624,7 +624,7 @@
       spawnedAt: now,
       dueAt: now + speed.travel,
       destinationX: punch.lane + sideOffset,
-      destinationY: code === 3 ? 49 : 46,
+      destinationY: punch.height,
       state: 'flying',
     });
     nextSpawnAt = now + speed.gap;
@@ -639,10 +639,10 @@
       const depth = Math.pow(Math.min(1, raw), 2.1);
       const x = 50 + (target.destinationX - 50) * depth;
       const y = 38 + (target.destinationY - 38) * depth;
-      const scale = 0.16 + depth * 0.98;
+      const scale = 0.34 + depth * 0.92;
       target.element.style.left = `${x}%`;
       target.element.style.top = `${y}%`;
-      target.element.style.opacity = String(Math.min(1, 0.2 + raw * 1.25));
+      target.element.style.opacity = String(Math.min(1, 0.42 + raw * 1.1));
       target.element.style.transform = `translate(-50%, -50%) scale(${scale})`;
       target.element.classList.toggle(
         'in-window',

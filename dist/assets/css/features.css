@@ -3426,7 +3426,7 @@ body.padwork-active .workout > .center {
   position: absolute;
   top: 38%;
   left: 50%;
-  width: clamp(76px, 10vw, 112px);
+  width: clamp(88px, 11.5vw, 126px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -3451,6 +3451,14 @@ body.padwork-active .workout > .center {
   inset: -13px;
   border: 2px solid color-mix(in srgb, var(--target-color) 54%, transparent);
   border-radius: 50%;
+}
+.padwork-flying-target::after {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  border: 1px solid color-mix(in srgb, var(--target-color) 32%, transparent);
+  border-radius: 50%;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--target-color) 42%, transparent);
 }
 .padwork-flying-target i {
   position: absolute;
@@ -3597,7 +3605,7 @@ body.padwork-active .workout > .center {
     min-width: 70px;
   }
   .padwork-flying-target {
-    width: clamp(68px, 21vw, 92px);
+    width: clamp(78px, 24vw, 106px);
   }
   .padwork-bottom {
     right: 10px;
