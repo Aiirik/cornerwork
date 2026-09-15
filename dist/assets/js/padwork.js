@@ -32,13 +32,15 @@
   };
   const DEFAULT_SETTINGS = {
     speed: 'standard',
+    labelMode: 'names',
     framing: 'fit',
     enabled: ['jab', 'cross', 'hook'],
     colors: { jab: '#199ee8', cross: '#f3c742', hook: '#ef4444' },
     deviceId: '',
   };
-  const HIT_EARLY = 430;
-  const HIT_LATE = 520;
+  const HIT_EARLY = 650;
+  const HIT_LATE = 700;
+  const LAUNCH_LABEL = 'Padwork game (Beta)';
 
   let api;
   let stage;
@@ -99,12 +101,12 @@
     toggle.id = 'padworkToggle';
     toggle.type = 'button';
     toggle.className = 'custom-workout padwork-launch';
-    toggle.textContent = 'Padwork game';
+    toggle.textContent = LAUNCH_LABEL;
     toggle.setAttribute('aria-pressed', 'false');
     toggle.addEventListener('click', () => {
       if (!active && !loading) enable();
     });
-    launch.querySelector('.workout-authoring-grid')?.appendChild(toggle);
+    launch.appendChild(toggle);
     launch
       .querySelectorAll('#customWorkout,#programStudio,#quickStart,#programs,#workoutPresets')
       .forEach((button) =>
@@ -143,7 +145,7 @@
     settingsDialog.className = 'feature-dialog padwork-settings-dialog';
     settingsDialog.tabIndex = -1;
     settingsDialog.innerHTML =
-      '<div class="feature-shell"><div class="feature-head"><h2>Padwork settings</h2><button class="feature-close" id="padworkSettingsClose" type="button" aria-label="Close"></button></div><p class="feature-note">Customize the target colors used during the game.</p><div class="padwork-colors"><div class="padwork-option-label">Target colors</div><label><span>Jab</span><input id="padworkJabColor" type="color"></label><label><span>Cross</span><input id="padworkCrossColor" type="color"></label><label><span>Hook</span><input id="padworkHookColor" type="color"></label><button class="feature-secondary" id="padworkResetColors" type="button">Reset colors</button></div></div>';
+      '<div class="feature-shell"><div class="feature-head"><h2>Padwork settings</h2><button class="feature-close" id="padworkSettingsClose" type="button" aria-label="Close"></button></div><p class="feature-note">Customize how targets appear during the game.</p><label class="padwork-field"><span>Target labels</span><select id="padworkLabels"><option value="names">Punch names</option><option value="numbers">Boxing numbers</option></select></label><div class="padwork-colors"><div class="padwork-option-label">Target colors</div><label><span>Jab</span><input id="padworkJabColor" type="color"></label><label><span>Cross</span><input id="padworkCrossColor" type="color"></label><label><span>Hook</span><input id="padworkHookColor" type="color"></label><button class="feature-secondary" id="padworkResetColors" type="button">Reset colors</button></div></div>';
     document.body.appendChild(settingsDialog);
 
     $('#padworkSettings', optionsPanel).addEventListener('click', () => {
@@ -159,6 +161,10 @@
 
     $('#padworkSpeed', optionsPanel).addEventListener('change', (event) => {
       settings.speed = event.target.value;
+      saveSettings();
+    });
+    $('#padworkLabels', settingsDialog).addEventListener('change', (event) => {
+      settings.labelMode = event.target.value === 'numbers' ? 'numbers' : 'names';
       saveSettings();
     });
     optionsPanel.querySelectorAll('.padwork-punches input').forEach((input) => {
@@ -252,7 +258,7 @@
         return;
       }
       loading = false;
-      setLaunchLabel('Padwork game');
+      setLaunchLabel(LAUNCH_LABEL);
       setMessage('Finding your shoulders and hands…', 'loading');
       animationFrame = requestAnimationFrame(frame);
     } catch (error) {
@@ -280,7 +286,7 @@
     toggle?.classList.remove('active', 'error');
     toggle?.setAttribute('aria-pressed', 'false');
     previousModeButton?.classList.add('active');
-    setLaunchLabel('Padwork game');
+    setLaunchLabel(LAUNCH_LABEL);
   }
 
   function stopCamera() {
@@ -427,7 +433,7 @@
       poseLandmarker &&
       video.readyState >= 2 &&
       video.currentTime !== lastVideoTime &&
-      now - lastInferenceAt >= 80
+      now - lastInferenceAt >= 60
     ) {
       lastInferenceAt = now;
       lastVideoTime = video.currentTime;
@@ -468,7 +474,7 @@
 
   function upperBodyVisible(landmarks) {
     return [11, 12, 13, 14, 15, 16].every(
-      (index) => landmarks[index] && (landmarks[index].visibility ?? 1) > 0.45,
+      (index) => landmarks[index] && (landmarks[index].visibility ?? 1) > 0.32,
     );
   }
 
@@ -514,7 +520,7 @@
       ? Math.abs(wrist.x - arm.previousWrist.x) / (elapsed / 1000)
       : 0;
     const hookMotion =
-      bend > 55 && bend < 138 && Math.abs(wrist.y - shoulder.y) < 0.22 && lateralSpeed > 0.58;
+      bend > 45 && bend < 150 && Math.abs(wrist.y - shoulder.y) < 0.3 && lateralSpeed > 0.38;
     arm.previousWrist = { x: wrist.x, y: wrist.y };
     arm.previousAt = now;
     if (hookMotion && now - arm.lastHitAt > 480) {
@@ -524,12 +530,12 @@
       registerPunch(3, now);
       return;
     }
-    if (bend < 128) {
+    if (bend < 145) {
       arm.armed = true;
       arm.minAngle = Math.min(arm.minAngle, bend);
       return;
     }
-    if (arm.armed && bend > 158 && arm.minAngle < 128 && now - arm.lastHitAt > 380) {
+    if (arm.armed && bend > 150 && arm.minAngle < 145 && now - arm.lastHitAt > 320) {
       arm.armed = false;
       arm.minAngle = 180;
       arm.lastHitAt = now;
@@ -634,8 +640,10 @@
     const element = document.createElement('div');
     const sideOffset = code === 3 ? (Math.random() < 0.5 ? -23 : 23) : 0;
     element.className = `padwork-flying-target punch-${punch.id}`;
+    element.dataset.labelMode = settings.labelMode;
     element.style.setProperty('--target-color', settings.colors[punch.id]);
-    element.innerHTML = `<i></i><strong>${punch.short}</strong>`;
+    element.innerHTML = `<i></i><strong>${settings.labelMode === 'numbers' ? code : punch.short}</strong>`;
+    element.setAttribute('aria-label', `${punch.name} target`);
     $('#padworkArena', stage).appendChild(element);
     targets.push({
       id: ++targetId,
@@ -673,10 +681,13 @@
   }
 
   function registerPunch(code, now) {
-    const target = targets.find(
-      (item) =>
-        item.state === 'flying' && now >= item.dueAt - HIT_EARLY && now <= item.dueAt + HIT_LATE,
-    );
+    const eligible = targets
+      .filter(
+        (item) =>
+          item.state === 'flying' && now >= item.dueAt - HIT_EARLY && now <= item.dueAt + HIT_LATE,
+      )
+      .sort((a, b) => Math.abs(now - a.dueAt) - Math.abs(now - b.dueAt));
+    const target = eligible.find((item) => item.code === code) || eligible[0];
     if (!target) return;
     if (target.code !== code) {
       misses++;
@@ -770,6 +781,7 @@
 
   function applySettings() {
     $('#padworkSpeed', optionsPanel).value = settings.speed;
+    $('#padworkLabels', settingsDialog).value = settings.labelMode;
     optionsPanel.querySelectorAll('.padwork-punches input').forEach((input) => {
       input.checked = settings.enabled.includes(input.value);
     });
@@ -823,7 +835,7 @@
     setTimeout(() => {
       if (!active) {
         toggle?.classList.remove('error');
-        setLaunchLabel('Padwork game');
+        setLaunchLabel(LAUNCH_LABEL);
       }
     }, 3500);
   }
