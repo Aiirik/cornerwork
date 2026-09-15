@@ -3167,7 +3167,6 @@
           sessionStorage.getItem('cornerwork-sw-version') !== version
         ) {
           sessionStorage.setItem('cornerwork-sw-version', version);
-          location.reload();
         }
       });
       navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -469,7 +469,8 @@ import {
     guidedBeginner: false,
     haptics: true,
     highContrast: false,
-    versusMode: false,
+    endlessMode: false,
+    endlessWarmup: 30,
     buttonTextBrightness: 98,
     whiteOutlineText: false,
     accentColor: 'red',
@@ -521,6 +522,7 @@ import {
     workoutStartedAt = 0,
     activeSeconds = 0,
     completionReported = false;
+  let endlessLevelsCompleted = 0;
   let sessionRandomState = 0;
   function createVariationSeed() {
     if (globalThis.crypto?.getRandomValues) {
@@ -548,11 +550,36 @@ import {
     value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
     return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
   }
+  function endlessLevelProfile(level = round) {
+    const currentLevel = Math.max(1, Math.floor(Number(level) || 1)),
+      tier = Math.floor((currentLevel - 1) / 2),
+      includeTypes = ['punch'];
+    if (currentLevel >= 3) includeTypes.push('body');
+    if (currentLevel >= 5) includeTypes.push('defense');
+    if (currentLevel >= 7) includeTypes.push('footwork');
+    return {
+      level: currentLevel,
+      roundTime: Math.min(300, 60 + tier * 15),
+      restTime: Math.min(60, 20 + tier * 5),
+      pace: Math.max(2, 8 - tier),
+      skill: currentLevel <= 2 ? 'basic' : currentLevel <= 5 ? 'intermediate' : 'advanced',
+      maxMoves: Math.min(8, 2 + Math.floor(currentLevel / 2)),
+      includeTypes,
+    };
+  }
   function val(id) {
+    if (settings.endlessMode) {
+      const profile = endlessLevelProfile();
+      if (id === 'warmupTime') return Math.max(0, Number(settings.endlessWarmup) || 0);
+      if (id === 'roundTime') return profile.roundTime;
+      if (id === 'restTime') return profile.restTime;
+      if (id === 'pace') return profile.pace;
+    }
     const el = $('#' + id);
     return el.classList.contains('time-input') ? +(el.dataset.seconds || 0) : +el.value;
   }
   function restAfterRound(roundNumber) {
+    if (settings.endlessMode) return endlessLevelProfile(roundNumber).restTime;
     const schedule = settings.workout?.restSchedule,
       value = Array.isArray(schedule) ? +schedule[roundNumber - 1] : NaN;
     return Number.isFinite(value) ? Math.max(0, value) : val('restTime');
@@ -622,7 +649,6 @@ import {
     'guidedBeginner',
     'haptics',
     'highContrast',
-    'versusMode',
   ];
   let presets = [];
   try {
@@ -1261,9 +1287,12 @@ import {
     return c.join('|');
   }
   function included() {
+    if (settings.endlessMode) return new Set(endlessLevelProfile().includeTypes);
     return new Set($$('#include .active').map((b) => b.dataset.type));
   }
   function selectedLevel() {
+    if (settings.endlessMode)
+      return { basic: 1, intermediate: 2, advanced: 3 }[endlessLevelProfile().skill];
     return { basic: 1, intermediate: 2, advanced: 3 }[settings.skill];
   }
   function visibleCombos() {
@@ -1306,6 +1335,7 @@ import {
     return 1;
   }
   function equipmentSubset(pool) {
+    if (settings.endlessMode) return pool;
     if (settings.trainingMode === 'general' || pool.length < 2) return pool;
     const preferred = pool.filter((c) =>
         settings.trainingMode === 'bag'
@@ -1318,7 +1348,22 @@ import {
     if (preferred.length < 2 || !other.length) return pool;
     return sessionRandom() < 0.75 ? preferred : other;
   }
+  function endlessPick(pool) {
+    const profile = endlessLevelProfile(),
+      progress = Math.min(1, (profile.level - 1) / 10),
+      easyChance = 0.7 - progress * 0.45,
+      hardChance = 0.05 + progress * 0.4,
+      easy = pool.filter((combo) => combo.m.length <= 2),
+      hard = pool.filter((combo) => combo.m.length >= Math.max(3, profile.maxMoves - 1)),
+      middle = pool.filter((combo) => !easy.includes(combo) && !hard.includes(combo)),
+      roll = sessionRandom();
+    let band = roll < easyChance ? easy : roll < easyChance + hardChance ? hard : middle;
+    if (!band.length)
+      band = middle.length ? middle : easy.length ? easy : hard.length ? hard : pool;
+    return band[Math.floor(sessionRandom() * band.length)];
+  }
   function weightedPick(pool) {
+    if (settings.endlessMode) return endlessPick(pool);
     const weights = pool.map(equipmentWeight),
       total = weights.reduce((sum, value) => sum + value, 0);
     let roll = sessionRandom() * total;
@@ -1332,13 +1377,15 @@ import {
   function available() {
     const inc = included(),
       level = selectedLevel(),
-      max = { low: 3, medium: 5, high: 9 }[settings.complexity];
+      max = settings.endlessMode
+        ? endlessLevelProfile().maxMoves
+        : { low: 3, medium: 5, high: 9 }[settings.complexity];
     let pool = combos.filter(
       (c) =>
         c.level <= level &&
         c.m.length <= max &&
         c.types.every((t) => inc.has(t)) &&
-        locked.has(c.id),
+        (settings.endlessMode || locked.has(c.id)),
     );
     if (!pool.length)
       pool = combos.filter((c) => c.types.every((t) => inc.has(t)) && locked.has(c.id));
@@ -1347,7 +1394,7 @@ import {
       const focused = pool.filter((c) => focuses.some((f) => matchesFocus(c, f)));
       if (focused.length) pool = focused;
     }
-    if (settings.progressiveCombos) {
+    if (!settings.endlessMode && settings.progressiveCombos) {
       const total = Math.max(1, val('rounds')),
         cap = Math.min(
           max,
@@ -1364,6 +1411,7 @@ import {
     return pool;
   }
   function activeFocuses() {
+    if (settings.endlessMode) return [];
     if (settings.structured !== 'off' && phase === 'work')
       return blockPlan[round]?.[blockIndex] || [];
     return focusPlan[round] || [];
@@ -1628,7 +1676,13 @@ import {
     focusPlan = {};
     blockPlan = {};
     blockIndex = 0;
-    if (activeFocusedDrill() || settings.focusEnabled !== 'yes' || !settings.focuses.length) return;
+    if (
+      settings.endlessMode ||
+      activeFocusedDrill() ||
+      settings.focusEnabled !== 'yes' ||
+      !settings.focuses.length
+    )
+      return;
     const inc = included(),
       level = selectedLevel(),
       max = { low: 3, medium: 5, high: 9 }[settings.complexity],
@@ -1694,6 +1748,7 @@ import {
     });
   }
   function activeFocusedDrill() {
+    if (settings.endlessMode) return null;
     const drill = settings.focusedDrill;
     return drill && Array.isArray(drill.assignments) && drill.assignments.length ? drill : null;
   }
@@ -1763,7 +1818,7 @@ import {
       return;
     } else if (pendingMovement) repeatLeft = 0;
     let pool = equipmentSubset(available());
-    if (settings.unique === 'yes' && pool.length > 1) {
+    if ((settings.endlessMode || settings.unique === 'yes') && pool.length > 1) {
       const fresh = pool.filter((c) => !roundUsed.has(c.id));
       if (fresh.length) pool = fresh;
       else roundUsed.clear();
@@ -1777,8 +1832,9 @@ import {
     pendingMovement = '';
     lastKey = keyOf(current);
     roundUsed.add(pick.id);
-    repeatLeft =
-      settings.repeats === 'more'
+    repeatLeft = settings.endlessMode
+      ? 0
+      : settings.repeats === 'more'
         ? 2
         : settings.repeats === 'some' && sessionRandom() < 0.5
           ? 1
@@ -1829,6 +1885,7 @@ import {
     return Math.max(2, Math.round(val('pace') * (fast ? 0.65 : 1)));
   }
   function workoutRemaining() {
+    if (settings.endlessMode) return 0;
     const rounds = val('rounds'),
       roundTime = val('roundTime');
     if (phase === 'complete') return 0;
@@ -1968,8 +2025,9 @@ import {
   function announceRound() {
     const drill = activeFocusedDrill(),
       focus = activeFocuses().map(focusName).join(' and '),
-      message =
-        drill && round === 1
+      message = settings.endlessMode
+        ? 'Level ' + round + '.'
+        : drill && round === 1
           ? 'Round 1. ' + drill.name + '. ' + drill.instructions
           : 'Round ' + round + (drill ? '' : focus ? '. ' + focus : '') + '.';
     roundAnnouncementActive = true;
@@ -2294,8 +2352,15 @@ import {
     renderClock(clockText);
     $('#comboTotal').textContent = comboTotal;
     $('#moveTotal').textContent = moveTotal;
-    $('#workoutLeft').textContent = 'Workout time left: ' + totalFmt(workoutRemaining());
-    $('#workoutLeft').style.display = settings.showTimeLeft ? 'block' : 'none';
+    $('#workoutLeft').textContent = settings.endlessMode
+      ? 'No finish line · ' +
+        endlessLevelsCompleted +
+        ' level' +
+        (endlessLevelsCompleted === 1 ? '' : 's') +
+        ' cleared'
+      : 'Workout time left: ' + totalFmt(workoutRemaining());
+    $('#workoutLeft').style.display =
+      settings.endlessMode || settings.showTimeLeft ? 'block' : 'none';
     const warmup = val('warmupTime'),
       work = val('rounds') * val('roundTime'),
       rest = restTotal(),
@@ -2320,8 +2385,15 @@ import {
             : punchOutActive
               ? 'punchout'
               : '');
-    $('#phase').textContent =
-      phase === 'warmup'
+    $('#phase').textContent = settings.endlessMode
+      ? phase === 'warmup'
+        ? 'Endless warmup'
+        : phase === 'rest'
+          ? 'Level ' + round + ' cleared'
+          : phase === 'complete'
+            ? 'Endless run complete'
+            : 'Level ' + round
+      : phase === 'warmup'
         ? 'Warmup'
         : phase === 'rest'
           ? restAfterRound(round) > val('restTime')
@@ -2390,16 +2462,25 @@ import {
       $('#comboNumbers').textContent = '';
       $('#comboNumbers').style.display = 'none';
     }
-    const summary = [
-      settings.trainingMode === 'bag'
-        ? 'Bag'
-        : settings.trainingMode === 'shadow'
-          ? 'Shadowboxing'
-          : 'General',
-      settings.skill,
-      settings.complexity + ' complexity',
-    ];
-    if (settings.progressiveCombos) summary.push('Progressive combinations');
+    const profile = endlessLevelProfile(),
+      summary = settings.endlessMode
+        ? [
+            'Endless',
+            profile.skill,
+            'Up to ' + profile.maxMoves + ' moves',
+            fmt(profile.restTime) + ' next break',
+          ]
+        : [
+            settings.trainingMode === 'bag'
+              ? 'Bag'
+              : settings.trainingMode === 'shadow'
+                ? 'Shadowboxing'
+                : 'General',
+            settings.skill,
+            settings.complexity + ' complexity',
+          ];
+    if (!settings.endlessMode && settings.progressiveCombos)
+      summary.push('Progressive combinations');
     if (activeFocuses().length) summary.push(...activeFocuses().map(focusName));
     if (settings.structured !== 'off' && Object.keys(blockPlan).length) {
       summary.push(settings.structured + ' sec blocks');
@@ -2434,33 +2515,50 @@ import {
             (phase === 'warmup' ? 'current' : '') +
             '" aria-label="Warmup"></span>'
           : '';
-    $('#timeline').style.gridTemplateColumns = '';
+    $('#timeline').style.gridTemplateColumns = settings.endlessMode
+      ? 'repeat(5,minmax(0,1fr))'
+      : '';
     setHtmlIfChanged(
       $('#timeline'),
-      warmupPip +
-        Array.from({ length: total }, (_, i) => {
-          const r = i + 1,
-            roundFocuses = planVisible && focusPlan[r] ? focusPlan[r] : [],
-            focus = roundFocuses.map(focusName).join(' + '),
-            shortFocus = roundFocuses.map(shortFocusName).join(' + '),
-            done = r < round || (r === round && (phase === 'rest' || phase === 'complete')),
-            current = r === round && phase === 'work',
-            resting = r === round && phase === 'rest' && r < total;
-          return (
-            '<span class="round-marker"><span class="round-pip ' +
-            (done ? 'done' : current ? 'current' : '') +
-            '"><span class="round-focus-label" title="' +
-            focus +
-            '"><span class="round-focus-full">' +
-            focus +
-            '</span><span class="round-focus-short">' +
-            shortFocus +
-            '</span></span></span></span>' +
-            (resting
-              ? '<span class="phase-pip rest-pip current" aria-label="Rest period"></span>'
-              : '')
-          );
-        }).join(''),
+      settings.endlessMode
+        ? Array.from({ length: 5 }, (_, i) => Math.max(1, round - 2) + i)
+            .map(
+              (level) =>
+                '<span class="round-marker endless-level-marker"><span class="round-pip ' +
+                (level < round || (level === round && phase === 'rest')
+                  ? 'done'
+                  : level === round && phase === 'work'
+                    ? 'current'
+                    : '') +
+                '"><span class="round-focus-label">L' +
+                level +
+                '</span></span></span>',
+            )
+            .join('')
+        : warmupPip +
+            Array.from({ length: total }, (_, i) => {
+              const r = i + 1,
+                roundFocuses = planVisible && focusPlan[r] ? focusPlan[r] : [],
+                focus = roundFocuses.map(focusName).join(' + '),
+                shortFocus = roundFocuses.map(shortFocusName).join(' + '),
+                done = r < round || (r === round && (phase === 'rest' || phase === 'complete')),
+                current = r === round && phase === 'work',
+                resting = r === round && phase === 'rest' && r < total;
+              return (
+                '<span class="round-marker"><span class="round-pip ' +
+                (done ? 'done' : current ? 'current' : '') +
+                '"><span class="round-focus-label" title="' +
+                focus +
+                '"><span class="round-focus-full">' +
+                focus +
+                '</span><span class="round-focus-short">' +
+                shortFocus +
+                '</span></span></span></span>' +
+                (resting
+                  ? '<span class="phase-pip rest-pip current" aria-label="Rest period"></span>'
+                  : '')
+              );
+            }).join(''),
     );
     if (phase === 'complete' && !completionReported) {
       completionReported = true;
@@ -2472,13 +2570,15 @@ import {
                 date: Date.now(),
                 startedAt: workoutStartedAt || Date.now(),
                 duration: activeSeconds,
-                plannedDuration: val('warmupTime') + val('rounds') * val('roundTime') + restTotal(),
-                rounds: val('rounds'),
+                plannedDuration: settings.endlessMode
+                  ? activeSeconds
+                  : val('warmupTime') + val('rounds') * val('roundTime') + restTotal(),
+                rounds: settings.endlessMode ? endlessLevelsCompleted : val('rounds'),
                 combos: comboTotal,
                 moves: moveTotal,
                 focuses: [...new Set(Object.values(focusPlan).flat())].map(focusName),
-                mode: settings.trainingMode,
-                skill: settings.skill,
+                mode: settings.endlessMode ? 'Endless' : settings.trainingMode,
+                skill: settings.endlessMode ? endlessLevelProfile().skill : settings.skill,
               },
             }),
           ),
@@ -2509,6 +2609,7 @@ import {
     if (phase === 'ready') {
       comboTotal = 0;
       moveTotal = 0;
+      endlessLevelsCompleted = 0;
       completionReported = false;
       workoutStartedAt = Date.now();
       activeSeconds = 0;
@@ -2606,12 +2707,13 @@ import {
         punchOutActive = false;
         const nextRest = restAfterRound(round),
           restCall = nextRest > val('restTime') ? 'Long recovery' : 'Rest';
-        if (round >= val('rounds')) {
+        if (!settings.endlessMode && round >= val('rounds')) {
           phase = 'complete';
           time = 0;
           vibrate([180, 90, 180]);
           roundEndBell(() => say('Workout complete. Great work.'));
         } else if (nextRest > 0) {
+          if (settings.endlessMode) endlessLevelsCompleted = round;
           phase = 'rest';
           time = nextRest;
           running = true;
@@ -2672,7 +2774,7 @@ import {
     } else if (phase === 'rest') {
       activateRound();
     } else if (phase === 'complete') {
-      round = val('rounds');
+      round = settings.endlessMode ? 1 : val('rounds');
       activateRound();
     }
     render();
@@ -2704,8 +2806,24 @@ import {
     workoutStartedAt = 0;
     activeSeconds = 0;
     completionReported = false;
+    endlessLevelsCompleted = 0;
     newCombo(false);
     render();
+  }
+  function endEndlessWorkout() {
+    if (!settings.endlessMode || ['ready', 'complete'].includes(phase)) return;
+    clear();
+    cancelSpeech();
+    running = false;
+    phase = 'complete';
+    time = 0;
+    comboVisible = false;
+    roundAnnouncementActive = false;
+    betweenCue = '';
+    pendingMovement = '';
+    render();
+    vibrate([180, 90, 180]);
+    roundEndBell(() => say('Endless run complete. ' + moveTotal + ' points.'));
   }
   function cancelPrimaryHold() {
     clearTimeout(primaryHoldTimer);
@@ -2738,12 +2856,16 @@ import {
     } else if (phase === 'rest') {
       round++;
       activateRound();
-    } else if (phase === 'work' && round < val('rounds') && restAfterRound(round) > 0) {
+    } else if (
+      phase === 'work' &&
+      (settings.endlessMode || round < val('rounds')) &&
+      restAfterRound(round) > 0
+    ) {
       phase = 'rest';
       time = restAfterRound(round);
       running = true;
       tick = setInterval(step, 1000);
-    } else if (phase === 'work' && round < val('rounds')) {
+    } else if (phase === 'work' && (settings.endlessMode || round < val('rounds'))) {
       round++;
       activateRound();
     } else {
@@ -2792,6 +2914,10 @@ import {
             ...new Set([...settings.allowedCombos, ...bodyComboIds, ...catalogAdditions]),
           ];
         settings.comboCatalogVersion = 3;
+        saveSettings();
+      }
+      if ('versusMode' in settings) {
+        delete settings.versusMode;
         saveSettings();
       }
     }
@@ -3667,16 +3793,34 @@ import {
         comboVisible,
         comboCount: comboTotal,
         moveCount: moveTotal,
+        score: moveTotal,
+        activeSeconds,
+        levelsCompleted: endlessLevelsCompleted,
       };
     },
-    setVersusMode(enabled) {
-      settings.versusMode = !!enabled;
-      saveSettings();
-      render();
-      window.dispatchEvent(
-        new CustomEvent('cornerwork-versus-mode', { detail: { enabled: settings.versusMode } }),
-      );
+    get endlessProfile() {
+      return { ...endlessLevelProfile() };
     },
+    setEndlessMode(enabled) {
+      const next = !!enabled;
+      if (next === settings.endlessMode || !['ready', 'complete'].includes(phase)) return;
+      settings.endlessMode = next;
+      saveSettings();
+      resetWorkout();
+      window.dispatchEvent(
+        new CustomEvent('cornerwork-endless-mode', { detail: { enabled: settings.endlessMode } }),
+      );
+      requestAnimationFrame(() => {
+        fitWorkoutToViewport();
+        requestAnimationFrame(fitWorkoutToViewport);
+      });
+    },
+    setEndlessWarmup(seconds) {
+      settings.endlessWarmup = Math.min(300, Math.max(0, Math.round(Number(seconds) || 0)));
+      saveSettings();
+      if (settings.endlessMode && phase === 'ready') resetWorkout();
+    },
+    endEndlessWorkout,
     get presets() {
       return presets.map((p) => ({ ...p }));
     },

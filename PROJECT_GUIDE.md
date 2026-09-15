@@ -84,10 +84,13 @@ Use these labels consistently in the interface and documentation:
 
 ### Workout execution
 
-- VS Computer is an optional presentation layer for the normal Cornerwork workout engine. It never changes combo selection, cadence, coaching, focus blocks, sounds, round timing, or controls.
-- The VS Computer toggle belongs inside the standard Workout timing section. Enabling it replaces only the main workout presentation with a virtual opponent, health bar, score, and combo chain; every original setup option remains available.
-- A real coach callout counts as a virtual attack. Move count influences points and damage, while workout progress keeps opponent health paced through the final round. Completion produces the knockout; the app does not claim to detect whether the user physically landed a punch.
-- VS Computer uses no camera, microphone, pose tracking, recording, upload, network opponent, or generative AI. It remains a private, offline-capable motivational workout display.
+- Endless is a separate workout type with its own focused setup panel. Selecting it must not reload the page or disturb the normal Custom, Program Studio, Quick Start, Presets, or Programs flows.
+- Endless exposes warm-up duration as its only timing control. Levels, rests, callout cadence, skill, included technique categories, and maximum combination length follow one deterministic progression every run.
+- Level 1 starts with 1:00 work and 0:20 rest. Every two levels add 0:15 work and 0:05 rest, capped at 5:00 work and 1:00 rest. Callouts accelerate toward a two-second cadence while longer combinations and more technique categories unlock.
+- Endless awards exactly one point for every called action, including defensive movements. `1` is worth one point, `1-2` is worth two, and `1-2-3-Slip right` is worth four. The app does not claim to detect whether the user physically performed a move.
+- Endless strongly favors one- and two-action combinations in its opening levels. As levels rise, medium and complex calls become more likely, but simple combinations always retain at least a 25% selection band so late levels remain varied rather than becoming exclusively difficult.
+- Endless has no final level or target score. Clearing a level starts its generated recovery, then the next level begins. The workout continues until the user chooses End run.
+- Endless reuses the normal Cornerwork workout engine, including speech, sounds, coaching, stance, display settings, pause/resume, phase navigation, hold-to-reset, Wake Lock, and completion history. It requires no camera, microphone, pose tracking, recording, or network opponent.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
@@ -164,6 +167,7 @@ These rules are easy to break and should be deliberately verified after related 
 - The complete workout display scales down as one unit when the available window cannot contain the selected clock and callout sizes.
 - Compact layout reorganizes the same phase, timer, callout, statistics, timeline, and controls without removing workout functions.
 - Resizing, rotating the device, or changing display-size settings must not introduce page scrollbars or push workout controls offscreen.
+- Activating an updated service worker must not reload an open setup or workout. The updated app loads on the next normal launch or navigation.
 - The main workout must fit inside the visible mobile viewport without the top being pushed offscreen.
 - Normal page scrolling and overscroll are suppressed during the workout interface.
 - The Workout drawer and Settings popup must scroll internally when their content exceeds the viewport.
@@ -194,7 +198,7 @@ cornerwork/
         │   ├── app.js        Timer, combos, audio, settings, persistence, and sync
         │   ├── bootstrap.js  Early mobile behavior and enhancement loader
         │   ├── enhancements.js Additional workout types, tools, history, and UI
-        │   ├── versus.js      Optional VS Computer workout presentation and scoring
+        │   ├── endless.js     Endless workout setup, progression status, and manual end control
         │   └── icon-themes.js App icon discovery and gallery rendering
         └── icons/            Browser and installable-app icons plus addition guide
 ```
