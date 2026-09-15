@@ -138,6 +138,7 @@ These rules are easy to break and should be deliberately verified after related 
 
 ### Combo generation
 
+- The ready screen always displays Workout ready. Configuration changes may prepare a combo internally, but must not reveal it before Start.
 - A combo must match the selected skill level, complexity, included technique types, and allowed-combo list.
 - Training mode and active focus adjust selection preference without allowing incompatible combos.
 - The same sequence should not be selected twice consecutively when alternatives exist.

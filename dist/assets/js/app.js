@@ -1792,6 +1792,14 @@ import {
     if (speak && running && phase === 'work') deliverCombo(current, { schedule: !punchOutActive });
   }
   function renderCombo() {
+    // Configuration changes may prepare the next combo while the workout is idle.
+    // Keep that internal state from leaking onto the ready screen before Start.
+    if (phase === 'ready') {
+      $('#combo').textContent = 'Workout ready';
+      $('#comboNumbers').textContent = '';
+      $('#comboNumbers').style.display = 'none';
+      return;
+    }
     if (!comboVisible) {
       $('#combo').textContent = '';
       $('#comboNumbers').textContent = '';
