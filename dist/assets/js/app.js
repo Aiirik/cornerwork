@@ -3387,6 +3387,7 @@ import {
       content.style.setProperty('--workout-fit-inverse', '1');
       content.style.setProperty('--workout-shift-x', '0px');
       content.style.setProperty('--workout-shift-y', '0px');
+      document.documentElement.style.setProperty('--clock-position-y', '0px');
       const style = getComputedStyle(viewport),
         viewportRect = viewport.getBoundingClientRect(),
         inset = 4,
@@ -3396,7 +3397,8 @@ import {
         visibleBottom = viewportRect.bottom - parseFloat(style.paddingBottom) - inset,
         availableWidth = Math.max(1, visibleRight - visibleLeft),
         availableHeight = Math.max(1, visibleBottom - visibleTop),
-        contentRect = content.getBoundingClientRect();
+        contentRect = content.getBoundingClientRect(),
+        timerRect = $('#timer').getBoundingClientRect();
       let left = contentRect.left,
         right = contentRect.right,
         top = contentRect.top,
@@ -3421,14 +3423,26 @@ import {
         scaledCenterY = transformOriginY + ((top + bottom) / 2 - transformOriginY) * scale,
         shiftX = (visibleLeft + visibleRight) / 2 - scaledCenterX,
         shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY,
-        mobileLift = matchMedia('(max-width: 820px)').matches ? -24 : 0,
+        mobileLift =
+          matchMedia('(max-width: 820px)').matches &&
+          !document.body.classList.contains('compact-workout')
+            ? -24
+            : 0,
         requestedOffset = mobileLift + settings.clockOffset,
-        verticalSlack = Math.max(0, (availableHeight - contentHeight * scale) / 2),
-        safeOffset = Math.max(-verticalSlack, Math.min(verticalSlack, requestedOffset));
+        projectedTimerTop = transformOriginY + (timerRect.top - transformOriginY) * scale + shiftY,
+        projectedTimerBottom =
+          transformOriginY + (timerRect.bottom - transformOriginY) * scale + shiftY,
+        safeUp = Math.max(0, (projectedTimerTop - visibleTop) / scale),
+        safeDown = Math.max(0, (visibleBottom - projectedTimerBottom) / scale),
+        safeOffset = Math.max(-safeUp, Math.min(safeDown, requestedOffset));
       content.style.setProperty('--workout-fit', String(scale));
       content.style.setProperty('--workout-fit-inverse', String(1 / scale));
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
-      content.style.setProperty('--workout-shift-y', (shiftY + safeOffset).toFixed(2) + 'px');
+      content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
+      document.documentElement.style.setProperty(
+        '--clock-position-y',
+        safeOffset.toFixed(2) + 'px',
+      );
     });
   }
   function syncSoundControls(prefix) {

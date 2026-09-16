@@ -105,7 +105,7 @@ Use these labels consistently in the interface and documentation:
 - Start/pause, previous phase, next phase, and hold-to-restart controls
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
-- The workout display keeps its existing desktop position and receives a small safe upward bias on mobile. Display settings include a shared clock-position fine adjustment from 60 px up to 60 px down; the viewport fitter clamps that adjustment to available space so smaller screens do not clip the workout.
+- The shared workout layout remains fixed. Only the main countdown receives a small safe upward bias in the Standard mobile layout; desktop and Compact keep their normal clock position. Display settings include a clock-only fine adjustment from 60 px up to 60 px down, clamped to the viewport so smaller screens do not clip the countdown.
 - Full round-focus labels wrap to two lines inside timeline pips, with an optional compact abbreviated-label display setting
 
 ### Saving and continuity

@@ -333,6 +333,7 @@ button {
   width: 5ch;
   white-space: nowrap;
   text-align: center;
+  transform: translateY(var(--clock-position-y, 0px));
 }
 .workout-left {
   color: var(--muted);
