@@ -31,7 +31,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=188" />
+    <link rel="stylesheet" href="assets/css/app.css?v=191" />
   </head>
   <body>
     <main class="app">
@@ -654,6 +654,9 @@
                 ><strong>Clock size:</strong> Makes the main countdown smaller or larger without
                 changing its timing.</span
               ><span
+                ><strong>Mobile clock position:</strong> Moves only the round label, countdown, and
+                clock details upward on phones. The rest of the workout layout stays fixed.</span
+              ><span
                 ><strong>Callout size:</strong> Adjusts the combo text independently from the
                 clock.</span
               ><span
@@ -731,6 +734,20 @@
                 value="100"
                 aria-label="Main clock font size"
               /><output class="speed-value size-value" id="clockSizeValue">100%</output>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span>Mobile clock position</span>
+            <div class="speed-control">
+              <input
+                id="mobileClockLift"
+                type="range"
+                min="0"
+                max="60"
+                step="5"
+                value="40"
+                aria-label="Move the mobile clock section upward"
+              /><output class="speed-value size-value" id="mobileClockLiftValue">40px up</output>
             </div>
           </div>
           <div class="setting-row">
@@ -1244,7 +1261,7 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=213"></script>
+    <script type="module" src="assets/js/app.js?v=217"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
     <script src="assets/js/bootstrap.js?v=227" defer></script>
   </body>

@@ -2203,6 +2203,14 @@ button *,
 .workout-display {
   display: contents;
 }
+@media (max-width: 820px) {
+  .workout-display > .phase,
+  .workout-display > .timer,
+  .workout-display > .workout-stats,
+  .workout-display > .workout-left {
+    transform: translateY(var(--mobile-clock-lift, 0px));
+  }
+}
 body.compact-workout .center {
   width: min(1000px, 100%);
 }
