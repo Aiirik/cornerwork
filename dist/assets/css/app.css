@@ -1088,8 +1088,8 @@ button {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
-.mark,
-.icon-picker-preview {
+.icon-picker-preview,
+body.legacy-brand .mark {
   --mark-frame: #25272b;
   box-sizing: border-box;
   border: 1px solid #343840;
@@ -1098,10 +1098,14 @@ button {
   box-shadow: 0 0 18px #ffffff14;
 }
 .mark {
-  width: 52px;
-  height: 52px;
-  padding: 5px;
-  border-radius: 13px;
+  width: clamp(132px, 15vw, 154px);
+  height: clamp(58px, 6.6vw, 66px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
 }
 .mark img,
 .icon-picker-preview img {
@@ -1113,23 +1117,36 @@ button {
   -webkit-user-drag: none;
 }
 .mark img {
+  border-radius: 0;
+}
+body:not(.legacy-brand) .brand-name {
+  display: none;
+}
+body.legacy-brand .brand {
+  gap: 14px;
+  letter-spacing: 0.14em;
+}
+body.legacy-brand .mark {
+  width: 52px;
+  height: 52px;
+  padding: 5px;
+  border-radius: 13px;
+}
+body.legacy-brand .mark img {
   border-radius: 7px;
 }
-body.circular-header-icon .mark,
-body.circular-header-icon .mark img,
+body.legacy-brand .brand-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 0.8;
+}
+body.circular-header-icon.legacy-brand .mark,
+body.circular-header-icon.legacy-brand .mark img,
 body.circular-header-icon .icon-picker-preview,
 body.circular-header-icon .icon-picker-preview img {
   border-radius: 50%;
-}
-body.compact-brand .brand {
-  gap: 10px;
-  letter-spacing: 0.08em;
-}
-body.compact-brand .brand-name {
-  flex-direction: row;
-  align-items: baseline;
-  gap: 0;
-  line-height: 1;
 }
 @media (max-width: 820px) {
   .app {
@@ -1831,6 +1848,9 @@ button *,
     border-color 0.18s ease,
     background-color 0.18s ease;
 }
+#appIconSettingRow[hidden] {
+  display: none;
+}
 .icon-picker-trigger:hover,
 .icon-picker-trigger:focus-visible {
   border-color: var(--red);
@@ -2103,7 +2123,12 @@ button *,
 }
 @media (max-width: 820px) {
   .timer {
-    font-size: calc(clamp(78px, 25vw, 120px) * var(--clock-scale));
+    /* Keep oversized clocks inside the phone width so the viewport fitter does not
+       shrink and recenter the entire workout, which would add space above it. */
+    font-size: min(
+      calc(clamp(78px, 25vw, 120px) * var(--clock-scale)),
+      var(--mobile-clock-width-limit, 29vw)
+    );
   }
   .combo {
     font-size: calc(clamp(32px, 10vw, 52px) * var(--callout-scale));
@@ -2111,7 +2136,10 @@ button *,
 }
 @media (max-width: 820px) and (max-height: 700px) {
   .timer {
-    font-size: calc(clamp(68px, 20vw, 96px) * var(--clock-scale));
+    font-size: min(
+      calc(clamp(68px, 20vw, 96px) * var(--clock-scale)),
+      var(--mobile-clock-width-limit, 29vw)
+    );
   }
 }
 .size-value {
@@ -2244,7 +2272,10 @@ body.compact-workout .workout-display .phase {
 body.compact-workout .workout-display .timer {
   grid-area: timer;
   margin: 0 auto 2px;
-  font-size: calc(clamp(72px, min(13vw, 20dvh), 156px) * var(--clock-scale));
+  font-size: min(
+    calc(clamp(72px, min(13vw, 20dvh), 156px) * var(--clock-scale)),
+    var(--mobile-clock-width-limit, 29vw)
+  );
 }
 body.compact-workout .workout-display .workout-left {
   grid-area: remaining;

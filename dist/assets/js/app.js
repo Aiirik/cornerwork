@@ -416,6 +416,15 @@ import {
     allerta: '"Allerta Stencil"',
     keania: '"Keania One"',
   };
+  // Each bundled font has a different digit width. These caps let the clock fill the
+  // phone without making the viewport fitter shrink and recenter the whole workout.
+  const mobileClockWidthLimits = {
+    league: 33,
+    montserrat: 29,
+    barlow: 44,
+    allerta: 29,
+    keania: 30,
+  };
   let iconThemes = new Map([['default', createIconTheme('default')]]);
   const displayDefaults = {
     clockSize: 100,
@@ -450,7 +459,7 @@ import {
   let settings = {
     comboCatalogVersion: 3,
     roundStartDefaultV2: true,
-    brandLayoutDefaultV2: true,
+    brandLayoutHeaderV3: true,
     wordSpeechRateScaleV2: true,
     speechGapControlsV2: true,
     trainingMode: 'bag',
@@ -2588,22 +2597,28 @@ import {
     document.body.classList.toggle('white-outline-text', !!settings.whiteOutlineText);
     document.body.classList.toggle('show-fullscreen-button', !!settings.showFullscreen);
     document.body.classList.toggle('compact-workout', settings.displayMode === 'compact');
-    document.body.classList.toggle('compact-brand', settings.brandLayout === 'compact');
+    const legacyBrand = settings.brandLayout === 'legacy';
+    document.body.classList.toggle('legacy-brand', legacyBrand);
     document.body.classList.toggle('circular-header-icon', settings.headerIconShape === 'circle');
     document.body.classList.toggle('compact-round-labels', !!settings.compactRoundLabels);
-    const iconTheme =
+    const selectedIconTheme =
         iconThemes.get(settings.appIconTheme) || createIconTheme(settings.appIconTheme),
+      activeIconTheme = legacyBrand ? selectedIconTheme : createIconTheme('default'),
       brandIcon = $('#brandIcon'),
-      brandIconSource = iconTheme.root + '/icon.png',
-      browserIconSource = iconTheme.root + '/icon-192.png',
-      appleTouchIconSource = iconTheme.root + '/apple-touch-icon.png';
+      brandIconSource = legacyBrand
+        ? selectedIconTheme.root + '/icon.png'
+        : 'assets/icons/Header-icon.png',
+      browserIconSource = activeIconTheme.root + '/icon-192.png',
+      appleTouchIconSource = activeIconTheme.root + '/apple-touch-icon.png';
     if (brandIcon.getAttribute('src') !== brandIconSource) brandIcon.src = brandIconSource;
+    brandIcon.alt = legacyBrand ? '' : 'Cornerwork';
+    $('#appIconSettingRow').hidden = !legacyBrand;
     if ($('#browserIcon').getAttribute('href') !== browserIconSource)
       $('#browserIcon').href = browserIconSource;
     if ($('#appleTouchIcon').getAttribute('href') !== appleTouchIconSource)
       $('#appleTouchIcon').href = appleTouchIconSource;
-    if ($('#appManifest').getAttribute('href') !== iconTheme.manifest)
-      $('#appManifest').href = iconTheme.manifest;
+    if ($('#appManifest').getAttribute('href') !== activeIconTheme.manifest)
+      $('#appManifest').href = activeIconTheme.manifest;
     document.documentElement.style.setProperty(
       '--button-text',
       'rgb(255 255 255 / ' +
@@ -3178,9 +3193,10 @@ import {
         shortcuts: { ...settings.shortcuts, ...(saved.shortcuts || {}) },
         workout: { ...settings.workout, ...(saved.workout || {}) },
       };
-      if (!saved.brandLayoutDefaultV2) {
+      if (!saved.brandLayoutHeaderV3) {
         settings.brandLayout = 'default';
-        settings.brandLayoutDefaultV2 = true;
+        settings.brandLayoutHeaderV3 = true;
+        delete settings.brandLayoutDefaultV2;
         saveSettings();
       }
       if ('mobileClockLift' in settings || 'mobileClockPositionV2' in settings) {
@@ -3258,11 +3274,11 @@ import {
     settings.headerIconShape = 'square';
     saveSettings();
   }
-  if (settings.brandLayout === 'large') {
-    settings.brandLayout = 'default';
+  if (settings.brandLayout === 'compact' || settings.brandLayout === 'large') {
+    settings.brandLayout = 'legacy';
     saveSettings();
   }
-  if (!['default', 'compact'].includes(settings.brandLayout)) {
+  if (!['default', 'legacy'].includes(settings.brandLayout)) {
     settings.brandLayout = 'default';
     saveSettings();
   }
@@ -3376,6 +3392,10 @@ import {
   function applyDisplaySizes() {
     if (!clockFonts[settings.clockFont]) settings.clockFont = displayDefaults.clockFont;
     document.documentElement.style.setProperty('--clock-font', clockFonts[settings.clockFont]);
+    document.documentElement.style.setProperty(
+      '--mobile-clock-width-limit',
+      mobileClockWidthLimits[settings.clockFont] + 'vw',
+    );
     document.documentElement.style.setProperty('--clock-scale', settings.clockSize / 100);
     document.documentElement.style.setProperty('--callout-scale', settings.calloutSize / 100);
     $('#clockFont').value = settings.clockFont;

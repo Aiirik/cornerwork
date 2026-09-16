@@ -31,7 +31,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=195" />
+    <link rel="stylesheet" href="assets/css/app.css?v=197" />
   </head>
   <body>
     <main class="app">
@@ -426,7 +426,11 @@
         <header class="topbar">
           <div class="brand">
             <span class="mark"
-              ><img id="brandIcon" src="assets/icons/icon.png" alt="" draggable="false" /></span
+              ><img
+                id="brandIcon"
+                src="assets/icons/Header-icon.png"
+                alt="Cornerwork"
+                draggable="false" /></span
             ><span class="brand-name"><span>Corner</span><span>work</span></span>
           </div>
           <div class="top-actions">
@@ -559,7 +563,7 @@
           ></button>
         </div>
         <p class="preset-modal-note">
-          Select the icon used throughout Cornerwork. Your header and browser icon update
+          Select the icon used by the Legacy logo layout. Its header and browser icon update
           immediately.
         </p>
         <div class="icon-picker-shape">
@@ -674,11 +678,13 @@
                 ><strong>Show full-screen button:</strong> Shows the full-screen control in the
                 desktop header. It stays hidden on mobile.</span
               ><span
-                ><strong>App icon:</strong> Opens the icon gallery. Your choice updates the app
-                header, browser icon, and the icon offered when installing the app again.</span
+                ><strong>Logo layout:</strong> Default uses the complete Cornerwork header artwork
+                with no separate frame or text. Legacy uses the framed app icon with Corner and Work
+                stacked beside it.</span
               ><span
-                ><strong>Logo layout:</strong> Default stacks Corner above Work. Compact uses the
-                same size icon and lettering on one line.</span
+                ><strong>App icon:</strong> Available in Legacy layout. Opens the icon gallery and
+                updates the Legacy header, browser icon, and the icon offered when installing the
+                app again.</span
               >
             </div>
           </div>
@@ -690,6 +696,13 @@
             </div>
           </div>
           <div class="setting-row">
+            <span>Logo layout</span>
+            <div class="segmented" data-setting="brandLayout">
+              <button class="active" data-value="default">Default</button
+              ><button data-value="legacy">Legacy</button>
+            </div>
+          </div>
+          <div class="setting-row" id="appIconSettingRow" hidden>
             <span>App icon</span
             ><button
               class="icon-picker-trigger"
@@ -703,13 +716,6 @@
                 <use href="assets/icons/ui-icons.svg#icon-settings"></use>
               </svg>
             </button>
-          </div>
-          <div class="setting-row">
-            <span>Logo layout</span>
-            <div class="segmented" data-setting="brandLayout">
-              <button class="active" data-value="default">Default</button
-              ><button data-value="compact">Compact</button>
-            </div>
           </div>
           <div class="setting-row clock-font-row">
             <span>Clock font</span
@@ -1246,8 +1252,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=223"></script>
+    <script type="module" src="assets/js/app.js?v=225"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=229" defer></script>
+    <script src="assets/js/bootstrap.js?v=231" defer></script>
   </body>
 </html>

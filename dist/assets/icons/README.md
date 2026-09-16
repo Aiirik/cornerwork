@@ -7,10 +7,12 @@ No HTML or JavaScript changes are required. The folder name becomes the label sh
    - `heavy bag` displays as **heavy bag**.
    - `Heavy-Bag` displays as **Heavy-Bag**.
 2. Add all four PNG files below to that folder:
-   - `icon.png`, the full-size gallery and header artwork
+   - `icon.png`, the full-size gallery and Legacy header artwork
    - `icon-192.png`, exactly 192 by 192 pixels
    - `icon-512.png`, exactly 512 by 512 pixels
    - `apple-touch-icon.png`, exactly 180 by 180 pixels
 3. Commit and push the folder. The deployment automatically adds it to the icon gallery, creates its web-app manifest, and includes its files in offline caching.
 
-The default icon uses the same four filenames directly inside `assets/icons`.
+The default install, browser, and Legacy header icon uses the same four filenames directly inside
+`assets/icons`. The separate root file `Header-icon.png` is the combined artwork used by the Default
+logo layout; it is not part of the selectable icon gallery.
