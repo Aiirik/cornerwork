@@ -2647,9 +2647,10 @@ import {
       showKeys = settings.shortcutLabels,
       sc = settings.shortcuts,
       canHoldRestart = !running && !['ready', 'complete'].includes(phase),
+      holdAction = settings.endlessMode ? 'Hold to end run' : 'Hold to restart',
       meta =
         (showKeys ? '<span class="keycap">' + displayKey(sc.start) + '</span>' : '') +
-        (canHoldRestart ? '<span class="hold-restart">Hold to restart</span>' : '');
+        (canHoldRestart ? '<span class="hold-restart">' + holdAction + '</span>' : '');
     setHtmlIfChanged(
       $('#start'),
       '<span>' +
@@ -2662,7 +2663,7 @@ import {
     $('#start').classList.toggle('is-resume', canHoldRestart);
     $('#start').setAttribute(
       'aria-label',
-      canHoldRestart ? 'Resume workout. Hold to restart workout' : action,
+      canHoldRestart ? 'Resume workout. ' + holdAction : action,
     );
     setHtmlIfChanged(
       $('#restart'),
@@ -2756,20 +2757,21 @@ import {
     setHtmlIfChanged(
       $('#timeline'),
       settings.endlessMode
-        ? Array.from({ length: 5 }, (_, i) => Math.max(1, round - 2) + i)
-            .map(
-              (level) =>
-                '<span class="round-marker endless-level-marker"><span class="round-pip ' +
-                (level < round || (level === round && phase === 'rest')
-                  ? 'done'
-                  : level === round && phase === 'work'
-                    ? 'current'
-                    : '') +
-                '"><span class="round-focus-label">L' +
-                level +
-                '</span></span></span>',
-            )
-            .join('')
+        ? warmupPip +
+            Array.from({ length: 5 }, (_, i) => Math.max(1, round - 2) + i)
+              .map(
+                (level) =>
+                  '<span class="round-marker endless-level-marker"><span class="round-pip ' +
+                  (level < round || (level === round && phase === 'rest')
+                    ? 'done'
+                    : level === round && phase === 'work'
+                      ? 'current'
+                      : '') +
+                  '"><span class="round-focus-label">Lvl ' +
+                  level +
+                  '</span></span></span>',
+              )
+              .join('')
         : warmupPip +
             Array.from({ length: total }, (_, i) => {
               const r = i + 1,
@@ -3085,7 +3087,8 @@ import {
       primaryHoldTimer = null;
       primaryHoldTriggered = true;
       $('#start').classList.remove('holding');
-      resetWorkout();
+      if (settings.endlessMode) endEndlessWorkout();
+      else resetWorkout();
       primaryHoldResetTimer = setTimeout(() => (primaryHoldTriggered = false), 700);
     }, 1200);
   }

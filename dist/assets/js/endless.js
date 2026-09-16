@@ -3,7 +3,6 @@
   let modeButton;
   let setup;
   let scoreboard;
-  let endButton;
   let coachingButton;
   let syncTimer = 0;
   let enabled = false;
@@ -35,7 +34,6 @@
     buildModeButton(launch);
     buildSetup(launch);
     buildScoreboard(workoutDisplay);
-    buildEndButton(controls);
     watchOtherWorkoutTypes(launch);
     syncMode(true);
     window.addEventListener('cornerwork-endless-mode', () => syncMode(true));
@@ -101,16 +99,6 @@
     $('#workoutLeft', workoutDisplay)?.insertAdjacentElement('afterend', scoreboard);
   }
 
-  function buildEndButton(controls) {
-    endButton = document.createElement('button');
-    endButton.id = 'endlessEnd';
-    endButton.type = 'button';
-    endButton.className = 'endless-end';
-    endButton.textContent = 'End run';
-    endButton.onclick = () => api.endEndlessWorkout();
-    controls.insertAdjacentElement('afterend', endButton);
-  }
-
   function watchOtherWorkoutTypes(launch) {
     launch.addEventListener(
       'click',
@@ -169,8 +157,6 @@
     $('#endlessScore', scoreboard).textContent = String(state.score);
     $('#endlessLevel', scoreboard).textContent = String(state.round);
     $('#endlessLevelTime', scoreboard).textContent = fmt(profile.roundTime);
-    endButton.classList.toggle('visible', enabled && !['ready', 'complete'].includes(state.phase));
-    endButton.textContent = state.score ? 'End run · ' + state.score + ' pts' : 'End run';
   }
 
   window.addEventListener('pagehide', () => clearInterval(syncTimer));

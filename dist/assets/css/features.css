@@ -228,38 +228,21 @@ body.endless-mode .endless-scoreboard {
 body.endless-mode.compact-workout .endless-scoreboard {
   grid-column: 1 / -1;
 }
-.endless-level-marker .round-pip {
-  height: 28px;
-}
 .endless-level-marker .round-focus-label {
-  display: block;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #88919e;
   font-size: 9px;
-  line-height: 28px;
+  line-height: 1;
   letter-spacing: 0.08em;
+  text-align: center;
 }
 .endless-level-marker .round-pip.current .round-focus-label,
 .endless-level-marker .round-pip.done .round-focus-label {
   color: white;
-}
-.endless-end {
-  display: none;
-  min-height: 38px;
-  margin: 9px auto 0;
-  border: 1px solid var(--red-border);
-  border-radius: 10px;
-  padding: 8px 16px;
-  background: #191318;
-  color: var(--red-text);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-body.endless-mode .endless-end.visible {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 body.endless-mode .workout-left {
   color: #aab3bf;
@@ -277,19 +260,6 @@ body.endless-mode #skip {
   }
   .endless-scoreboard strong {
     font-size: 18px;
-  }
-  body.endless-mode .combo-wrap {
-    min-height: clamp(82px, 15dvh, 132px);
-    margin: 3px 0;
-  }
-  body.endless-mode .workout-summary {
-    margin: 5px 0;
-  }
-  body.endless-mode .controls {
-    margin-top: 9px;
-  }
-  .endless-end {
-    margin-top: 6px;
   }
 }
 @media (max-width: 380px) {
