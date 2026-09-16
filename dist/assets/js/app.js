@@ -2647,12 +2647,14 @@ import {
               : '');
     $('#phase').textContent = settings.endlessMode
       ? phase === 'warmup'
-        ? 'Endless warmup'
+        ? 'Warmup'
         : phase === 'rest'
           ? 'Level ' + round + ' cleared'
           : phase === 'complete'
             ? 'Endless run complete'
-            : 'Level ' + round
+            : phase === 'ready'
+              ? ''
+              : 'Level ' + round
       : phase === 'warmup'
         ? 'Warmup'
         : phase === 'rest'
@@ -2734,7 +2736,7 @@ import {
             'Endless',
             profile.skill,
             'Up to ' + profile.maxMoves + ' moves',
-            fmt(profile.restTime) + ' next break',
+            fmt(profile.restTime) + ' next rest',
           ]
         : [
             settings.trainingMode === 'bag'
