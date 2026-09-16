@@ -2203,7 +2203,24 @@ button *,
 .workout-display {
   display: contents;
 }
+.workout-footer {
+  display: contents;
+}
 @media (max-width: 820px) {
+  body:not(.compact-workout) .workout > .center {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  body:not(.compact-workout) .workout > .center .combo-wrap {
+    min-height: 112px;
+    flex: 1 1 auto;
+  }
+  body:not(.compact-workout) .workout-footer {
+    display: block;
+    flex: 0 0 auto;
+  }
   .workout-display > .phase,
   .workout-display > .timer,
   .workout-display > .workout-stats,
