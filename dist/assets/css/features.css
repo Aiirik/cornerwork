@@ -163,6 +163,33 @@ body.endless-mode #setup > .endless-setup {
   font-size: 9px;
   line-height: 1.35;
 }
+.endless-scoring-rule > b {
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+.endless-points-grid {
+  display: grid;
+  gap: 4px;
+  margin-top: 7px;
+}
+.endless-points-grid > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid #2b333f;
+  padding-top: 4px;
+  color: #aeb6c2;
+  font-size: 9px;
+  line-height: 1.25;
+}
+.endless-points-grid b {
+  flex: 0 0 auto;
+  color: var(--red-text);
+  font-size: 9px;
+  white-space: nowrap;
+}
 .endless-next {
   border: 1px solid var(--red-border);
   border-radius: 10px;

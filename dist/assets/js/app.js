@@ -535,6 +535,7 @@ import {
     repeatLeft = 0,
     comboTotal = 0,
     moveTotal = 0,
+    scoreTotal = 0,
     locked = new Set(combos.map((c) => c.id)),
     focusPlan = {},
     blockPlan = {},
@@ -1778,9 +1779,25 @@ import {
   function callCombo(combo, options) {
     comboTotal++;
     moveTotal += combo.length;
+    scoreTotal += combo.reduce((total, move) => total + endlessMovePoints(move), 0);
     $('#comboTotal').textContent = comboTotal;
     $('#moveTotal').textContent = moveTotal;
     sayCombo(combo, options);
+  }
+  function endlessMovePoints(move) {
+    const text = String(move).toLowerCase(),
+      punchNumber =
+        typeof move === 'number' ? move : Number(text.match(/(?:body |head )?([1-6])$/)?.[1] || 0);
+    if (punchNumber) {
+      const powerPunch = [3, 4, 5, 6].includes(punchNumber),
+        bodyBonus = text.startsWith('body ') ? 1 : 0;
+      return (powerPunch ? 2 : 1) + bodyBonus;
+    }
+    if (/(hook|uppercut|kick|knee|elbow)/.test(text)) return 2;
+    return 1;
+  }
+  function pointsLabel(points) {
+    return points + ' point' + (points === 1 ? '' : 's');
   }
   const standardCues = [
       'Hands back to guard',
@@ -1986,7 +2003,9 @@ import {
   function announceFocusedAssignment() {
     if (!focusedAssignment || !running || phase !== 'work') return;
     comboTotal++;
-    moveTotal += Math.max(1, +focusedAssignment.moves || 1);
+    const assignmentMoves = Math.max(1, +focusedAssignment.moves || 1);
+    moveTotal += assignmentMoves;
+    scoreTotal += assignmentMoves;
     $('#comboTotal').textContent = comboTotal;
     $('#moveTotal').textContent = moveTotal;
     say(focusedAssignment.speech, () => {
@@ -2647,10 +2666,15 @@ import {
       showKeys = settings.shortcutLabels,
       sc = settings.shortcuts,
       canHoldRestart = !running && !['ready', 'complete'].includes(phase),
-      holdAction = settings.endlessMode ? 'Hold to end run' : 'Hold to restart',
+      holdAction = settings.endlessMode
+        ? 'Hold to end run: ' + pointsLabel(scoreTotal)
+        : 'Hold to restart',
+      holdContent = settings.endlessMode
+        ? 'Hold to end run: <strong>' + pointsLabel(scoreTotal) + '</strong>'
+        : holdAction,
       meta =
         (showKeys ? '<span class="keycap">' + displayKey(sc.start) + '</span>' : '') +
-        (canHoldRestart ? '<span class="hold-restart">' + holdAction + '</span>' : '');
+        (canHoldRestart ? '<span class="hold-restart">' + holdContent + '</span>' : '');
     setHtmlIfChanged(
       $('#start'),
       '<span>' +
@@ -2813,6 +2837,7 @@ import {
                 rounds: settings.endlessMode ? endlessLevelsCompleted : val('rounds'),
                 combos: comboTotal,
                 moves: moveTotal,
+                points: scoreTotal,
                 focuses: [...new Set(Object.values(focusPlan).flat())].map(focusName),
                 mode: settings.endlessMode ? 'Endless' : settings.trainingMode,
                 skill: settings.endlessMode ? endlessLevelProfile().skill : settings.skill,
@@ -2846,6 +2871,7 @@ import {
     if (phase === 'ready') {
       comboTotal = 0;
       moveTotal = 0;
+      scoreTotal = 0;
       endlessLevelsCompleted = 0;
       completionReported = false;
       workoutStartedAt = Date.now();
@@ -3036,6 +3062,7 @@ import {
     repeatLeft = 0;
     comboTotal = 0;
     moveTotal = 0;
+    scoreTotal = 0;
     roundUsed.clear();
     focusPlan = {};
     blockPlan = {};
@@ -3071,7 +3098,7 @@ import {
     pendingMovement = '';
     render();
     vibrate([180, 90, 180]);
-    roundEndBell(() => say('Endless run complete. ' + moveTotal + ' points.'));
+    roundEndBell(() => say('Endless run complete. ' + pointsLabel(scoreTotal) + '.'));
   }
   function cancelPrimaryHold() {
     clearTimeout(primaryHoldTimer);
@@ -4043,7 +4070,7 @@ import {
         comboVisible,
         comboCount: comboTotal,
         moveCount: moveTotal,
-        score: moveTotal,
+        score: scoreTotal,
         activeSeconds,
         levelsCompleted: endlessLevelsCompleted,
       };

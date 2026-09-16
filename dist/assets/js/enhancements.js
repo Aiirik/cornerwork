@@ -2050,8 +2050,10 @@
                 ' rounds · ' +
                 fmt(x.duration || x.plannedDuration) +
                 '</span></div><b>' +
-                x.combos +
-                ' combos</b></div>',
+                (x.mode === 'Endless' && Number.isFinite(Number(x.points))
+                  ? Number(x.points) + ' point' + (Number(x.points) === 1 ? '' : 's')
+                  : x.combos + ' combos') +
+                '</b></div>',
             )
             .join('')
         : '<p class="feature-note">Your completed workouts will appear here.</p>') +
@@ -3115,7 +3117,8 @@
     }
     window.addEventListener('cornerwork-complete', (e) => {
       const selected = read('cornerwork-active-selection', null),
-        detail = { ...e.detail, workoutName: selected?.name || '' };
+        detail = { ...e.detail, workoutName: selected?.name || '' },
+        endlessCompletion = detail.mode === 'Endless';
       api.addWorkoutHistory(detail);
       const active = readSession('cornerwork-active-program');
       if (active) {
@@ -3136,8 +3139,10 @@
         '</strong><span>Rounds</span></div><div><strong>' +
         e.detail.combos +
         '</strong><span>Combos</span></div><div><strong>' +
-        e.detail.moves +
-        '</strong><span>Moves</span></div><div><strong>' +
+        (endlessCompletion ? e.detail.points : e.detail.moves) +
+        '</strong><span>' +
+        (endlessCompletion ? 'Points' : 'Moves') +
+        '</span></div><div><strong>' +
         fmt(e.detail.duration || e.detail.plannedDuration) +
         '</strong><span>Time</span></div><div><strong>' +
         safe(e.detail.skill) +
