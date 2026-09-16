@@ -3002,7 +3002,6 @@
           'displayMode',
           'compactRoundLabels',
           'clockSize',
-          'clockOffset',
           'clockFont',
           'calloutSize',
           'highContrast',

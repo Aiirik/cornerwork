@@ -417,12 +417,7 @@ import {
     keania: '"Keania One"',
   };
   let iconThemes = new Map([['default', createIconTheme('default')]]);
-  const displayDefaults = {
-    clockSize: 100,
-    clockOffset: 0,
-    calloutSize: 100,
-    clockFont: 'league',
-  };
+  const displayDefaults = { clockSize: 100, calloutSize: 100, clockFont: 'league' };
   const soundDefaults = {
     warning: {
       warningSound: 'wood',
@@ -676,7 +671,6 @@ import {
     'targetGap',
     'wordMoveGap',
     'clockSize',
-    'clockOffset',
     'clockFont',
     'calloutSize',
     'clapperEnabled',
@@ -3360,7 +3354,6 @@ import {
   };
   function applyDisplaySizes() {
     if (!clockFonts[settings.clockFont]) settings.clockFont = displayDefaults.clockFont;
-    settings.clockOffset = Math.min(60, Math.max(-60, Number(settings.clockOffset) || 0));
     document.documentElement.style.setProperty('--clock-font', clockFonts[settings.clockFont]);
     document.documentElement.style.setProperty('--clock-scale', settings.clockSize / 100);
     document.documentElement.style.setProperty('--callout-scale', settings.calloutSize / 100);
@@ -3368,10 +3361,6 @@ import {
     $('#clockFont')._syncCustomSelect?.();
     $('#clockSize').value = settings.clockSize;
     $('#clockSizeValue').textContent = settings.clockSize + '%';
-    $('#clockOffset').value = settings.clockOffset;
-    $('#clockOffsetValue').textContent = settings.clockOffset
-      ? Math.abs(settings.clockOffset) + 'px ' + (settings.clockOffset < 0 ? 'up' : 'down')
-      : 'Default';
     $('#calloutSize').value = settings.calloutSize;
     $('#calloutSizeValue').textContent = settings.calloutSize + '%';
     fitWorkoutToViewport();
@@ -3381,13 +3370,16 @@ import {
     cancelAnimationFrame(workoutFitFrame);
     workoutFitFrame = requestAnimationFrame(() => {
       const viewport = $('.workout'),
-        content = $('.center');
-      if (!viewport || !content) return;
+        content = $('.center'),
+        timer = $('#timer');
+      if (!viewport || !content || !timer) return;
       content.style.setProperty('--workout-fit', '1');
       content.style.setProperty('--workout-fit-inverse', '1');
       content.style.setProperty('--workout-shift-x', '0px');
       content.style.setProperty('--workout-shift-y', '0px');
-      document.documentElement.style.setProperty('--clock-position-y', '0px');
+      // The mobile clock lift is visual only. Remove it while measuring so it cannot move,
+      // resize, or re-center any of the surrounding workout interface.
+      timer.style.transform = 'translateY(0px)';
       const style = getComputedStyle(viewport),
         viewportRect = viewport.getBoundingClientRect(),
         inset = 4,
@@ -3397,8 +3389,7 @@ import {
         visibleBottom = viewportRect.bottom - parseFloat(style.paddingBottom) - inset,
         availableWidth = Math.max(1, visibleRight - visibleLeft),
         availableHeight = Math.max(1, visibleBottom - visibleTop),
-        contentRect = content.getBoundingClientRect(),
-        timerRect = $('#timer').getBoundingClientRect();
+        contentRect = content.getBoundingClientRect();
       let left = contentRect.left,
         right = contentRect.right,
         top = contentRect.top,
@@ -3422,27 +3413,12 @@ import {
         scaledCenterX = transformOriginX + ((left + right) / 2 - transformOriginX) * scale,
         scaledCenterY = transformOriginY + ((top + bottom) / 2 - transformOriginY) * scale,
         shiftX = (visibleLeft + visibleRight) / 2 - scaledCenterX,
-        shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY,
-        mobileLift =
-          matchMedia('(max-width: 820px)').matches &&
-          !document.body.classList.contains('compact-workout')
-            ? -24
-            : 0,
-        requestedOffset = mobileLift + settings.clockOffset,
-        projectedTimerTop = transformOriginY + (timerRect.top - transformOriginY) * scale + shiftY,
-        projectedTimerBottom =
-          transformOriginY + (timerRect.bottom - transformOriginY) * scale + shiftY,
-        safeUp = Math.max(0, (projectedTimerTop - visibleTop) / scale),
-        safeDown = Math.max(0, (visibleBottom - projectedTimerBottom) / scale),
-        safeOffset = Math.max(-safeUp, Math.min(safeDown, requestedOffset));
+        shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY;
       content.style.setProperty('--workout-fit', String(scale));
       content.style.setProperty('--workout-fit-inverse', String(1 / scale));
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
       content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
-      document.documentElement.style.setProperty(
-        '--clock-position-y',
-        safeOffset.toFixed(2) + 'px',
-      );
+      timer.style.removeProperty('transform');
     });
   }
   function syncSoundControls(prefix) {
@@ -3661,7 +3637,7 @@ import {
   };
   $('#testComboSpeed').onclick = () =>
     sayCombo([1, 2, 'body 3', 'slip outside', 'step in', 'pivot', 'step out']);
-  ['clockSize', 'clockOffset', 'calloutSize'].forEach((id) => {
+  ['clockSize', 'calloutSize'].forEach((id) => {
     $('#' + id).oninput = () => {
       settings[id] = +$('#' + id).value;
       applyDisplaySizes();
