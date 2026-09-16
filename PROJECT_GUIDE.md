@@ -31,7 +31,7 @@ Cornerwork is not intended to become a social network, competitive leaderboard, 
 5. **Advanced options should not overwhelm setup.** Keep common choices visible and place detailed controls in clearly labelled collapsible groups.
 6. **Help controls are quiet and consistent.** Use the shared optically aligned help glyph beside labels, with clear hover, focus, and touch behavior.
 7. **Mobile and desktop share behavior.** Layout may adapt, but workout rules and settings must remain consistent.
-8. **Local-first is the default.** An account is optional. Saved workout presets and completed program sessions sync through Firebase; general preferences remain browser-specific.
+8. **Local-first is the default.** An account is optional. Saved workout presets, workout history, and completed program sessions sync through Firebase; general preferences remain browser-specific.
 9. **Preserve user choices.** Existing local storage data and older saved workouts should continue to load when settings evolve.
 
 ## Product terminology
@@ -110,7 +110,8 @@ Use these labels consistently in the interface and documentation:
 
 - Browser-local settings, custom combos, presets, Studio programs, repeatable variation seeds, history, program progress, and panel state
 - Saved workouts and account controls remain visible at the bottom of the Workout panel and are not part of its collapsible tab state
-- Optional Google sign-in and Firebase syncing for saved workout presets, Studio programs and their last repeatable versions, and completed built-in program sessions
+- Optional Google sign-in and Firebase syncing for saved workout presets, workout history, Studio programs and their last repeatable versions, and completed built-in program sessions
+- Workout history merges by stable entry ID across devices, retains at most 500 entries, and carries a synced clear timestamp so removed history does not reappear from another device.
 - Studio cloud sync uses a versioned JSON payload so authored round-focus arrays remain compatible with Standard edition Firestore. The cloud reader also accepts the earlier object-field shape for migration safety.
 - Coaching reminders, cue frequency, recovery instructions, and guided-beginner choices are included in saved and shared workouts
 - Saved-workout notes, favourites, duplication, search, links, and QR sharing
@@ -225,6 +226,7 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 | `cornerwork-presets`                  | Locally saved workout presets                                 |
 | `cornerwork-custom-combos`            | User-created combinations                                     |
 | `cornerwork-history`                  | Completed workout records                                     |
+| `cornerwork-history-cleared-at`       | Synced history clear timestamp                                |
 | `cornerwork-program-progress`         | Completed program sessions                                    |
 | `cornerwork-studio-programs`          | User-created Program Studio definitions                       |
 | `cornerwork-studio-program-deletions` | Cross-device Studio deletion timestamps                       |

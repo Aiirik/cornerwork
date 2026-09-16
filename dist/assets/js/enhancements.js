@@ -1990,17 +1990,22 @@
       '<div id="historyContent"></div><div class="feature-actions"><button class="feature-secondary" id="historyBackup">Backup data</button><button class="feature-secondary" id="clearHistory">Clear history</button></div>',
     );
     el.querySelector('#clearHistory').onclick = () => {
-      if (confirm('Clear your workout history on this device?')) {
-        write('cornerwork-history', []);
+      if (
+        confirm(
+          "Clear your workout history? If you're signed in, it will also be cleared from your synced devices.",
+        )
+      ) {
+        api.clearWorkoutHistory();
         renderHistory(el);
       }
     };
+    window.addEventListener('cornerwork-history-sync', () => renderHistory(el));
     renderHistory(el);
     return el;
   }
   function renderHistory(el = $('#historyDialog')) {
     if (!el) return;
-    const history = read('cornerwork-history', []),
+    const history = api?.workoutHistory || read('cornerwork-history', []),
       s = historyStats(history),
       month = history.filter((x) => Date.now() - x.date < 2592000000).length,
       week = history.filter((x) => Date.now() - x.date < 604800000).length;
@@ -2100,7 +2105,7 @@
     return modal(
       'privacyDialog',
       'Privacy Policy',
-      '<div class="info-copy"><p class="info-summary"><strong>The short version:</strong> Most Cornerwork data stays in your browser. If you sign in with Google, your saved workouts, Studio programs, and program progress sync so they can appear on your other devices. Cornerwork does not sell your data or use advertising or analytics trackers.</p><h3>Data saved on this device</h3><p>Your settings, custom combinations, Studio programs, repeatable session variations, workout history, saved workouts, and program progress are stored in your browser. This information stays on that browser unless you sign in, export a backup, or share a workout.</p><p>Clearing Cornerwork\'s browser data can remove this local information. Data stored in another browser or device does not automatically appear unless it was synced through your account or restored from a backup.</p><h3>When you sign in with Google</h3><p>Google verifies your identity and Firebase keeps you signed in. Cornerwork uses your Google account identifier and email address to connect your account. Your saved workouts, Studio programs, their last repeatable versions, and built-in program progress are stored in Firebase Cloud Firestore so they can sync between devices. Your other settings, custom combinations, workout history, and built-in program variation seeds remain local to each browser.</p><p>Cornerwork never receives your Google password. Google and Firebase may process normal technical information, such as your IP address and browser details, under their own privacy policies.</p><h3>Backups and shared workouts</h3><p>An exported backup is downloaded directly to your device. Cornerwork only reads a backup when you choose a file to import. Shared workouts place the workout setup inside the share link, so anyone who receives that link can view and import that workout.</p><h3>Removing your data</h3><p>You can remove local information by clearing the site data for Cornerwork in your browser. If you are signed in, delete synced saved workouts and Studio programs inside Cornerwork before signing out. Clearing only the browser data does not remove information already synced to Firebase.</p><p class="info-updated">Last updated September 15, 2026.</p></div>',
+      '<div class="info-copy"><p class="info-summary"><strong>The short version:</strong> Most Cornerwork data stays in your browser. If you sign in with Google, your saved workouts, workout history, Studio programs, and program progress sync so they can appear on your other devices. Cornerwork does not sell your data or use advertising or analytics trackers.</p><h3>Data saved on this device</h3><p>Your settings, custom combinations, Studio programs, repeatable session variations, workout history, saved workouts, and program progress are stored in your browser. This information stays on that browser unless you sign in, export a backup, or share a workout.</p><p>Clearing Cornerwork\'s browser data can remove this local information. Data stored in another browser or device does not automatically appear unless it was synced through your account or restored from a backup.</p><h3>When you sign in with Google</h3><p>Google verifies your identity and Firebase keeps you signed in. Cornerwork uses your Google account identifier and email address to connect your account. Your saved workouts, workout history, Studio programs, their last repeatable versions, and built-in program progress are stored in Firebase Cloud Firestore so they can sync between devices. Your other settings, custom combinations, and built-in program variation seeds remain local to each browser.</p><p>Cornerwork never receives your Google password. Google and Firebase may process normal technical information, such as your IP address and browser details, under their own privacy policies.</p><h3>Backups and shared workouts</h3><p>An exported backup is downloaded directly to your device. Cornerwork only reads a backup when you choose a file to import. Shared workouts place the workout setup inside the share link, so anyone who receives that link can view and import that workout.</p><h3>Removing your data</h3><p>You can remove local information by clearing the site data for Cornerwork in your browser. If you are signed in, clear workout history and delete synced saved workouts and Studio programs inside Cornerwork before signing out. Clearing only the browser data does not remove information already synced to Firebase.</p><p class="info-updated">Last updated September 16, 2026.</p></div>',
       'info-dialog',
     );
   }
@@ -3110,10 +3115,8 @@
     }
     window.addEventListener('cornerwork-complete', (e) => {
       const selected = read('cornerwork-active-selection', null),
-        detail = { ...e.detail, workoutName: selected?.name || '' },
-        historyData = read('cornerwork-history', []);
-      historyData.unshift(detail);
-      write('cornerwork-history', historyData.slice(0, 500));
+        detail = { ...e.detail, workoutName: selected?.name || '' };
+      api.addWorkoutHistory(detail);
       const active = readSession('cornerwork-active-program');
       if (active) {
         const progress = read('cornerwork-program-progress', {}),
