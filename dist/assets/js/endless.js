@@ -2,7 +2,8 @@
   let api;
   let modeButton;
   let setup;
-  let scoreboard;
+  let points;
+  let pointsDivider;
   let coachingButton;
   let syncTimer = 0;
   let enabled = false;
@@ -33,7 +34,7 @@
 
     buildModeButton(launch);
     buildSetup(launch);
-    buildScoreboard(workoutDisplay);
+    buildPoints(workoutDisplay);
     watchOtherWorkoutTypes(launch);
     syncMode(true);
     window.addEventListener('cornerwork-endless-mode', () => syncMode(true));
@@ -94,15 +95,15 @@
       window.dispatchEvent(new CustomEvent('cornerwork-open-coaching'));
   }
 
-  function buildScoreboard(workoutDisplay) {
-    scoreboard = document.createElement('div');
-    scoreboard.className = 'endless-scoreboard';
-    scoreboard.setAttribute('aria-label', 'Endless run status');
-    scoreboard.innerHTML =
-      '<span>Points<strong id="endlessScore">0</strong></span><span>Level<strong id="endlessLevel">1</strong></span><span>Level time<strong id="endlessLevelTime">1:00</strong></span>';
-    // Keep the Endless-only status inside the existing callout area. Adding it as another
-    // top-level workout row makes the viewport fitter shrink every shared workout element.
-    $('.combo-wrap', workoutDisplay)?.append(scoreboard);
+  function buildPoints(workoutDisplay) {
+    const stats = $('.workout-stats', workoutDisplay);
+    if (!stats) return;
+    pointsDivider = document.createElement('i');
+    pointsDivider.className = 'endless-points-divider';
+    points = document.createElement('span');
+    points.className = 'endless-points';
+    points.innerHTML = 'Points: <strong id="endlessScore">0</strong>';
+    stats.append(pointsDivider, points);
   }
 
   function watchOtherWorkoutTypes(launch) {
@@ -126,7 +127,8 @@
     modeButton.classList.toggle('active', enabled);
     modeButton.setAttribute('aria-pressed', String(enabled));
     setup.setAttribute('aria-hidden', String(!enabled));
-    scoreboard.setAttribute('aria-hidden', String(!enabled));
+    points?.setAttribute('aria-hidden', String(!enabled));
+    pointsDivider?.setAttribute('aria-hidden', String(!enabled));
     ['#restart', '#skip'].forEach((selector) => {
       const control = $(selector);
       if (control) control.disabled = enabled;
@@ -165,9 +167,8 @@
     coachingButton.textContent = api.settings.coachCues
       ? 'On · ' + frequency
       : 'Off · Edit coaching';
-    $('#endlessScore', scoreboard).textContent = String(state.score);
-    $('#endlessLevel', scoreboard).textContent = String(state.round);
-    $('#endlessLevelTime', scoreboard).textContent = fmt(profile.roundTime);
+    const score = $('#endlessScore', points);
+    if (score) score.textContent = String(state.score);
   }
 
   window.addEventListener('pagehide', () => clearInterval(syncTimer));

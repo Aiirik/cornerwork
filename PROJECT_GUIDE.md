@@ -95,10 +95,10 @@ Use these labels consistently in the interface and documentation:
 - Endless reuses the normal Cornerwork workout engine, including speech, sounds, coaching, stance, display settings, pause/resume, Wake Lock, and completion history. Previous- and next-phase controls are hidden and disabled in Endless because levels must be completed in order. Its warm-up uses the normal phase pip, and its level markers use centered `Lvl N` labels. It requires no camera, microphone, pose tracking, recording, or network opponent.
 - Endless uses the standard `Warmup` heading, shows `Endless mode` in the shared phase row before the run begins, and describes its recovery countdown as `Next rest`.
 - On mobile Standard layouts, combo callouts stay visually centered between the top-aligned clock block and the fixed content below it. Callout font scaling preserves that center point. Endless omits its redundant `Endless` summary pill while retaining skill, upcoming move count, and next-rest details.
-- Endless omits the redundant `No finish line` and levels-cleared line below the clock; current level progress remains available in its status board and level timeline.
+- Endless omits the redundant `No finish line` and levels-cleared line below the clock. Current level progress remains available in its level timeline, and points appear in the shared Combos and Moves line without adding another row.
 - Endless offers Basic and Advanced progression. Both add 0:15 work every three levels and 0:05 rest every four levels. Basic uses Basic difficulty for Levels 1–5, Intermediate for 6–11, and Advanced from 12 onward; Advanced uses Basic for 1–2, Intermediate for 3–6, and Advanced from 7 onward. Maximum combination length and callout pace advance on the same three-level cadence as work duration.
 - On mobile Standard layouts, the summary pills, round or level pips, primary controls, and audio note form one shared bottom-anchored footer in every workout mode. The callout area flexes into the remaining middle space, so removing mode-specific text cannot lift the controls.
-- Endless keeps the normal Standard and Compact workout geometry. Its three-part status board lives inside the existing combo/callout area so it cannot resize or shift the shared clock, timeline, summary, and primary controls. Switching workout types also preserves the user's active display layout and sizing preferences.
+- Endless keeps the normal Standard and Compact workout geometry. It does not add a separate status board; only Points are added to the existing workout-stat line. Switching workout types also preserves the user's active display layout and sizing preferences.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
@@ -110,7 +110,7 @@ Use these labels consistently in the interface and documentation:
 - Start/pause, previous phase, next phase, and hold-to-restart controls
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
-- On phones, the round label, countdown, stats, and time-left block use the fixed top-aligned layout shared by Standard and Compact. Clock placement is not user-adjustable, and large clock sizes are capped to the available phone width so the viewport fitter does not add top spacing or shift the timeline and controls.
+- In Standard layout on phones and desktops, the round label, countdown, stats, and time-left block stay top-aligned while the callout area flexes and the footer remains anchored below it. Clock placement is not user-adjustable, and large phone clocks are capped to the available width so the viewport fitter does not add top spacing or shift the timeline and controls.
 - Full round-focus labels wrap to two lines inside timeline pips, with an optional compact abbreviated-label display setting
 
 ### Saving and continuity

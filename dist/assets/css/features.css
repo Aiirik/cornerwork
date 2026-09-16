@@ -224,58 +224,19 @@ body.endless-mode #setup > .endless-setup {
   font-size: 9px;
   line-height: 1.5;
 }
-.endless-scoreboard {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  width: min(520px, 100%);
+.endless-points,
+.endless-points-divider {
   display: none;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  margin: 0 auto;
-  border: 1px solid #343d49;
-  border-radius: 14px;
-  background: #343d49;
 }
-body.endless-mode .endless-scoreboard {
-  display: grid;
+body.endless-mode .endless-points {
+  display: inline;
 }
-body.endless-mode .combo-wrap {
-  position: relative;
-  padding-bottom: 66px;
+body.endless-mode .endless-points-divider {
+  display: block;
 }
-.endless-scoreboard span {
-  min-height: 57px;
-  display: grid;
-  place-content: center;
-  gap: 2px;
-  background: linear-gradient(145deg, #171c24, #0e1218);
-  color: #9fa8b5;
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-align: center;
-  text-transform: uppercase;
-}
-.endless-scoreboard strong {
-  color: #f7f8fa;
-  font-size: 21px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-}
-.endless-scoreboard span:first-child strong {
+.endless-points strong {
   color: var(--red-text);
-}
-body.endless-mode.compact-workout .combo-wrap {
-  padding-bottom: 52px;
-}
-body.endless-mode.compact-workout .endless-scoreboard span {
-  min-height: 44px;
-}
-body.endless-mode.compact-workout .endless-scoreboard strong {
-  font-size: 17px;
+  font-variant-numeric: tabular-nums;
 }
 .endless-level-marker .round-focus-label {
   width: 100%;
@@ -299,17 +260,6 @@ body.endless-mode .workout-left {
 body.endless-mode #restart,
 body.endless-mode #skip {
   display: none !important;
-}
-@media (max-width: 820px) {
-  .endless-scoreboard span {
-    min-height: 48px;
-  }
-  .endless-scoreboard strong {
-    font-size: 18px;
-  }
-  body.endless-mode .combo-wrap {
-    padding-bottom: 56px;
-  }
 }
 @media (max-width: 380px) {
   .endless-progression,
