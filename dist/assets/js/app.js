@@ -421,7 +421,7 @@ import {
     clockSize: 100,
     calloutSize: 100,
     clockFont: 'league',
-    mobileClockLift: 40,
+    mobileClockLift: 0,
   };
   const soundDefaults = {
     warning: {
@@ -452,6 +452,7 @@ import {
     comboCatalogVersion: 3,
     roundStartDefaultV2: true,
     brandLayoutDefaultV2: true,
+    mobileClockPositionV2: true,
     wordSpeechRateScaleV2: true,
     speechGapControlsV2: true,
     trainingMode: 'bag',
@@ -3172,6 +3173,11 @@ import {
         settings.brandLayoutDefaultV2 = true;
         saveSettings();
       }
+      if (!saved.mobileClockPositionV2) {
+        settings.mobileClockLift = 0;
+        settings.mobileClockPositionV2 = true;
+        saveSettings();
+      }
       if (!saved.speechGapControlsV2) {
         settings.numberWordGap = 0;
         settings.wordMoveGap = 90;
@@ -3359,7 +3365,7 @@ import {
   };
   function applyDisplaySizes() {
     if (!clockFonts[settings.clockFont]) settings.clockFont = displayDefaults.clockFont;
-    settings.mobileClockLift = Math.min(60, Math.max(0, Number(settings.mobileClockLift) || 0));
+    settings.mobileClockLift = Math.min(0, Math.max(-60, Number(settings.mobileClockLift) || 0));
     document.documentElement.style.setProperty('--clock-font', clockFonts[settings.clockFont]);
     document.documentElement.style.setProperty('--clock-scale', settings.clockSize / 100);
     document.documentElement.style.setProperty('--callout-scale', settings.calloutSize / 100);
@@ -3369,8 +3375,8 @@ import {
     $('#clockSizeValue').textContent = settings.clockSize + '%';
     $('#mobileClockLift').value = settings.mobileClockLift;
     $('#mobileClockLiftValue').textContent = settings.mobileClockLift
-      ? settings.mobileClockLift + 'px up'
-      : 'Current';
+      ? settings.mobileClockLift + 'px'
+      : 'Default';
     $('#calloutSize').value = settings.calloutSize;
     $('#calloutSizeValue').textContent = settings.calloutSize + '%';
     fitWorkoutToViewport();
@@ -3427,7 +3433,7 @@ import {
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
       content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
       const mobileClockLift = matchMedia('(max-width: 820px)').matches
-        ? -settings.mobileClockLift
+        ? -(60 + settings.mobileClockLift)
         : 0;
       content.style.setProperty('--mobile-clock-lift', mobileClockLift + 'px');
     });

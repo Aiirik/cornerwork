@@ -105,7 +105,7 @@ Use these labels consistently in the interface and documentation:
 - Start/pause, previous phase, next phase, and hold-to-restart controls
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
-- On phones, the round label, countdown, stats, and time-left block can be lifted up to 60 pixels without changing the measured position of callouts, summaries, timelines, or controls. The default lift is 40 pixels and the setting never moves the clock below the original position.
+- On phones, the round label, countdown, stats, and time-left block defaults to 60 pixels above its original position. The display control ranges from Default to -60px, which returns it to the original position without going lower. Standard moves only those clock details; Compact moves its complete clock card so its contents remain inside the card. Neither adjustment participates in viewport fitting or moves the timeline and controls.
 - Full round-focus labels wrap to two lines inside timeline pips, with an optional compact abbreviated-label display setting
 
 ### Saving and continuity

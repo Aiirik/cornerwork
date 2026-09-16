@@ -31,7 +31,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=191" />
+    <link rel="stylesheet" href="assets/css/app.css?v=192" />
   </head>
   <body>
     <main class="app">
@@ -654,8 +654,9 @@
                 ><strong>Clock size:</strong> Makes the main countdown smaller or larger without
                 changing its timing.</span
               ><span
-                ><strong>Mobile clock position:</strong> Moves only the round label, countdown, and
-                clock details upward on phones. The rest of the workout layout stays fixed.</span
+                ><strong>Mobile clock position:</strong> Default places the clock section 60 pixels
+                higher on phones. Move toward -60px to return it to its original lower
+                position.</span
               ><span
                 ><strong>Callout size:</strong> Adjusts the combo text independently from the
                 clock.</span
@@ -742,12 +743,12 @@
               <input
                 id="mobileClockLift"
                 type="range"
-                min="0"
-                max="60"
+                min="-60"
+                max="0"
                 step="5"
-                value="40"
-                aria-label="Move the mobile clock section upward"
-              /><output class="speed-value size-value" id="mobileClockLiftValue">40px up</output>
+                value="0"
+                aria-label="Adjust the mobile clock from its default raised position"
+              /><output class="speed-value size-value" id="mobileClockLiftValue">Default</output>
             </div>
           </div>
           <div class="setting-row">
@@ -1261,7 +1262,7 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=217"></script>
+    <script type="module" src="assets/js/app.js?v=218"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
     <script src="assets/js/bootstrap.js?v=227" defer></script>
   </body>

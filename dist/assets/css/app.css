@@ -2210,6 +2210,15 @@ button *,
   .workout-display > .workout-left {
     transform: translateY(var(--mobile-clock-lift, 0px));
   }
+  body.compact-workout .workout-display {
+    transform: translateY(var(--mobile-clock-lift, 0px));
+  }
+  body.compact-workout .workout-display > .phase,
+  body.compact-workout .workout-display > .timer,
+  body.compact-workout .workout-display > .workout-stats,
+  body.compact-workout .workout-display > .workout-left {
+    transform: none;
+  }
 }
 body.compact-workout .center {
   width: min(1000px, 100%);
