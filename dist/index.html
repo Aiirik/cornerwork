@@ -654,6 +654,10 @@
                 ><strong>Clock size:</strong> Makes the main countdown smaller or larger without
                 changing its timing.</span
               ><span
+                ><strong>Clock position:</strong> Moves the workout display slightly up or down.
+                Mobile starts a little higher automatically, while desktop keeps its current
+                position.</span
+              ><span
                 ><strong>Callout size:</strong> Adjusts the combo text independently from the
                 clock.</span
               ><span
@@ -731,6 +735,20 @@
                 value="100"
                 aria-label="Main clock font size"
               /><output class="speed-value size-value" id="clockSizeValue">100%</output>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span>Clock position</span>
+            <div class="speed-control">
+              <input
+                id="clockOffset"
+                type="range"
+                min="-60"
+                max="60"
+                step="5"
+                value="0"
+                aria-label="Move workout clock up or down"
+              /><output class="speed-value gap-value" id="clockOffsetValue">Default</output>
             </div>
           </div>
           <div class="setting-row">
@@ -1244,8 +1262,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=213"></script>
+    <script type="module" src="assets/js/app.js?v=214"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=227" defer></script>
+    <script src="assets/js/bootstrap.js?v=228" defer></script>
   </body>
 </html>

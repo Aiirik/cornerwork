@@ -417,7 +417,12 @@ import {
     keania: '"Keania One"',
   };
   let iconThemes = new Map([['default', createIconTheme('default')]]);
-  const displayDefaults = { clockSize: 100, calloutSize: 100, clockFont: 'league' };
+  const displayDefaults = {
+    clockSize: 100,
+    clockOffset: 0,
+    calloutSize: 100,
+    clockFont: 'league',
+  };
   const soundDefaults = {
     warning: {
       warningSound: 'wood',
@@ -671,6 +676,7 @@ import {
     'targetGap',
     'wordMoveGap',
     'clockSize',
+    'clockOffset',
     'clockFont',
     'calloutSize',
     'clapperEnabled',
@@ -3354,6 +3360,7 @@ import {
   };
   function applyDisplaySizes() {
     if (!clockFonts[settings.clockFont]) settings.clockFont = displayDefaults.clockFont;
+    settings.clockOffset = Math.min(60, Math.max(-60, Number(settings.clockOffset) || 0));
     document.documentElement.style.setProperty('--clock-font', clockFonts[settings.clockFont]);
     document.documentElement.style.setProperty('--clock-scale', settings.clockSize / 100);
     document.documentElement.style.setProperty('--callout-scale', settings.calloutSize / 100);
@@ -3361,6 +3368,10 @@ import {
     $('#clockFont')._syncCustomSelect?.();
     $('#clockSize').value = settings.clockSize;
     $('#clockSizeValue').textContent = settings.clockSize + '%';
+    $('#clockOffset').value = settings.clockOffset;
+    $('#clockOffsetValue').textContent = settings.clockOffset
+      ? Math.abs(settings.clockOffset) + 'px ' + (settings.clockOffset < 0 ? 'up' : 'down')
+      : 'Default';
     $('#calloutSize').value = settings.calloutSize;
     $('#calloutSizeValue').textContent = settings.calloutSize + '%';
     fitWorkoutToViewport();
@@ -3409,11 +3420,15 @@ import {
         scaledCenterX = transformOriginX + ((left + right) / 2 - transformOriginX) * scale,
         scaledCenterY = transformOriginY + ((top + bottom) / 2 - transformOriginY) * scale,
         shiftX = (visibleLeft + visibleRight) / 2 - scaledCenterX,
-        shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY;
+        shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY,
+        mobileLift = matchMedia('(max-width: 820px)').matches ? -24 : 0,
+        requestedOffset = mobileLift + settings.clockOffset,
+        verticalSlack = Math.max(0, (availableHeight - contentHeight * scale) / 2),
+        safeOffset = Math.max(-verticalSlack, Math.min(verticalSlack, requestedOffset));
       content.style.setProperty('--workout-fit', String(scale));
       content.style.setProperty('--workout-fit-inverse', String(1 / scale));
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
-      content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
+      content.style.setProperty('--workout-shift-y', (shiftY + safeOffset).toFixed(2) + 'px');
     });
   }
   function syncSoundControls(prefix) {
@@ -3632,7 +3647,7 @@ import {
   };
   $('#testComboSpeed').onclick = () =>
     sayCombo([1, 2, 'body 3', 'slip outside', 'step in', 'pivot', 'step out']);
-  ['clockSize', 'calloutSize'].forEach((id) => {
+  ['clockSize', 'clockOffset', 'calloutSize'].forEach((id) => {
     $('#' + id).oninput = () => {
       settings[id] = +$('#' + id).value;
       applyDisplaySizes();
