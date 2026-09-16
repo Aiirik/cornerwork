@@ -58,7 +58,7 @@
   core.defer = true;
   core.addEventListener('load', () => {
     const endless = document.createElement('script');
-    endless.src = 'assets/js/endless.js?v=8';
+    endless.src = 'assets/js/endless.js?v=9';
     endless.defer = true;
     document.head.appendChild(endless);
   });

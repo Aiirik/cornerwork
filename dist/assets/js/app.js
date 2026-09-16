@@ -501,6 +501,7 @@ import {
     highContrast: false,
     endlessMode: false,
     endlessWarmup: 30,
+    endlessDifficulty: 'basic',
     buttonTextBrightness: 98,
     whiteOutlineText: false,
     accentColor: 'red',
@@ -587,18 +588,32 @@ import {
   }
   function endlessLevelProfile(level = round) {
     const currentLevel = Math.max(1, Math.floor(Number(level) || 1)),
-      tier = Math.floor((currentLevel - 1) / 2),
+      workTier = Math.floor((currentLevel - 1) / 3),
+      restTier = Math.floor((currentLevel - 1) / 4),
+      progression = settings.endlessDifficulty === 'advanced' ? 'advanced' : 'basic',
+      skill =
+        progression === 'advanced'
+          ? currentLevel <= 2
+            ? 'basic'
+            : currentLevel <= 6
+              ? 'intermediate'
+              : 'advanced'
+          : currentLevel <= 5
+            ? 'basic'
+            : currentLevel <= 11
+              ? 'intermediate'
+              : 'advanced',
       includeTypes = ['punch'];
     if (currentLevel >= 3) includeTypes.push('body');
     if (currentLevel >= 5) includeTypes.push('defense');
     if (currentLevel >= 7) includeTypes.push('footwork');
     return {
       level: currentLevel,
-      roundTime: Math.min(300, 60 + tier * 15),
-      restTime: Math.min(60, 20 + tier * 5),
-      pace: Math.max(2, 8 - tier),
-      skill: currentLevel <= 2 ? 'basic' : currentLevel <= 5 ? 'intermediate' : 'advanced',
-      maxMoves: Math.min(8, 2 + Math.floor(currentLevel / 2)),
+      roundTime: Math.min(300, 60 + workTier * 15),
+      restTime: Math.min(60, 20 + restTier * 5),
+      pace: Math.max(2, 8 - workTier),
+      skill,
+      maxMoves: Math.min(8, 2 + workTier),
       includeTypes,
     };
   }
@@ -4117,6 +4132,13 @@ import {
       settings.endlessWarmup = Math.min(300, Math.max(0, Math.round(Number(seconds) || 0)));
       saveSettings();
       if (settings.endlessMode && phase === 'ready') resetWorkout();
+    },
+    setEndlessDifficulty(mode) {
+      const next = mode === 'advanced' ? 'advanced' : 'basic';
+      if (next === settings.endlessDifficulty || !['ready', 'complete'].includes(phase)) return;
+      settings.endlessDifficulty = next;
+      saveSettings();
+      if (settings.endlessMode) resetWorkout();
     },
     endEndlessWorkout,
     get presets() {

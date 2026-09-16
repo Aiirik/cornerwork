@@ -96,6 +96,7 @@ Use these labels consistently in the interface and documentation:
 - Endless uses the standard `Warmup` heading, hides the level heading until level work actually begins, and describes its recovery countdown as `Next rest`.
 - On mobile Standard layouts, combo callouts stay visually centered between the raised clock block and the fixed content below it. Callout font scaling preserves that center point. Endless omits its redundant `Endless` summary pill while retaining skill, upcoming move count, and next-rest details.
 - Endless omits the redundant `No finish line` and levels-cleared line below the clock; current level progress remains available in its status board and level timeline.
+- Endless offers Basic and Advanced progression. Both add 0:15 work every three levels and 0:05 rest every four levels. Basic uses Basic difficulty for Levels 1–5, Intermediate for 6–11, and Advanced from 12 onward; Advanced uses Basic for 1–2, Intermediate for 3–6, and Advanced from 7 onward. Maximum combination length and callout pace advance on the same three-level cadence as work duration.
 - Endless keeps the normal Standard and Compact workout geometry. Its three-part status board lives inside the existing combo/callout area so it cannot resize or shift the shared clock, timeline, summary, and primary controls. Switching workout types also preserves the user's active display layout and sizing preferences.
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound

@@ -62,10 +62,11 @@
     setup.className = 'endless-setup';
     setup.innerHTML =
       '<div class="endless-setup-head"><div><h2>Endless</h2><p>Clear levels, earn points, and keep going until you end the run.</p></div><span class="endless-badge">No limit</span></div>' +
+      '<div class="endless-progression field"><div><label>Progression</label><p class="endless-note">Basic builds gradually. Advanced reaches difficult combinations sooner.</p></div><div class="segmented endless-progression-toggle" role="group" aria-label="Endless progression"><button type="button" data-value="basic">Basic</button><button type="button" data-value="advanced">Advanced</button></div></div>' +
       '<div class="endless-warmup field"><div><label for="endlessWarmup">Warm-up</label><p class="endless-note">This is the only adjustable timing setting. Every level after it follows the same progression.</p></div><div class="number-control workout-timing-control"><button class="step-btn" id="endlessWarmupDown" type="button" aria-label="Decrease Endless warm-up">−</button><input class="time-input" id="endlessWarmup" type="text" inputmode="numeric" data-min="0" data-max="300" data-step="5" aria-label="Endless warm-up time"><button class="step-btn" id="endlessWarmupUp" type="button" aria-label="Increase Endless warm-up">+</button></div></div>' +
       '<div class="endless-coaching field"><div><label for="endlessEditCoaching">Voice coach</label><p class="endless-note">Turn on technique reminders and recovery encouragement.</p></div><button class="workout-option-button" id="endlessEditCoaching" type="button">Edit coaching</button></div>' +
       '<div class="endless-next"><span>Current level rules</span><strong id="endlessNextRules"></strong></div>' +
-      '<details class="endless-rules"><summary><span class="endless-rules-title">How difficulty grows</span><i class="collapse-indicator" aria-hidden="true"></i></summary><div class="endless-rules-body"><div class="endless-rule endless-scoring-rule"><b>PTS</b><div><strong>Points per called action</strong><small>Add every action in the combination together.</small><div class="endless-points-grid"><div><span>Jab, cross, feint, defense or movement</span><b>1 point</b></div><div><span>Hook or uppercut</span><b>2 points</b></div><div><span>Any body punch</span><b>+1 bonus</b></div></div></div></div><div class="endless-rule"><b>2</b><div><strong>Longer levels and recovery</strong><small>Every two levels add 0:15 work and 0:05 rest, capped at 5:00 and 1:00.</small></div></div><div class="endless-rule"><b>3</b><div><strong>Random focus levels</strong><small>Most levels mix combinations. Occasionally a level emphasizes one punch or repeats one combination.</small></div></div></div></details>';
+      '<details class="endless-rules"><summary><span class="endless-rules-title">How difficulty grows</span><i class="collapse-indicator" aria-hidden="true"></i></summary><div class="endless-rules-body"><div class="endless-rule endless-scoring-rule"><b>PTS</b><div><strong>Points per called action</strong><small>Add every action in the combination together.</small><div class="endless-points-grid"><div><span>Jab, cross, feint, defense or movement</span><b>1 point</b></div><div><span>Hook or uppercut</span><b>2 points</b></div><div><span>Any body punch</span><b>+1 bonus</b></div></div></div></div><div class="endless-rule"><b>2</b><div><strong>Longer levels and recovery</strong><small>Every three levels add 0:15 work. Every four levels add 0:05 rest, capped at 5:00 and 1:00.</small></div></div><div class="endless-rule"><b>3</b><div><strong>Random focus levels</strong><small>Most levels mix combinations. Occasionally a level emphasizes one punch or repeats one combination.</small></div></div></div></details>';
     launch.insertAdjacentElement('afterend', setup);
 
     const input = $('#endlessWarmup', setup);
@@ -84,6 +85,9 @@
       if (event.key !== 'Enter') return;
       event.preventDefault();
       input.blur();
+    });
+    setup.querySelectorAll('.endless-progression-toggle button').forEach((button) => {
+      button.onclick = () => api.setEndlessDifficulty(button.dataset.value);
     });
     coachingButton = $('#endlessEditCoaching', setup);
     coachingButton.onclick = () =>
@@ -141,6 +145,11 @@
     const profile = api.endlessProfile;
     const input = $('#endlessWarmup', setup);
     if (document.activeElement !== input) input.value = fmt(api.settings.endlessWarmup);
+    setup.querySelectorAll('.endless-progression-toggle button').forEach((button) => {
+      const active = button.dataset.value === api.settings.endlessDifficulty;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
     $('#endlessNextRules', setup).textContent =
       'Level ' +
       profile.level +
