@@ -421,7 +421,6 @@ import {
     clockSize: 100,
     calloutSize: 100,
     clockFont: 'league',
-    mobileClockLift: 0,
   };
   const soundDefaults = {
     warning: {
@@ -452,7 +451,6 @@ import {
     comboCatalogVersion: 3,
     roundStartDefaultV2: true,
     brandLayoutDefaultV2: true,
-    mobileClockPositionV2: true,
     wordSpeechRateScaleV2: true,
     speechGapControlsV2: true,
     trainingMode: 'bag',
@@ -2664,7 +2662,7 @@ import {
           : phase === 'complete'
             ? 'Endless run complete'
             : phase === 'ready'
-              ? ''
+              ? 'Endless mode'
               : 'Level ' + round
       : phase === 'warmup'
         ? 'Warmup'
@@ -3185,9 +3183,9 @@ import {
         settings.brandLayoutDefaultV2 = true;
         saveSettings();
       }
-      if (!saved.mobileClockPositionV2) {
-        settings.mobileClockLift = 0;
-        settings.mobileClockPositionV2 = true;
+      if ('mobileClockLift' in settings || 'mobileClockPositionV2' in settings) {
+        delete settings.mobileClockLift;
+        delete settings.mobileClockPositionV2;
         saveSettings();
       }
       if (!saved.speechGapControlsV2) {
@@ -3377,7 +3375,6 @@ import {
   };
   function applyDisplaySizes() {
     if (!clockFonts[settings.clockFont]) settings.clockFont = displayDefaults.clockFont;
-    settings.mobileClockLift = Math.min(0, Math.max(-60, Number(settings.mobileClockLift) || 0));
     document.documentElement.style.setProperty('--clock-font', clockFonts[settings.clockFont]);
     document.documentElement.style.setProperty('--clock-scale', settings.clockSize / 100);
     document.documentElement.style.setProperty('--callout-scale', settings.calloutSize / 100);
@@ -3385,10 +3382,6 @@ import {
     $('#clockFont')._syncCustomSelect?.();
     $('#clockSize').value = settings.clockSize;
     $('#clockSizeValue').textContent = settings.clockSize + '%';
-    $('#mobileClockLift').value = settings.mobileClockLift;
-    $('#mobileClockLiftValue').textContent = settings.mobileClockLift
-      ? settings.mobileClockLift + 'px'
-      : 'Default';
     $('#calloutSize').value = settings.calloutSize;
     $('#calloutSizeValue').textContent = settings.calloutSize + '%';
     fitWorkoutToViewport();
@@ -3404,9 +3397,6 @@ import {
       content.style.setProperty('--workout-fit-inverse', '1');
       content.style.setProperty('--workout-shift-x', '0px');
       content.style.setProperty('--workout-shift-y', '0px');
-      // Keep this visual-only offset out of the viewport fitter so no surrounding UI shifts.
-      content.style.setProperty('--mobile-clock-lift', '0px');
-      content.style.setProperty('--mobile-callout-lift', '0px');
       const style = getComputedStyle(viewport),
         viewportRect = viewport.getBoundingClientRect(),
         inset = 4,
@@ -3445,11 +3435,6 @@ import {
       content.style.setProperty('--workout-fit-inverse', String(1 / scale));
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
       content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
-      const mobileClockLift = matchMedia('(max-width: 820px)').matches
-        ? -(60 + settings.mobileClockLift)
-        : 0;
-      content.style.setProperty('--mobile-clock-lift', mobileClockLift + 'px');
-      content.style.setProperty('--mobile-callout-lift', mobileClockLift / 2 + 'px');
     });
   }
   function syncSoundControls(prefix) {
@@ -3668,7 +3653,7 @@ import {
   };
   $('#testComboSpeed').onclick = () =>
     sayCombo([1, 2, 'body 3', 'slip outside', 'step in', 'pivot', 'step out']);
-  ['clockSize', 'mobileClockLift', 'calloutSize'].forEach((id) => {
+  ['clockSize', 'calloutSize'].forEach((id) => {
     $('#' + id).oninput = () => {
       settings[id] = +$('#' + id).value;
       applyDisplaySizes();

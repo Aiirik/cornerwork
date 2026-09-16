@@ -2221,25 +2221,6 @@ button *,
     display: block;
     flex: 0 0 auto;
   }
-  .workout-display > .phase,
-  .workout-display > .timer,
-  .workout-display > .workout-stats,
-  .workout-display > .workout-left {
-    transform: translateY(var(--mobile-clock-lift, 0px));
-  }
-  body:not(.compact-workout) .combo-wrap > .combo,
-  body:not(.compact-workout) .combo-wrap > .combo-numbers {
-    transform: translateY(var(--mobile-callout-lift, 0px));
-  }
-  body.compact-workout .workout-display {
-    transform: translateY(var(--mobile-clock-lift, 0px));
-  }
-  body.compact-workout .workout-display > .phase,
-  body.compact-workout .workout-display > .timer,
-  body.compact-workout .workout-display > .workout-stats,
-  body.compact-workout .workout-display > .workout-left {
-    transform: none;
-  }
 }
 body.compact-workout .center {
   width: min(1000px, 100%);
