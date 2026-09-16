@@ -2733,7 +2733,6 @@ import {
     const profile = endlessLevelProfile(),
       summary = settings.endlessMode
         ? [
-            'Endless',
             profile.skill,
             'Up to ' + profile.maxMoves + ' moves',
             fmt(profile.restTime) + ' next rest',
@@ -3396,6 +3395,7 @@ import {
       content.style.setProperty('--workout-shift-y', '0px');
       // Keep this visual-only offset out of the viewport fitter so no surrounding UI shifts.
       content.style.setProperty('--mobile-clock-lift', '0px');
+      content.style.setProperty('--mobile-callout-lift', '0px');
       const style = getComputedStyle(viewport),
         viewportRect = viewport.getBoundingClientRect(),
         inset = 4,
@@ -3438,6 +3438,7 @@ import {
         ? -(60 + settings.mobileClockLift)
         : 0;
       content.style.setProperty('--mobile-clock-lift', mobileClockLift + 'px');
+      content.style.setProperty('--mobile-callout-lift', mobileClockLift / 2 + 'px');
     });
   }
   function syncSoundControls(prefix) {

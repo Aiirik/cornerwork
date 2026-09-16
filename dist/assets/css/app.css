@@ -2210,6 +2210,10 @@ button *,
   .workout-display > .workout-left {
     transform: translateY(var(--mobile-clock-lift, 0px));
   }
+  body:not(.compact-workout) .combo-wrap > .combo,
+  body:not(.compact-workout) .combo-wrap > .combo-numbers {
+    transform: translateY(var(--mobile-callout-lift, 0px));
+  }
   body.compact-workout .workout-display {
     transform: translateY(var(--mobile-clock-lift, 0px));
   }
