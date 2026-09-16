@@ -1206,8 +1206,10 @@ body.circular-header-icon .icon-picker-preview img {
     bottom: 14px;
   }
   .topbar {
+    position: relative;
     align-items: center;
     justify-content: flex-start;
+    min-height: clamp(40px, 13vw, 55px);
     padding-bottom: 10px;
     gap: 6px;
   }
@@ -1216,12 +1218,17 @@ body.circular-header-icon .icon-picker-preview img {
   }
   .topbar .brand {
     order: 2;
-    flex: 0 1 auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    flex: 0 0 auto;
     min-width: 0;
-    margin-right: auto;
+    margin: 0;
+    transform: translate(-50%, -50%);
   }
   .topbar .volume-control {
     order: 3;
+    margin-left: auto;
   }
   .topbar .settings-btn {
     order: 4;
