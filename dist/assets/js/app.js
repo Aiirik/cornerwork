@@ -2613,14 +2613,10 @@ import {
     $('#comboTotal').textContent = comboTotal;
     $('#moveTotal').textContent = moveTotal;
     $('#workoutLeft').textContent = settings.endlessMode
-      ? 'No finish line · ' +
-        endlessLevelsCompleted +
-        ' level' +
-        (endlessLevelsCompleted === 1 ? '' : 's') +
-        ' cleared'
+      ? ''
       : 'Workout time left: ' + totalFmt(workoutRemaining());
     $('#workoutLeft').style.display =
-      settings.endlessMode || settings.showTimeLeft ? 'block' : 'none';
+      !settings.endlessMode && settings.showTimeLeft ? 'block' : 'none';
     const warmup = val('warmupTime'),
       work = val('rounds') * val('roundTime'),
       rest = restTotal(),
