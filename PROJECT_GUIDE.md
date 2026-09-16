@@ -105,7 +105,6 @@ Use these labels consistently in the interface and documentation:
 - Start/pause, previous phase, next phase, and hold-to-restart controls
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
-- On mobile, the main countdown receives a fixed visual 40 px upward lift. The viewport fitter measures the unshifted timer first, so this lift cannot reposition or resize the surrounding workout interface. Desktop remains unchanged.
 - Full round-focus labels wrap to two lines inside timeline pips, with an optional compact abbreviated-label display setting
 
 ### Saving and continuity

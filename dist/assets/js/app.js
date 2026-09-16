@@ -3370,16 +3370,12 @@ import {
     cancelAnimationFrame(workoutFitFrame);
     workoutFitFrame = requestAnimationFrame(() => {
       const viewport = $('.workout'),
-        content = $('.center'),
-        timer = $('#timer');
-      if (!viewport || !content || !timer) return;
+        content = $('.center');
+      if (!viewport || !content) return;
       content.style.setProperty('--workout-fit', '1');
       content.style.setProperty('--workout-fit-inverse', '1');
       content.style.setProperty('--workout-shift-x', '0px');
       content.style.setProperty('--workout-shift-y', '0px');
-      // The mobile clock lift is visual only. Remove it while measuring so it cannot move,
-      // resize, or re-center any of the surrounding workout interface.
-      timer.style.transform = 'translateY(0px)';
       const style = getComputedStyle(viewport),
         viewportRect = viewport.getBoundingClientRect(),
         inset = 4,
@@ -3418,7 +3414,6 @@ import {
       content.style.setProperty('--workout-fit-inverse', String(1 / scale));
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
       content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
-      timer.style.removeProperty('transform');
     });
   }
   function syncSoundControls(prefix) {
