@@ -2997,12 +2997,26 @@
     setSetupMode(read('cornerwork-setup-mode', 'custom'));
     $('#customWorkout').onclick = () => {
       const saved = read('cornerwork-custom-workout', null);
+      const currentDisplay = Object.fromEntries(
+        [
+          'displayMode',
+          'compactRoundLabels',
+          'clockSize',
+          'clockFont',
+          'calloutSize',
+          'highContrast',
+        ]
+          .filter((key) => key in api.settings)
+          .map((key) => [key, api.settings[key]]),
+      );
       write('cornerwork-setup-mode', 'custom');
       localStorage.removeItem('cornerwork-active-selection');
       sessionStorage.removeItem('cornerwork-active-program');
       selectionCard.classList.add('hidden-feature');
       setSetupMode('custom');
-      if (saved) api.applyConfig(saved, { reload: false });
+      // Display preferences belong to the app view, not a workout type. Keep the active layout
+      // when returning from Endless or another preset instead of restoring an older snapshot.
+      if (saved) api.applyConfig({ ...saved, ...currentDisplay }, { reload: false });
     };
     $('#quickStart').onclick = () => open(quick);
     $('#programStudio').onclick = () => studio.openLibrary();

@@ -54,11 +54,11 @@
     document.addEventListener('DOMContentLoaded', addAccessibilitySetting, { once: true });
   else addAccessibilitySetting();
   const core = document.createElement('script');
-  core.src = 'assets/js/enhancements.js?v=226';
+  core.src = 'assets/js/enhancements.js?v=227';
   core.defer = true;
   core.addEventListener('load', () => {
     const endless = document.createElement('script');
-    endless.src = 'assets/js/endless.js?v=7';
+    endless.src = 'assets/js/endless.js?v=8';
     endless.defer = true;
     document.head.appendChild(endless);
   });

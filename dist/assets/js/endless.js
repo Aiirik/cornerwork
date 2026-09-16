@@ -96,7 +96,9 @@
     scoreboard.setAttribute('aria-label', 'Endless run status');
     scoreboard.innerHTML =
       '<span>Points<strong id="endlessScore">0</strong></span><span>Level<strong id="endlessLevel">1</strong></span><span>Level time<strong id="endlessLevelTime">1:00</strong></span>';
-    $('#workoutLeft', workoutDisplay)?.insertAdjacentElement('afterend', scoreboard);
+    // Keep the Endless-only status inside the existing callout area. Adding it as another
+    // top-level workout row makes the viewport fitter shrink every shared workout element.
+    $('.combo-wrap', workoutDisplay)?.append(scoreboard);
   }
 
   function watchOtherWorkoutTypes(launch) {

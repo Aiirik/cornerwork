@@ -217,18 +217,26 @@ body.endless-mode #setup > .endless-setup {
   line-height: 1.5;
 }
 .endless-scoreboard {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: min(520px, 100%);
   display: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
-  margin: 9px auto 2px;
+  margin: 0 auto;
   border: 1px solid #343d49;
   border-radius: 14px;
   background: #343d49;
 }
 body.endless-mode .endless-scoreboard {
   display: grid;
+}
+body.endless-mode .combo-wrap {
+  position: relative;
+  padding-bottom: 66px;
 }
 .endless-scoreboard span {
   min-height: 57px;
@@ -252,8 +260,14 @@ body.endless-mode .endless-scoreboard {
 .endless-scoreboard span:first-child strong {
   color: var(--red-text);
 }
-body.endless-mode.compact-workout .endless-scoreboard {
-  grid-column: 1 / -1;
+body.endless-mode.compact-workout .combo-wrap {
+  padding-bottom: 52px;
+}
+body.endless-mode.compact-workout .endless-scoreboard span {
+  min-height: 44px;
+}
+body.endless-mode.compact-workout .endless-scoreboard strong {
+  font-size: 17px;
 }
 .endless-level-marker .round-focus-label {
   width: 100%;
@@ -279,14 +293,14 @@ body.endless-mode #skip {
   display: none !important;
 }
 @media (max-width: 820px) {
-  .endless-scoreboard {
-    margin-top: 5px;
-  }
   .endless-scoreboard span {
     min-height: 48px;
   }
   .endless-scoreboard strong {
     font-size: 18px;
+  }
+  body.endless-mode .combo-wrap {
+    padding-bottom: 56px;
   }
 }
 @media (max-width: 380px) {
