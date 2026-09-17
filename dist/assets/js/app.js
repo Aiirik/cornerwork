@@ -1224,7 +1224,7 @@ import {
       });
       userDataCloudRetryBlocked = false;
       cloudStatus(
-        'All workout data and progress synced',
+        'All data synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1253,7 +1253,7 @@ import {
         updatedAt: preset.updatedAt || Date.now(),
       });
       cloudStatus(
-        'All workout data and progress synced',
+        'All data synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1275,7 +1275,7 @@ import {
         updatedAt: Date.now(),
       });
       cloudStatus(
-        'All workout data and progress synced',
+        'All data synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1307,7 +1307,7 @@ import {
       });
       historyCloudRetryBlocked = false;
       cloudStatus(
-        'All workout data and progress synced',
+        'All data synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1344,7 +1344,7 @@ import {
       });
       studioCloudRetryBlocked = false;
       cloudStatus(
-        'All workout data and progress synced',
+        'All data synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1449,7 +1449,7 @@ import {
           !needsUserDataSync
         )
           cloudStatus(
-            'All workout data and progress synced',
+            'All data synced',
             user.email || 'Google account connected',
           );
         pendingPresets.forEach(savePresetToCloud);
