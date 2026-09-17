@@ -25,3 +25,13 @@ Cornerwork is a static web application hosted exclusively on GitHub Pages.
 - Preserve the established Cornerwork dark boxing-gym interface.
 - Keep desktop behavior stable when making mobile-specific changes.
 - Preserve browser-local settings and Firebase workout syncing unless a request explicitly changes them.
+
+## Voice changes
+
+- Cornerwork's bundled coaches are generated assets, not browser speech voices. When adding or
+  changing any spoken move, announcement, cue, focus, drill instruction, or other callout, update
+  `.github/scripts/voice-lines.mjs`, run `npm run voice:generate`, and run
+  `npm run voice:check`.
+- Follow `dist/assets/voices/README.md` for the complete regeneration and testing workflow.
+- Keep the Device voice option and its automatic fallback so an unrecognized bundled line is never
+  silently skipped.

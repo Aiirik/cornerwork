@@ -819,6 +819,12 @@
               <span
                 ><strong>Voice callouts:</strong> Turns spoken coach instructions on or off.</span
               ><span
+                ><strong>Voice type:</strong> Uses the same clear Cornerwork coach on every device,
+                or your device's built-in speech system.</span
+              ><span
+                ><strong>Coach voice:</strong> Chooses a packaged Cornerwork coach. Device voice
+                lists the English voices installed on this device.</span
+              ><span
                 ><strong>Number speed:</strong> Changes how quickly punch numbers are spoken.</span
               ><span
                 ><strong>Word speed:</strong> Changes how quickly separate actions such as slip,
@@ -863,6 +869,26 @@
             >
               <i></i>
             </button>
+          </div>
+          <div class="setting-row">
+            <span>Voice type</span
+            ><select id="voiceSource" aria-label="Voice type">
+              <option value="bundled">Cornerwork voice</option>
+              <option value="device">Device voice</option>
+            </select>
+          </div>
+          <div class="setting-row" id="bundledVoiceRow">
+            <span>Coach voice</span
+            ><select id="bundledVoice" aria-label="Cornerwork coach voice">
+              <option value="bella">Bella</option>
+              <option value="michael">Michael</option>
+            </select>
+          </div>
+          <div class="setting-row hidden" id="deviceVoiceRow">
+            <span>Device voice</span
+            ><select id="deviceVoice" aria-label="Device voice">
+              <option value="">Device default</option>
+            </select>
           </div>
           <div class="setting-row">
             <span>Number speed</span>
@@ -1252,8 +1278,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=228"></script>
+    <script type="module" src="assets/js/app.js?v=229"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=235" defer></script>
+    <script src="assets/js/bootstrap.js?v=236" defer></script>
   </body>
 </html>

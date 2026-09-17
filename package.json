@@ -1,0 +1,12 @@
+{
+  "name": "cornerwork-maintenance",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "voice:generate": "node .github/scripts/generate-voice-packs.mjs",
+    "voice:check": "node .github/scripts/validate-voice-packs.mjs"
+  },
+  "devDependencies": {
+    "kokoro-js": "1.2.1"
+  }
+}

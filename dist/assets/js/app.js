@@ -19,6 +19,7 @@ import {
   loadIconThemes,
   renderIconThemeOptions,
 } from './icon-themes.js?v=186';
+import { createVoiceEngine } from './voice-engine.js?v=229';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
@@ -486,6 +487,9 @@ import {
     sidebarShortcuts: false,
     showFullscreen: false,
     voice: true,
+    voiceSource: 'bundled',
+    bundledVoice: 'bella',
+    deviceVoice: '',
     speechRate: 5,
     wordSpeechRate: 5,
     targetGap: 0,
@@ -1251,12 +1255,7 @@ import {
     };
   }
   function normalizeCloudBundle(value = {}) {
-    const presetState = mergePresetState(
-      value.presets,
-      value.presetDeletions,
-      [],
-      {},
-    );
+    const presetState = mergePresetState(value.presets, value.presetDeletions, [], {});
     return {
       schemaVersion: 2,
       presets: presetState.presets,
@@ -1319,7 +1318,9 @@ import {
     return JSON.stringify(value);
   }
   function sameCloudBundle(left, right) {
-    return stableStringify(normalizeCloudBundle(left)) === stableStringify(normalizeCloudBundle(right));
+    return (
+      stableStringify(normalizeCloudBundle(left)) === stableStringify(normalizeCloudBundle(right))
+    );
   }
   function applyCloudBundle(bundle) {
     const normalized = normalizeCloudBundle(bundle);
@@ -2146,7 +2147,7 @@ import {
           : modeCues,
       probability =
         { off: 0, occasional: 0.2, balanced: 0.4, often: 0.65 }[settings.movementBetween] || 0,
-      canSpeak = isOn('voice') && settings.volume > 0 && 'speechSynthesis' in window,
+      canSpeak = speechAvailable(),
       movement =
         canSpeak && sessionRandom() < probability
           ? movementCues[Math.floor(sessionRandom() * movementCues.length)]
@@ -2411,26 +2412,65 @@ import {
     if (phase === 'work') return time + (rounds - round) * roundTime + restTotal(round, rounds - 1);
     return time + (rounds - round) * roundTime + restTotal(round + 1, rounds - 1);
   }
+  function speechAvailable() {
+    return (
+      isOn('voice') &&
+      settings.volume > 0 &&
+      (settings.voiceSource === 'bundled' || 'speechSynthesis' in window)
+    );
+  }
+  function availableDeviceVoices() {
+    if (!('speechSynthesis' in window)) return [];
+    return speechSynthesis
+      .getVoices()
+      .filter((voice) => !voice.lang || /^en\b/i.test(voice.lang))
+      .sort((a, b) => {
+        const localDifference = Number(b.localService) - Number(a.localService);
+        return localDifference || a.name.localeCompare(b.name);
+      });
+  }
+  function speakDeviceUtterance(text, onend, rate = 0.95) {
+    if (!speechAvailable() || !('speechSynthesis' in window)) {
+      onend?.();
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text),
+      selected = settings.deviceVoice
+        ? availableDeviceVoices().find((voice) => voice.voiceURI === settings.deviceVoice)
+        : null;
+    if (selected) {
+      utterance.voice = selected;
+      utterance.lang = selected.lang;
+    }
+    utterance.rate = appleMobile ? Math.max(0.5, rate * 0.82) : rate;
+    utterance.pitch = 0.88;
+    utterance.volume = settings.volume / 100;
+    if (onend) {
+      utterance.onend = onend;
+      utterance.onerror = onend;
+    }
+    speechSynthesis.speak(utterance);
+  }
+  const bundledSpeech = createVoiceEngine({
+    getContext: audioEngine,
+    getVolume: () => settings.volume,
+    getVoiceId: () => settings.bundledVoice,
+    fallback: speakDeviceUtterance,
+  });
   function cancelSpeech() {
     speechSequence++;
     speechTimers.forEach(clearTimeout);
     speechTimers = [];
+    bundledSpeech.cancel();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
   function speakUtterance(text, onend, rate = 0.95) {
-    if (!isOn('voice') || settings.volume <= 0 || !('speechSynthesis' in window)) {
+    if (!speechAvailable()) {
       onend?.();
       return;
     }
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = appleMobile ? Math.max(0.5, rate * 0.82) : rate;
-    u.pitch = 0.88;
-    u.volume = settings.volume / 100;
-    if (onend) {
-      u.onend = onend;
-      u.onerror = onend;
-    }
-    speechSynthesis.speak(u);
+    if (settings.voiceSource === 'bundled') bundledSpeech.speak(text, { onend, rate });
+    else speakDeviceUtterance(text, onend, rate);
   }
   function say(text, onend) {
     cancelSpeech();
@@ -2521,7 +2561,7 @@ import {
       resume = () => {
         if (running && phase === 'work') newCombo(true);
       };
-    if (!isOn('voice') || settings.volume <= 0 || !('speechSynthesis' in window)) resume();
+    if (!speechAvailable()) resume();
     else say(label, resume);
     render();
   }
@@ -2550,7 +2590,7 @@ import {
     roundAnnouncementActive = true;
     comboVisible = false;
     renderCombo();
-    if (!isOn('voice') || settings.volume <= 0 || !('speechSynthesis' in window)) {
+    if (!speechAvailable()) {
       finishRoundAnnouncement();
       return;
     }
@@ -3203,8 +3243,7 @@ import {
           comboTick = setInterval(() => newCombo(true), 2000);
         }
       };
-      if (isOn('voice') && settings.volume > 0 && 'speechSynthesis' in window)
-        say('Punch out', beginBurst);
+      if (speechAvailable()) say('Punch out', beginBurst);
       else beginBurst();
       vibrate([80, 40, 80, 40, 120]);
     }
@@ -3214,8 +3253,7 @@ import {
       const endBurst = () => {
         if (running && phase === 'work') beginComboCadence();
       };
-      if (isOn('voice') && settings.volume > 0 && 'speechSynthesis' in window)
-        say('Back to boxing', endBurst);
+      if (speechAvailable()) say('Back to boxing', endBurst);
       else endBurst();
     }
     if (phase === 'work' && time > 0 && settings.clapperEnabled && time === +settings.clapperTime) {
@@ -3714,7 +3752,39 @@ import {
     if (decayKey in settings)
       $('#' + prefix + 'DecayValue').textContent = (settings[decayKey] / 1000).toFixed(1) + ' sec';
   }
+  function refreshDeviceVoiceOptions() {
+    const select = $('#deviceVoice');
+    if (!select) return;
+    const voices = availableDeviceVoices(),
+      defaultOption = new Option('Device default', '');
+    select.replaceChildren(defaultOption);
+    voices.forEach((voice) => {
+      const suffix = voice.lang ? ` (${voice.lang})` : '';
+      select.add(new Option(voice.name + suffix, voice.voiceURI));
+    });
+    select.value = voices.some((voice) => voice.voiceURI === settings.deviceVoice)
+      ? settings.deviceVoice
+      : '';
+    select._syncCustomSelect?.();
+  }
+  function syncVoiceControls() {
+    settings.voiceSource = settings.voiceSource === 'device' ? 'device' : 'bundled';
+    settings.bundledVoice = settings.bundledVoice === 'michael' ? 'michael' : 'bella';
+    $('#voiceSource').value = settings.voiceSource;
+    $('#bundledVoice').value = settings.bundledVoice;
+    $('#bundledVoiceRow').classList.toggle('hidden', settings.voiceSource === 'device');
+    $('#deviceVoiceRow').classList.toggle('hidden', settings.voiceSource !== 'device');
+    $('#voiceSource')._syncCustomSelect?.();
+    $('#bundledVoice')._syncCustomSelect?.();
+    refreshDeviceVoiceOptions();
+    if (settings.voiceSource !== 'device') bundledSpeech.prepare(settings.bundledVoice);
+  }
   const targetGapLabels = ['Tight', 'Light', 'Clear', 'Extra'];
+  syncVoiceControls();
+  if ('speechSynthesis' in window) {
+    speechSynthesis.addEventListener?.('voiceschanged', refreshDeviceVoiceOptions);
+    setTimeout(refreshDeviceVoiceOptions, 0);
+  }
   $('#speechRate').value = settings.speechRate;
   $('#speechRateValue').textContent = settings.speechRate;
   $('#wordSpeechRate').value = settings.wordSpeechRate;
@@ -3893,6 +3963,23 @@ import {
   $('#speechRate').oninput = () => {
     settings.speechRate = +$('#speechRate').value;
     $('#speechRateValue').textContent = settings.speechRate;
+    saveSettings();
+  };
+  $('#voiceSource').onchange = () => {
+    cancelSpeech();
+    settings.voiceSource = $('#voiceSource').value === 'device' ? 'device' : 'bundled';
+    syncVoiceControls();
+    saveSettings();
+  };
+  $('#bundledVoice').onchange = () => {
+    cancelSpeech();
+    settings.bundledVoice = $('#bundledVoice').value === 'michael' ? 'michael' : 'bella';
+    bundledSpeech.prepare(settings.bundledVoice);
+    saveSettings();
+  };
+  $('#deviceVoice').onchange = () => {
+    cancelSpeech();
+    settings.deviceVoice = $('#deviceVoice').value;
     saveSettings();
   };
   $('#wordSpeechRate').oninput = () => {
