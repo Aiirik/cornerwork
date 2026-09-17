@@ -8,7 +8,6 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {
   collection,
-  deleteDoc,
   doc,
   getFirestore,
   onSnapshot,
@@ -749,16 +748,10 @@ import {
     cloudReady = false,
     cloudUnsubscribe = null,
     googleButtonReady = false,
-    studioCloudWritePending = false,
-    studioCloudRetryBlocked = false,
-    studioCloudQueuedState = null,
-    historyCloudWritePending = false,
-    historyCloudRetryBlocked = false,
-    historyCloudQueuedState = null,
-    userDataCloudWritePending = false,
-    userDataCloudRetryBlocked = false,
-    userDataCloudQueuedState = null;
-  const cloudDeletes = new Set(),
+    cloudWritePending = false,
+    cloudWriteQueued = false,
+    cloudRetryTimer = null;
+  const syncDocument = 'cornerwork-sync',
     programProgressDocument = '__program_progress__',
     workoutHistoryDocument = '__workout_history__',
     studioProgramsDocument = 'cornerwork-studio-programs',
@@ -771,7 +764,8 @@ import {
     customCombosKey = 'cornerwork-custom-combos',
     programVariationsKey = 'cornerwork-program-variations',
     customWorkoutKey = 'cornerwork-custom-workout',
-    userDataMetaKey = 'cornerwork-user-data-meta';
+    userDataMetaKey = 'cornerwork-user-data-meta',
+    presetDeletionsKey = 'cornerwork-preset-deletions';
   function workoutSnapshot() {
     const config = {};
     presetFields.forEach((k) => (config[k] = settings[k]));
@@ -1202,39 +1196,146 @@ import {
     if (syncNow) saveUserDataToCloud(saved, true);
     return saved;
   }
-  async function saveUserDataToCloud(state, force = false) {
-    if (!cloudUser || !db) return;
-    userDataCloudQueuedState = mergeUserData(state, {});
-    if (force) userDataCloudRetryBlocked = false;
-    if (userDataCloudWritePending || userDataCloudRetryBlocked) return;
-    userDataCloudWritePending = true;
-    const normalized = userDataCloudQueuedState;
-    userDataCloudQueuedState = null;
+  function normalizePresetDeletions(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value)
+        .map(([id, timestamp]) => [String(id), Math.max(0, Number(timestamp) || 0)])
+        .filter(([, timestamp]) => timestamp > 0)
+        .sort((left, right) => right[1] - left[1])
+        .slice(0, 1000),
+    );
+  }
+  function readPresetDeletionsLocal() {
+    return normalizePresetDeletions(readJsonLocal(presetDeletionsKey, {}));
+  }
+  function savePresetDeletionsLocal(value) {
+    const normalized = normalizePresetDeletions(value);
     try {
-      await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', userDataDocument), {
-        name: 'Cornerwork user data',
-        config: {
-          type: 'user-data',
-          formatVersion: 1,
-          payload: JSON.stringify(normalized),
-        },
-        note: '',
-        favorite: false,
-        updatedAt: Date.now(),
-      });
-      userDataCloudRetryBlocked = false;
-      cloudStatus(
-        'All data synced',
-        cloudUser.email || 'Google account connected',
-      );
+      localStorage.setItem(presetDeletionsKey, JSON.stringify(normalized));
+    } catch (e) {}
+    return normalized;
+  }
+  function normalizeSyncedPresets(value) {
+    if (!Array.isArray(value)) return [];
+    return value
+      .filter((preset) => preset && preset.id && preset.name && preset.config)
+      .map((preset) => ({
+        ...preset,
+        id: String(preset.id),
+        name: String(preset.name).slice(0, 80),
+        updatedAt: Math.max(0, Number(preset.updatedAt) || 0),
+      }));
+  }
+  function mergePresetState(localPresets, localDeletions, remotePresets, remoteDeletions) {
+    const deletions = { ...normalizePresetDeletions(localDeletions) };
+    Object.entries(normalizePresetDeletions(remoteDeletions)).forEach(([id, timestamp]) => {
+      deletions[id] = Math.max(deletions[id] || 0, timestamp);
+    });
+    const merged = new Map();
+    [...normalizeSyncedPresets(remotePresets), ...normalizeSyncedPresets(localPresets)].forEach(
+      (preset) => {
+        const current = merged.get(preset.id);
+        if (!current || preset.updatedAt >= current.updatedAt) merged.set(preset.id, preset);
+      },
+    );
+    return {
+      presets: [...merged.values()]
+        .filter((preset) => !deletions[preset.id] || deletions[preset.id] < preset.updatedAt)
+        .sort(
+          (left, right) =>
+            Number(Boolean(right.favorite)) - Number(Boolean(left.favorite)) ||
+            right.updatedAt - left.updatedAt,
+        ),
+      deletions,
+    };
+  }
+  function normalizeCloudBundle(value = {}) {
+    const presetState = mergePresetState(
+      value.presets,
+      value.presetDeletions,
+      [],
+      {},
+    );
+    return {
+      schemaVersion: 2,
+      presets: presetState.presets,
+      presetDeletions: presetState.deletions,
+      progress: normalizeProgramProgress(value.progress),
+      history: mergeHistoryState(value.history, {}),
+      studio: mergeStudioState(value.studio, {}),
+      userData: normalizeUserData(value.userData),
+    };
+  }
+  function readCloudBundle(value) {
+    const payload = value?.config?.payload ?? value?.payload;
+    if (typeof payload !== 'string') return null;
+    try {
+      const parsed = JSON.parse(payload);
+      return Number(parsed?.schemaVersion) >= 2 ? normalizeCloudBundle(parsed) : null;
     } catch (e) {
-      userDataCloudRetryBlocked = true;
-      cloudStatus('Data saved on this device', 'Cloud data sync is unavailable', true);
-    } finally {
-      userDataCloudWritePending = false;
-      if (userDataCloudQueuedState && !userDataCloudRetryBlocked)
-        saveUserDataToCloud(userDataCloudQueuedState);
+      return null;
     }
+  }
+  function readLocalCloudBundle() {
+    return normalizeCloudBundle({
+      presets,
+      presetDeletions: readPresetDeletionsLocal(),
+      progress: readProgramProgressLocal(),
+      history: readHistoryStateLocal(),
+      studio: readStudioStateLocal(),
+      userData: readUserDataLocal(),
+    });
+  }
+  function mergeCloudBundles(local, remote) {
+    local = normalizeCloudBundle(local);
+    remote = normalizeCloudBundle(remote);
+    const presetState = mergePresetState(
+      local.presets,
+      local.presetDeletions,
+      remote.presets,
+      remote.presetDeletions,
+    );
+    return normalizeCloudBundle({
+      presets: presetState.presets,
+      presetDeletions: presetState.deletions,
+      progress: mergeProgramProgress(local.progress, remote.progress),
+      history: mergeHistoryState(local.history, remote.history),
+      studio: mergeStudioState(local.studio, remote.studio),
+      userData: mergeUserData(local.userData, remote.userData),
+    });
+  }
+  function stableStringify(value) {
+    if (Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
+    if (value && typeof value === 'object')
+      return (
+        '{' +
+        Object.keys(value)
+          .sort()
+          .map((key) => JSON.stringify(key) + ':' + stableStringify(value[key]))
+          .join(',') +
+        '}'
+      );
+    return JSON.stringify(value);
+  }
+  function sameCloudBundle(left, right) {
+    return stableStringify(normalizeCloudBundle(left)) === stableStringify(normalizeCloudBundle(right));
+  }
+  function applyCloudBundle(bundle) {
+    const normalized = normalizeCloudBundle(bundle);
+    presets = normalized.presets;
+    sortPresets();
+    savePresets();
+    savePresetDeletionsLocal(normalized.presetDeletions);
+    renderPresets();
+    saveProgramProgressLocal(normalized.progress);
+    saveHistoryStateLocal(normalized.history);
+    saveStudioStateLocal(normalized.studio);
+    saveUserDataLocal(normalized.userData);
+    window.dispatchEvent(
+      new CustomEvent('cornerwork-program-progress-sync', { detail: normalized.progress }),
+    );
+    return normalized;
   }
   function cloudStatus(title, detail, error = false) {
     const el = $('#cloudStatus');
@@ -1242,231 +1343,138 @@ import {
     $('#cloudAccount').classList.toggle('connected', !!cloudUser && !error);
     el.innerHTML = '<strong>' + safeText(title) + '</strong>' + safeText(detail);
   }
-  async function savePresetToCloud(preset) {
+  function queueCloudSync() {
     if (!cloudUser || !db) return;
-    try {
-      await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', preset.id), {
-        name: preset.name,
-        config: preset.config,
-        note: preset.note || '',
-        favorite: !!preset.favorite,
-        updatedAt: preset.updatedAt || Date.now(),
-      });
-      cloudStatus(
-        'All data synced',
-        cloudUser.email || 'Google account connected',
-      );
-    } catch (e) {
-      cloudStatus('Sync needs setup', 'Check Firebase configuration', true);
-    }
+    cloudWriteQueued = true;
+    if (cloudReady) flushCloudSync();
   }
-  async function saveProgramProgressToCloud(progress) {
-    if (!cloudUser || !db) return;
+  async function flushCloudSync() {
+    if (
+      !cloudUser ||
+      !db ||
+      !cloudReady ||
+      cloudWritePending ||
+      cloudRetryTimer ||
+      !cloudWriteQueued
+    )
+      return;
+    cloudWritePending = true;
+    cloudWriteQueued = false;
+    const user = cloudUser,
+      bundle = readLocalCloudBundle();
     try {
-      await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', programProgressDocument), {
-        name: 'Cornerwork program progress',
+      await setDoc(doc(db, 'users', user.uid, 'workouts', syncDocument), {
+        name: 'Cornerwork synced data',
         config: {
-          type: 'program-progress',
-          formatVersion: 1,
-          payload: JSON.stringify({ progress: normalizeProgramProgress(progress) }),
+          type: 'cornerwork-sync',
+          formatVersion: 2,
+          payload: JSON.stringify(bundle),
         },
         note: '',
         favorite: false,
         updatedAt: Date.now(),
       });
-      cloudStatus(
-        'All data synced',
-        cloudUser.email || 'Google account connected',
-      );
-    } catch (e) {
-      cloudStatus('Progress saved on this device', 'Cloud progress sync is unavailable', true);
+      clearTimeout(cloudRetryTimer);
+      cloudRetryTimer = null;
+      if (cloudUser?.uid === user.uid)
+        cloudStatus('All data synced', user.email || 'Google account connected');
+    } catch (error) {
+      console.error('Cornerwork cloud sync failed', error);
+      cloudWriteQueued = true;
+      cloudStatus('Sync retrying', 'Your data is safe on this device', true);
+      clearTimeout(cloudRetryTimer);
+      cloudRetryTimer = setTimeout(() => {
+        cloudRetryTimer = null;
+        flushCloudSync();
+      }, 5000);
+    } finally {
+      cloudWritePending = false;
+      if (cloudWriteQueued && !cloudRetryTimer) queueMicrotask(flushCloudSync);
     }
   }
-  async function saveHistoryToCloud(state, force = false) {
-    if (!cloudUser || !db) return;
-    historyCloudQueuedState = mergeHistoryState(state, {});
-    if (force) historyCloudRetryBlocked = false;
-    if (historyCloudWritePending || historyCloudRetryBlocked) return;
-    historyCloudWritePending = true;
-    const normalized = historyCloudQueuedState;
-    historyCloudQueuedState = null;
-    try {
-      await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', workoutHistoryDocument), {
-        name: 'Cornerwork workout history',
-        config: {
-          type: 'workout-history',
-          formatVersion: 1,
-          payload: JSON.stringify({
-            entries: normalized.entries,
-            clearedAt: normalized.clearedAt,
-          }),
-        },
-        note: '',
-        favorite: false,
-        updatedAt: Date.now(),
-      });
-      historyCloudRetryBlocked = false;
-      cloudStatus(
-        'All data synced',
-        cloudUser.email || 'Google account connected',
-      );
-    } catch (e) {
-      historyCloudRetryBlocked = true;
-      cloudStatus('History saved on this device', 'Cloud history sync is unavailable', true);
-    } finally {
-      historyCloudWritePending = false;
-      if (historyCloudQueuedState && !historyCloudRetryBlocked)
-        saveHistoryToCloud(historyCloudQueuedState);
-    }
+  function savePresetToCloud(preset) {
+    const deletions = readPresetDeletionsLocal();
+    delete deletions[preset.id];
+    savePresetDeletionsLocal(deletions);
+    queueCloudSync();
   }
-  async function saveStudioProgramsToCloud(state, force = false) {
-    if (!cloudUser || !db) return;
-    studioCloudQueuedState = mergeStudioState(state, {});
-    if (force) studioCloudRetryBlocked = false;
-    if (studioCloudWritePending || studioCloudRetryBlocked) return;
-    studioCloudWritePending = true;
-    const normalized = studioCloudQueuedState;
-    studioCloudQueuedState = null;
-    try {
-      await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', studioProgramsDocument), {
-        name: 'Cornerwork Studio programs',
-        config: {
-          type: 'studio-programs',
-          formatVersion: 1,
-          payload: JSON.stringify({
-            programs: normalized.programs,
-            deletions: normalized.deletions,
-          }),
-        },
-        note: '',
-        favorite: false,
-        updatedAt: Date.now(),
-      });
-      studioCloudRetryBlocked = false;
-      cloudStatus(
-        'All data synced',
-        cloudUser.email || 'Google account connected',
-      );
-    } catch (e) {
-      studioCloudRetryBlocked = true;
-      cloudStatus('Programs saved on this device', 'Cloud program sync is unavailable', true);
-    } finally {
-      studioCloudWritePending = false;
-      if (studioCloudQueuedState && !studioCloudRetryBlocked)
-        saveStudioProgramsToCloud(studioCloudQueuedState);
-    }
+  function saveProgramProgressToCloud() {
+    queueCloudSync();
   }
-  async function deletePresetFromCloud(id) {
-    if (!cloudUser || !db) return;
-    cloudDeletes.add(id);
-    try {
-      await deleteDoc(doc(db, 'users', cloudUser.uid, 'workouts', id));
-    } catch (e) {
-      cloudStatus('Could not delete from cloud', 'Saved locally on this device', true);
-    } finally {
-      setTimeout(() => cloudDeletes.delete(id), 1500);
-    }
+  function saveHistoryToCloud() {
+    queueCloudSync();
+  }
+  function saveStudioProgramsToCloud() {
+    queueCloudSync();
+  }
+  function saveUserDataToCloud() {
+    queueCloudSync();
+  }
+  function deletePresetFromCloud(id) {
+    const deletions = readPresetDeletionsLocal();
+    deletions[id] = Date.now();
+    savePresetDeletionsLocal(deletions);
+    queueCloudSync();
   }
   function beginCloudSync(user) {
     if (cloudUnsubscribe) cloudUnsubscribe();
+    clearTimeout(cloudRetryTimer);
+    cloudRetryTimer = null;
     cloudUser = user;
     cloudReady = false;
-    studioCloudWritePending = false;
-    studioCloudRetryBlocked = false;
-    studioCloudQueuedState = null;
-    historyCloudWritePending = false;
-    historyCloudRetryBlocked = false;
-    historyCloudQueuedState = null;
-    userDataCloudWritePending = false;
-    userDataCloudRetryBlocked = false;
-    userDataCloudQueuedState = null;
-    cloudStatus(
-      'Syncing all workout data and progress…',
-      user.email || 'Google account connected',
-    );
+    cloudWritePending = false;
+    cloudWriteQueued = false;
+    cloudStatus('Syncing…', user.email || 'Google account connected');
     const ref = collection(db, 'users', user.uid, 'workouts');
     cloudUnsubscribe = onSnapshot(
       ref,
       (snapshot) => {
-        const progressSnapshot = snapshot.docs.find((item) => item.id === programProgressDocument),
-          historySnapshot = snapshot.docs.find((item) => item.id === workoutHistoryDocument),
-          studioSnapshot =
-            snapshot.docs.find((item) => item.id === studioProgramsDocument) ||
-            snapshot.docs.find((item) => item.id === legacyStudioProgramsDocument),
-          userDataSnapshot = snapshot.docs.find((item) => item.id === userDataDocument),
-          remoteProgress = readProgramProgressCloud(progressSnapshot?.data()),
-          mergedProgress = mergeProgramProgress(readProgramProgressLocal(), remoteProgress),
-          remoteHistoryState = readHistoryStateCloud(historySnapshot?.data()),
-          mergedHistoryState = mergeHistoryState(readHistoryStateLocal(), remoteHistoryState),
-          remoteStudioState = readStudioStateCloud(studioSnapshot?.data()),
-          mergedStudioState = mergeStudioState(readStudioStateLocal(), remoteStudioState),
-          remoteUserData = readUserDataCloud(userDataSnapshot?.data()),
-          mergedUserData = mergeUserData(readUserDataLocal(), remoteUserData),
-          cloud = snapshot.docs
-            .filter(
-              (item) =>
-                item.id !== programProgressDocument &&
-                item.id !== workoutHistoryDocument &&
-                item.id !== studioProgramsDocument &&
-                item.id !== legacyStudioProgramsDocument &&
-                item.id !== userDataDocument,
-            )
-            .map((item) => ({
-              id: item.id,
-              ...item.data(),
-              updatedAt: Number(item.data().updatedAt) || 0,
-            }))
-            .filter((preset) => preset.name && preset.config && !cloudDeletes.has(preset.id));
-        const merged = new Map(cloud.map((preset) => [preset.id, preset]));
-        presets.forEach((local) => {
-          const remote = merged.get(local.id);
-          if (!remote || Number(local.updatedAt) >= Number(remote.updatedAt))
-            merged.set(local.id, local);
-        });
-        presets = [...merged.values()];
-        sortPresets();
-        savePresets();
-        renderPresets();
-        saveProgramProgressLocal(mergedProgress);
-        saveHistoryStateLocal(mergedHistoryState);
-        saveStudioStateLocal(mergedStudioState);
-        saveUserDataLocal(mergedUserData);
-        window.dispatchEvent(
-          new CustomEvent('cornerwork-program-progress-sync', { detail: mergedProgress }),
-        );
+        const unifiedSnapshot = snapshot.docs.find((item) => item.id === syncDocument);
+        let remoteBundle = readCloudBundle(unifiedSnapshot?.data());
+        if (!remoteBundle) {
+          const progressSnapshot = snapshot.docs.find(
+              (item) => item.id === programProgressDocument,
+            ),
+            historySnapshot = snapshot.docs.find((item) => item.id === workoutHistoryDocument),
+            studioSnapshot =
+              snapshot.docs.find((item) => item.id === studioProgramsDocument) ||
+              snapshot.docs.find((item) => item.id === legacyStudioProgramsDocument),
+            userDataSnapshot = snapshot.docs.find((item) => item.id === userDataDocument),
+            legacyPresets = snapshot.docs
+              .filter(
+                (item) =>
+                  item.id !== syncDocument &&
+                  item.id !== programProgressDocument &&
+                  item.id !== workoutHistoryDocument &&
+                  item.id !== studioProgramsDocument &&
+                  item.id !== legacyStudioProgramsDocument &&
+                  item.id !== userDataDocument,
+              )
+              .map((item) => ({
+                id: item.id,
+                ...item.data(),
+                updatedAt: Number(item.data().updatedAt) || 0,
+              }))
+              .filter((preset) => preset.name && preset.config);
+          remoteBundle = normalizeCloudBundle({
+            presets: legacyPresets,
+            progress: readProgramProgressCloud(progressSnapshot?.data()),
+            history: readHistoryStateCloud(historySnapshot?.data()),
+            studio: readStudioStateCloud(studioSnapshot?.data()),
+            userData: readUserDataCloud(userDataSnapshot?.data()),
+          });
+        }
+        const merged = mergeCloudBundles(readLocalCloudBundle(), remoteBundle);
+        applyCloudBundle(merged);
         cloudReady = true;
-        const remoteIds = new Set(cloud.map((preset) => preset.id)),
-          pendingPresets = presets.filter((preset) => !remoteIds.has(preset.id)),
-          needsProgressSync = !sameProgramProgress(remoteProgress, mergedProgress),
-          needsHistorySync = !sameHistoryState(remoteHistoryState, mergedHistoryState),
-          needsStudioSync = !sameStudioState(remoteStudioState, mergedStudioState),
-          needsUserDataSync = !sameUserData(remoteUserData, mergedUserData);
-        if (
-          !pendingPresets.length &&
-          !needsProgressSync &&
-          !needsHistorySync &&
-          !needsStudioSync &&
-          !needsUserDataSync
-        )
-          cloudStatus(
-            'All data synced',
-            user.email || 'Google account connected',
-          );
-        pendingPresets.forEach(savePresetToCloud);
-        if (needsProgressSync) saveProgramProgressToCloud(mergedProgress);
-        if (needsHistorySync && !historyCloudWritePending && !historyCloudRetryBlocked)
-          saveHistoryToCloud(mergedHistoryState);
-        if (needsStudioSync && !studioCloudWritePending && !studioCloudRetryBlocked)
-          saveStudioProgramsToCloud(mergedStudioState);
-        if (needsUserDataSync && !userDataCloudWritePending && !userDataCloudRetryBlocked)
-          saveUserDataToCloud(mergedUserData);
+        if (!unifiedSnapshot || !sameCloudBundle(remoteBundle, merged)) queueCloudSync();
+        else cloudStatus('All data synced', user.email || 'Google account connected');
       },
-      () =>
-        cloudStatus(
-          'Cloud sync unavailable',
-          'Workouts, history, and progress still save here',
-          true,
-        ),
+      (error) => {
+        console.error('Cornerwork cloud listener failed', error);
+        cloudReady = false;
+        cloudStatus('Sync unavailable', 'Your data is safe on this device', true);
+      },
     );
   }
   async function acceptGoogleCredential(response) {
@@ -1523,6 +1531,9 @@ import {
           }
           cloudUser = null;
           cloudReady = false;
+          cloudWriteQueued = false;
+          clearTimeout(cloudRetryTimer);
+          cloudRetryTimer = null;
           $('#googleSignIn').classList.remove('hidden');
           $('#googleSignOut').classList.add('hidden');
           cloudStatus('Saved on this device', 'Google sign-in is optional');
