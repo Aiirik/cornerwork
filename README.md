@@ -90,7 +90,7 @@ You can:
 - Track workout history, streaks, and completed Program sessions.
 - Export a Cornerwork backup and restore it in another browser.
 
-Google sign-in is optional. When enabled, Cornerwork uses Firebase to sync saved workouts, workout history, Studio programs, repeatable Studio versions, and built-in Program progress between signed-in devices. General display, audio, accessibility, and workout preferences remain specific to each browser.
+Google sign-in is optional. When enabled, Cornerwork uses Firebase to sync saved workouts, workout history, custom combinations, the current Custom setup, Studio programs, repeatable variations, and built-in Program progress between signed-in devices. Display, audio, accessibility, icon, layout, shortcut, and panel-state preferences remain specific to each browser.
 
 ## Mobile app and offline use
 

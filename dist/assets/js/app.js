@@ -754,16 +754,24 @@ import {
     studioCloudQueuedState = null,
     historyCloudWritePending = false,
     historyCloudRetryBlocked = false,
-    historyCloudQueuedState = null;
+    historyCloudQueuedState = null,
+    userDataCloudWritePending = false,
+    userDataCloudRetryBlocked = false,
+    userDataCloudQueuedState = null;
   const cloudDeletes = new Set(),
     programProgressDocument = '__program_progress__',
     workoutHistoryDocument = '__workout_history__',
     studioProgramsDocument = 'cornerwork-studio-programs',
     legacyStudioProgramsDocument = '__studio_programs__',
+    userDataDocument = 'cornerwork-user-data',
     studioProgramsKey = 'cornerwork-studio-programs',
     studioDeletionsKey = 'cornerwork-studio-program-deletions',
     workoutHistoryKey = 'cornerwork-history',
-    workoutHistoryClearedAtKey = 'cornerwork-history-cleared-at';
+    workoutHistoryClearedAtKey = 'cornerwork-history-cleared-at',
+    customCombosKey = 'cornerwork-custom-combos',
+    programVariationsKey = 'cornerwork-program-variations',
+    customWorkoutKey = 'cornerwork-custom-workout',
+    userDataMetaKey = 'cornerwork-user-data-meta';
   function workoutSnapshot() {
     const config = {};
     presetFields.forEach((k) => (config[k] = settings[k]));
@@ -1039,6 +1047,195 @@ import {
     };
     return normalize(left) === normalize(right);
   }
+  function readProgramProgressCloud(value) {
+    const payload = value?.config?.payload ?? value?.payload;
+    if (typeof payload === 'string') {
+      try {
+        return normalizeProgramProgress(JSON.parse(payload)?.progress);
+      } catch (e) {}
+    }
+    return normalizeProgramProgress(value?.progress);
+  }
+  function readJsonLocal(key, fallback) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key));
+      return value ?? fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+  function normalizeCustomCombos(value) {
+    if (!Array.isArray(value)) return [];
+    return value
+      .filter(
+        (combo) =>
+          combo && combo.id && combo.n && Array.isArray(combo.m) && Array.isArray(combo.types),
+      )
+      .map((combo) => ({
+        ...combo,
+        id: String(combo.id),
+        n: String(combo.n).slice(0, 60),
+        m: combo.m.slice(0, 12),
+        types: [...new Set(combo.types)],
+        level: Math.min(3, Math.max(1, Number(combo.level) || 1)),
+        custom: true,
+      }));
+  }
+  function normalizeProgramVariations(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key, seed]) => key && typeof seed === 'string')
+        .map(([key, seed]) => [String(key), seed]),
+    );
+  }
+  function normalizeCustomWorkout(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const clean = JSON.parse(JSON.stringify(value));
+    [
+      'displayMode',
+      'compactRoundLabels',
+      'clockSize',
+      'clockFont',
+      'calloutSize',
+      'haptics',
+      'highContrast',
+    ].forEach((key) => delete clean[key]);
+    return clean;
+  }
+  function userDataSectionEmpty(section, value) {
+    if (section === 'customCombos') return !Array.isArray(value) || !value.length;
+    if (section === 'programVariations')
+      return !value || typeof value !== 'object' || !Object.keys(value).length;
+    return !value || typeof value !== 'object';
+  }
+  function normalizeUserData(value) {
+    const meta =
+        value?.updatedAt && typeof value.updatedAt === 'object' && !Array.isArray(value.updatedAt)
+          ? value.updatedAt
+          : {},
+      normalized = {
+        customCombos: normalizeCustomCombos(value?.customCombos),
+        programVariations: normalizeProgramVariations(value?.programVariations),
+        customWorkout: normalizeCustomWorkout(value?.customWorkout),
+        updatedAt: {},
+      };
+    ['customCombos', 'programVariations', 'customWorkout'].forEach((section) => {
+      const timestamp = Math.max(0, Number(meta[section]) || 0);
+      normalized.updatedAt[section] =
+        timestamp || (userDataSectionEmpty(section, normalized[section]) ? 0 : 1);
+    });
+    return normalized;
+  }
+  function readUserDataLocal() {
+    return normalizeUserData({
+      customCombos,
+      programVariations: readJsonLocal(programVariationsKey, {}),
+      customWorkout: readJsonLocal(customWorkoutKey, null),
+      updatedAt: readJsonLocal(userDataMetaKey, {}),
+    });
+  }
+  function readUserDataCloud(value) {
+    const payload = value?.config?.payload ?? value?.payload;
+    if (typeof payload === 'string') {
+      try {
+        return normalizeUserData(JSON.parse(payload));
+      } catch (e) {}
+    }
+    return normalizeUserData(value);
+  }
+  function mergeUserData(local, remote) {
+    local = normalizeUserData(local);
+    remote = normalizeUserData(remote);
+    const merged = { updatedAt: {} };
+    ['customCombos', 'programVariations', 'customWorkout'].forEach((section) => {
+      const localTime = local.updatedAt[section] || 0,
+        remoteTime = remote.updatedAt[section] || 0,
+        useRemote =
+          remoteTime > localTime ||
+          (remoteTime === localTime &&
+            userDataSectionEmpty(section, local[section]) &&
+            !userDataSectionEmpty(section, remote[section]));
+      merged[section] = useRemote ? remote[section] : local[section];
+      merged.updatedAt[section] = Math.max(localTime, remoteTime);
+    });
+    return normalizeUserData(merged);
+  }
+  function sameUserData(left, right) {
+    return JSON.stringify(normalizeUserData(left)) === JSON.stringify(normalizeUserData(right));
+  }
+  function saveUserDataLocal(state) {
+    const normalized = normalizeUserData(state),
+      previousCustomIds = new Set(customCombos.map((combo) => combo.id));
+    customCombos = normalized.customCombos;
+    try {
+      localStorage.setItem(customCombosKey, JSON.stringify(customCombos));
+      localStorage.setItem(programVariationsKey, JSON.stringify(normalized.programVariations));
+      if (normalized.customWorkout)
+        localStorage.setItem(customWorkoutKey, JSON.stringify(normalized.customWorkout));
+      else localStorage.removeItem(customWorkoutKey);
+      localStorage.setItem(userDataMetaKey, JSON.stringify(normalized.updatedAt));
+    } catch (e) {}
+    for (let index = combos.length - 1; index >= 0; index--)
+      if (combos[index].custom) combos.splice(index, 1);
+    combos.push(...customCombos);
+    previousCustomIds.forEach((id) => locked.delete(id));
+    customCombos.forEach((combo) => locked.add(combo.id));
+    if (Array.isArray(settings.allowedCombos)) {
+      settings.allowedCombos = settings.allowedCombos.filter(
+        (id) => !previousCustomIds.has(id) || customCombos.some((combo) => combo.id === id),
+      );
+      customCombos.forEach((combo) => {
+        if (!settings.allowedCombos.includes(combo.id)) settings.allowedCombos.push(combo.id);
+      });
+      saveSettings();
+    }
+    renderComboList();
+    return normalized;
+  }
+  function updateUserDataSection(section, value, syncNow = true) {
+    if (!['customCombos', 'programVariations', 'customWorkout'].includes(section)) return;
+    const state = readUserDataLocal();
+    state[section] = value;
+    state.updatedAt[section] = Date.now();
+    const saved = saveUserDataLocal(state);
+    if (syncNow) saveUserDataToCloud(saved, true);
+    return saved;
+  }
+  async function saveUserDataToCloud(state, force = false) {
+    if (!cloudUser || !db) return;
+    userDataCloudQueuedState = mergeUserData(state, {});
+    if (force) userDataCloudRetryBlocked = false;
+    if (userDataCloudWritePending || userDataCloudRetryBlocked) return;
+    userDataCloudWritePending = true;
+    const normalized = userDataCloudQueuedState;
+    userDataCloudQueuedState = null;
+    try {
+      await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', userDataDocument), {
+        name: 'Cornerwork user data',
+        config: {
+          type: 'user-data',
+          formatVersion: 1,
+          payload: JSON.stringify(normalized),
+        },
+        note: '',
+        favorite: false,
+        updatedAt: Date.now(),
+      });
+      userDataCloudRetryBlocked = false;
+      cloudStatus(
+        'All workout data and progress synced',
+        cloudUser.email || 'Google account connected',
+      );
+    } catch (e) {
+      userDataCloudRetryBlocked = true;
+      cloudStatus('Data saved on this device', 'Cloud data sync is unavailable', true);
+    } finally {
+      userDataCloudWritePending = false;
+      if (userDataCloudQueuedState && !userDataCloudRetryBlocked)
+        saveUserDataToCloud(userDataCloudQueuedState);
+    }
+  }
   function cloudStatus(title, detail, error = false) {
     const el = $('#cloudStatus');
     el.classList.toggle('cloud-error', error);
@@ -1056,7 +1253,7 @@ import {
         updatedAt: preset.updatedAt || Date.now(),
       });
       cloudStatus(
-        'Workouts, history, programs, and progress synced',
+        'All workout data and progress synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1067,12 +1264,18 @@ import {
     if (!cloudUser || !db) return;
     try {
       await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', programProgressDocument), {
-        type: 'program-progress',
-        progress: normalizeProgramProgress(progress),
+        name: 'Cornerwork program progress',
+        config: {
+          type: 'program-progress',
+          formatVersion: 1,
+          payload: JSON.stringify({ progress: normalizeProgramProgress(progress) }),
+        },
+        note: '',
+        favorite: false,
         updatedAt: Date.now(),
       });
       cloudStatus(
-        'Workouts, history, programs, and progress synced',
+        'All workout data and progress synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1089,14 +1292,22 @@ import {
     historyCloudQueuedState = null;
     try {
       await setDoc(doc(db, 'users', cloudUser.uid, 'workouts', workoutHistoryDocument), {
-        type: 'workout-history',
-        history: normalized.entries,
-        clearedAt: normalized.clearedAt,
+        name: 'Cornerwork workout history',
+        config: {
+          type: 'workout-history',
+          formatVersion: 1,
+          payload: JSON.stringify({
+            entries: normalized.entries,
+            clearedAt: normalized.clearedAt,
+          }),
+        },
+        note: '',
+        favorite: false,
         updatedAt: Date.now(),
       });
       historyCloudRetryBlocked = false;
       cloudStatus(
-        'Workouts, history, programs, and progress synced',
+        'All workout data and progress synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1133,7 +1344,7 @@ import {
       });
       studioCloudRetryBlocked = false;
       cloudStatus(
-        'Workouts, history, programs, and progress synced',
+        'All workout data and progress synced',
         cloudUser.email || 'Google account connected',
       );
     } catch (e) {
@@ -1166,8 +1377,11 @@ import {
     historyCloudWritePending = false;
     historyCloudRetryBlocked = false;
     historyCloudQueuedState = null;
+    userDataCloudWritePending = false;
+    userDataCloudRetryBlocked = false;
+    userDataCloudQueuedState = null;
     cloudStatus(
-      'Syncing workouts, history, programs, and progress…',
+      'Syncing all workout data and progress…',
       user.email || 'Google account connected',
     );
     const ref = collection(db, 'users', user.uid, 'workouts');
@@ -1179,19 +1393,23 @@ import {
           studioSnapshot =
             snapshot.docs.find((item) => item.id === studioProgramsDocument) ||
             snapshot.docs.find((item) => item.id === legacyStudioProgramsDocument),
-          remoteProgress = normalizeProgramProgress(progressSnapshot?.data()?.progress),
+          userDataSnapshot = snapshot.docs.find((item) => item.id === userDataDocument),
+          remoteProgress = readProgramProgressCloud(progressSnapshot?.data()),
           mergedProgress = mergeProgramProgress(readProgramProgressLocal(), remoteProgress),
           remoteHistoryState = readHistoryStateCloud(historySnapshot?.data()),
           mergedHistoryState = mergeHistoryState(readHistoryStateLocal(), remoteHistoryState),
           remoteStudioState = readStudioStateCloud(studioSnapshot?.data()),
           mergedStudioState = mergeStudioState(readStudioStateLocal(), remoteStudioState),
+          remoteUserData = readUserDataCloud(userDataSnapshot?.data()),
+          mergedUserData = mergeUserData(readUserDataLocal(), remoteUserData),
           cloud = snapshot.docs
             .filter(
               (item) =>
                 item.id !== programProgressDocument &&
                 item.id !== workoutHistoryDocument &&
                 item.id !== studioProgramsDocument &&
-                item.id !== legacyStudioProgramsDocument,
+                item.id !== legacyStudioProgramsDocument &&
+                item.id !== userDataDocument,
             )
             .map((item) => ({
               id: item.id,
@@ -1212,6 +1430,7 @@ import {
         saveProgramProgressLocal(mergedProgress);
         saveHistoryStateLocal(mergedHistoryState);
         saveStudioStateLocal(mergedStudioState);
+        saveUserDataLocal(mergedUserData);
         window.dispatchEvent(
           new CustomEvent('cornerwork-program-progress-sync', { detail: mergedProgress }),
         );
@@ -1220,10 +1439,17 @@ import {
           pendingPresets = presets.filter((preset) => !remoteIds.has(preset.id)),
           needsProgressSync = !sameProgramProgress(remoteProgress, mergedProgress),
           needsHistorySync = !sameHistoryState(remoteHistoryState, mergedHistoryState),
-          needsStudioSync = !sameStudioState(remoteStudioState, mergedStudioState);
-        if (!pendingPresets.length && !needsProgressSync && !needsHistorySync && !needsStudioSync)
+          needsStudioSync = !sameStudioState(remoteStudioState, mergedStudioState),
+          needsUserDataSync = !sameUserData(remoteUserData, mergedUserData);
+        if (
+          !pendingPresets.length &&
+          !needsProgressSync &&
+          !needsHistorySync &&
+          !needsStudioSync &&
+          !needsUserDataSync
+        )
           cloudStatus(
-            'Workouts, history, programs, and progress synced',
+            'All workout data and progress synced',
             user.email || 'Google account connected',
           );
         pendingPresets.forEach(savePresetToCloud);
@@ -1232,6 +1458,8 @@ import {
           saveHistoryToCloud(mergedHistoryState);
         if (needsStudioSync && !studioCloudWritePending && !studioCloudRetryBlocked)
           saveStudioProgramsToCloud(mergedStudioState);
+        if (needsUserDataSync && !userDataCloudWritePending && !userDataCloudRetryBlocked)
+          saveUserDataToCloud(mergedUserData);
       },
       () =>
         cloudStatus(
@@ -4189,6 +4417,9 @@ import {
       saveProgramProgressToCloud(normalized);
       return normalized;
     },
+    syncUserDataSection(section, value) {
+      return updateUserDataSection(section, value);
+    },
     addWorkoutHistory(entry) {
       const now = Date.now(),
         local = readHistoryStateLocal(),
@@ -4247,6 +4478,7 @@ import {
       };
       customCombos.push(clean);
       localStorage.setItem('cornerwork-custom-combos', JSON.stringify(customCombos));
+      updateUserDataSection('customCombos', customCombos, false);
       if (Array.isArray(settings.allowedCombos) && !settings.allowedCombos.includes(clean.id)) {
         settings.allowedCombos.push(clean.id);
         saveSettings();
@@ -4265,11 +4497,13 @@ import {
         custom: true,
       };
       localStorage.setItem('cornerwork-custom-combos', JSON.stringify(customCombos));
+      updateUserDataSection('customCombos', customCombos, false);
       location.reload();
     },
     removeCustomCombo(id) {
       customCombos = customCombos.filter((c) => c.id !== id);
       localStorage.setItem('cornerwork-custom-combos', JSON.stringify(customCombos));
+      updateUserDataSection('customCombos', customCombos, false);
       locked.delete(id);
       if (Array.isArray(settings.allowedCombos)) {
         settings.allowedCombos = settings.allowedCombos.filter((comboId) => comboId !== id);
@@ -4314,6 +4548,15 @@ import {
           'cornerwork-program-variations',
           JSON.stringify(data.programVariations),
         );
+      const importedUserData = readUserDataLocal(),
+        importedAt = Date.now();
+      importedUserData.updatedAt = {
+        customCombos: importedAt,
+        programVariations: importedAt,
+        customWorkout: importedUserData.customWorkout ? importedAt : 0,
+      };
+      saveUserDataLocal(importedUserData);
+      saveUserDataToCloud(importedUserData, true);
       location.reload();
     },
   };

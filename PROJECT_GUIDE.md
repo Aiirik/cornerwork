@@ -115,11 +115,11 @@ Use these labels consistently in the interface and documentation:
 
 ### Saving and continuity
 
-- Browser-local settings, custom combos, presets, Studio programs, repeatable variation seeds, history, program progress, and panel state
+- Browser-local storage keeps app preferences, custom combinations, saved workouts, Studio programs, repeatable variation seeds, workout history, program progress, and panel state available on the current device.
 - Saved workouts and account controls remain visible at the bottom of the Workout panel and are not part of its collapsible tab state
-- Optional Google sign-in and Firebase syncing for saved workout presets, workout history, Studio programs and their last repeatable versions, and completed built-in program sessions
+- Optional Google sign-in and Firebase syncing for saved workouts, workout history, custom combinations, the current Custom setup, Studio programs, repeatable variations, and completed built-in program sessions. Display, audio, accessibility, icon, layout, shortcuts, and panel-state preferences remain device-specific.
 - Workout history merges by stable entry ID across devices, retains at most 500 entries, and carries a synced clear timestamp so removed history does not reappear from another device.
-- Studio cloud sync uses a versioned JSON payload so authored round-focus arrays remain compatible with Standard edition Firestore. The cloud reader also accepts the earlier object-field shape for migration safety.
+- Synced history, program progress, Studio programs, and user-created workout data use versioned JSON payloads inside the saved-workout-compatible Firestore document shape. Readers also accept the earlier object-field shapes for migration safety.
 - Coaching reminders, cue frequency, recovery instructions, and guided-beginner choices are included in saved and shared workouts
 - Saved-workout notes, favourites, duplication, search, links, and QR sharing
 - Backup and restore for local settings, workouts, Studio programs, repeatable variations, custom combos, history, and program progress
@@ -239,6 +239,7 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 | `cornerwork-studio-programs`          | User-created Program Studio definitions                       |
 | `cornerwork-studio-program-deletions` | Cross-device Studio deletion timestamps                       |
 | `cornerwork-program-variations`       | Last-started repeatable seed for each program session         |
+| `cornerwork-user-data-meta`            | Per-section timestamps for conflict-safe account syncing      |
 | `cornerwork-setup-mode`               | Current custom, Studio, quick, program, or preset selection   |
 | `cornerwork-active-selection`         | Selected preset description                                   |
 | `cornerwork-custom-workout`           | Last custom setup before loading a preset                     |
