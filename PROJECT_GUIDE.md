@@ -166,8 +166,8 @@ These rules are easy to break and should be deliberately verified after related 
 
 - Voice volume follows the main workout volume.
 - Number speed and word speed are independent.
-- Bundled coach speed uses pitch-preserving time stretching. Changing number, word, or announcement
-  tempo must not raise or lower the coach's pitch.
+- Bundled coach playback must use the broadly supported Web Audio sprite path. A failed optional
+  audio enhancement must never silence bundled or device voices.
 - Normal combo frequency begins after the complete spoken combination and any attached coaching cue finishes.
 - iPhone and iPad speech rate is compensated so it better matches desktop playback.
 - Round announcements use normal announcement timing, not combo readout speed.

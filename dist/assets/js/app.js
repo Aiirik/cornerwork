@@ -19,7 +19,7 @@ import {
   loadIconThemes,
   renderIconThemeOptions,
 } from './icon-themes.js?v=186';
-import { createVoiceEngine } from './voice-engine.js?v=230';
+import { createVoiceEngine } from './voice-engine.js?v=231';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
@@ -536,6 +536,8 @@ import { createVoiceEngine } from './voice-engine.js?v=230';
     wakeLockPending = false,
     audioContext = null,
     speechTimers = [],
+    deviceSpeechStartTimer = null,
+    activeDeviceUtterances = new Set(),
     speechSequence = 0,
     soundTimers = [],
     current = [],
@@ -2445,11 +2447,27 @@ import { createVoiceEngine } from './voice-engine.js?v=230';
     utterance.rate = appleMobile ? Math.max(0.5, rate * 0.82) : rate;
     utterance.pitch = 0.88;
     utterance.volume = settings.volume / 100;
-    if (onend) {
-      utterance.onend = onend;
-      utterance.onerror = onend;
-    }
-    speechSynthesis.speak(utterance);
+    const finish = () => {
+      if (!activeDeviceUtterances.delete(utterance)) return;
+      onend?.();
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    activeDeviceUtterances.add(utterance);
+    clearTimeout(deviceSpeechStartTimer);
+    deviceSpeechStartTimer = setTimeout(
+      () => {
+        deviceSpeechStartTimer = null;
+        if (!activeDeviceUtterances.has(utterance)) return;
+        try {
+          speechSynthesis.resume();
+          speechSynthesis.speak(utterance);
+        } catch (error) {
+          finish();
+        }
+      },
+      appleMobile ? 30 : 0,
+    );
   }
   const bundledSpeech = createVoiceEngine({
     getContext: audioEngine,
@@ -2461,6 +2479,9 @@ import { createVoiceEngine } from './voice-engine.js?v=230';
     speechSequence++;
     speechTimers.forEach(clearTimeout);
     speechTimers = [];
+    clearTimeout(deviceSpeechStartTimer);
+    deviceSpeechStartTimer = null;
+    activeDeviceUtterances.clear();
     bundledSpeech.cancel();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }

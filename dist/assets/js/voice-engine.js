@@ -1,7 +1,3 @@
-import SignalsmithStretch from './vendor/signalsmith-stretch.mjs';
-
-SignalsmithStretch.moduleUrl = new URL('./vendor/signalsmith-stretch.mjs', import.meta.url).href;
-
 const normalize = (value) =>
   String(value)
     .toLowerCase()
@@ -17,11 +13,9 @@ const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, v
 
 export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback }) {
   let manifestPromise,
-    generation = 0,
-    stretchContext = null,
-    stretchPromise = null,
-    endTimer = null;
-  const buffers = new Map();
+    generation = 0;
+  const buffers = new Map(),
+    activeSources = new Set();
 
   const manifest = () =>
     (manifestPromise ||= fetch('./assets/voices/manifest.json')
@@ -52,57 +46,6 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
       });
     buffers.set(voice.id, promise);
     return promise;
-  }
-
-  function stretchFor(context) {
-    if (stretchPromise && stretchContext === context) return stretchPromise;
-    stretchContext = context;
-    stretchPromise = SignalsmithStretch(context, {
-      numberOfInputs: 0,
-      numberOfOutputs: 1,
-      outputChannelCount: [1],
-      channelCount: 1,
-    })
-      .then(async (node) => {
-        const gain = context.createGain();
-        gain.gain.value = clamp(getVolume() / 100, 0, 1);
-        node.connect(gain);
-        gain.connect(context.destination);
-        await node.configure({ preset: 'default', splitComputation: true });
-        return { node, gain };
-      })
-      .catch((error) => {
-        if (stretchContext === context) {
-          stretchContext = null;
-          stretchPromise = null;
-        }
-        throw error;
-      });
-    return stretchPromise;
-  }
-
-  function combineClips(audioBuffer, voice, clips, playbackRate) {
-    const channel = audioBuffer.getChannelData(0),
-      sampleRate = audioBuffer.sampleRate,
-      pieces = clips.map(({ line, gap }) => {
-        const clip = voice.clips[line.id];
-        if (!clip) throw new Error(`Missing bundled clip: ${line.key}`);
-        const start = clamp(Math.round(clip.start * sampleRate), 0, channel.length),
-          end = clamp(Math.round((clip.start + clip.duration) * sampleRate), start, channel.length),
-          silence = Math.max(0, Math.round(gap * playbackRate * sampleRate));
-        return { start, end, silence };
-      }),
-      totalSamples = pieces.reduce(
-        (total, piece) => total + piece.end - piece.start + piece.silence,
-        0,
-      ),
-      samples = new Float32Array(totalSamples);
-    let offset = 0;
-    pieces.forEach(({ start, end, silence }) => {
-      samples.set(channel.subarray(start, end), offset);
-      offset += end - start + silence;
-    });
-    return samples;
   }
 
   function resolveText(data, text) {
@@ -156,9 +99,8 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
   async function prepare(voiceId = getVoiceId()) {
     try {
       const data = await manifest(),
-        voice = data.voices.find(({ id }) => id === voiceId) || data.voices[0],
-        context = getContext();
-      if (voice && context) await Promise.all([bufferFor(voice), stretchFor(context)]);
+        voice = data.voices.find(({ id }) => id === voiceId) || data.voices[0];
+      if (voice) await bufferFor(voice);
       return Boolean(voice);
     } catch (error) {
       console.warn('Bundled voice unavailable; using the device voice.', error);
@@ -174,33 +116,37 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
         clips = resolveText(data, text),
         context = getContext();
       if (!voice || !clips || !context) throw new Error('No matching bundled voice line');
-      const [audioBuffer, stretch] = await Promise.all([bufferFor(voice), stretchFor(context)]);
+      const audioBuffer = await bufferFor(voice);
       if (requestGeneration !== generation) return true;
       if (context.state !== 'running') await context.resume().catch(() => {});
       if (requestGeneration !== generation) return true;
 
       const playbackRate = clamp(rate / (data.generationSpeed || 1), 0.55, 1.8),
-        samples = combineClips(audioBuffer, voice, clips, playbackRate),
-        outputDuration = samples.length / audioBuffer.sampleRate / playbackRate;
-      clearTimeout(endTimer);
-      await stretch.node.stop();
-      await stretch.node.dropBuffers();
-      if (requestGeneration !== generation) return true;
-      await stretch.node.addBuffers([samples], [samples.buffer]);
-      if (requestGeneration !== generation) return true;
-      const latency = Math.max(0.03, Number(await stretch.node.latency()) || 0),
-        startAt = context.currentTime + latency;
-      if (requestGeneration !== generation) return true;
-      stretch.gain.gain.value = clamp(getVolume() / 100, 0, 1);
-      await stretch.node.start(startAt, 0, outputDuration, playbackRate, 0);
-      if (requestGeneration !== generation) return true;
-      endTimer = setTimeout(
-        () => {
-          endTimer = null;
+        gain = context.createGain();
+      gain.gain.value = clamp(getVolume() / 100, 0, 1);
+      gain.connect(context.destination);
+      let when = context.currentTime + 0.015,
+        finalSource;
+      clips.forEach(({ line, gap }) => {
+        const clip = voice.clips[line.id];
+        if (!clip) throw new Error(`Missing bundled clip: ${line.key}`);
+        const source = context.createBufferSource();
+        source.buffer = audioBuffer;
+        source.playbackRate.value = playbackRate;
+        source.connect(gain);
+        activeSources.add(source);
+        source.onended = () => activeSources.delete(source);
+        source.start(when, clip.start, clip.duration);
+        when += clip.duration / playbackRate + gap;
+        finalSource = source;
+      });
+      if (finalSource) {
+        const originalEnd = finalSource.onended;
+        finalSource.onended = () => {
+          originalEnd();
           if (requestGeneration === generation) onend?.();
-        },
-        Math.max(0, startAt - context.currentTime + outputDuration + 0.04) * 1000,
-      );
+        };
+      }
       return true;
     } catch (error) {
       if (requestGeneration !== generation) return true;
@@ -212,9 +158,12 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
 
   function cancel() {
     generation++;
-    clearTimeout(endTimer);
-    endTimer = null;
-    stretchPromise?.then(({ node }) => node.stop()).catch(() => {});
+    activeSources.forEach((source) => {
+      try {
+        source.stop();
+      } catch (error) {}
+    });
+    activeSources.clear();
   }
 
   return { cancel, prepare, speak };

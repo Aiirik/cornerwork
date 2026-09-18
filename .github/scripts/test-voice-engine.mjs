@@ -1,34 +1,30 @@
 import { pathToFileURL } from 'node:url';
 
-const calls = [];
+const calls = [],
+  activeSources = new Set();
 
-class FakePort {
-  set onmessage(handler) {
-    this.handler = handler;
-    queueMicrotask(() =>
-      handler({
-        data: [
-          'ready',
-          { configure: 1, latency: 0, stop: 1, start: 5, addBuffers: 1, dropBuffers: 1 },
-        ],
-      }),
-    );
-  }
-
-  postMessage(data, transfer) {
-    const [id, method, ...args] = data;
-    calls.push({ method, args, transferred: transfer?.length || 0 });
-    queueMicrotask(() => this.handler({ data: [id, method === 'latency' ? 0.01 : null] }));
-  }
-}
-
-globalThis.AudioWorkletNode = class {
+class FakeSource {
   constructor() {
-    this.port = new FakePort();
+    this.playbackRate = { value: 1 };
   }
 
   connect() {}
-};
+
+  start(when, offset, duration) {
+    calls.push({ method: 'start', when, offset, duration, rate: this.playbackRate.value });
+    activeSources.add(this);
+    this.timer = setTimeout(() => {
+      activeSources.delete(this);
+      this.onended?.();
+    }, 20);
+  }
+
+  stop() {
+    clearTimeout(this.timer);
+    activeSources.delete(this);
+    queueMicrotask(() => this.onended?.());
+  }
+}
 
 const manifest = {
   generationSpeed: 1.2,
@@ -55,15 +51,14 @@ globalThis.fetch = async (url) => ({
   arrayBuffer: async () => new ArrayBuffer(url.includes('bella') ? 8 : 0),
 });
 
-const channel = new Float32Array(2000);
-channel.fill(0.25);
 const context = {
     state: 'running',
     currentTime: 1,
     destination: {},
     resume: async () => {},
-    decodeAudioData: async () => ({ sampleRate: 24000, getChannelData: () => channel }),
+    decodeAudioData: async () => ({ sampleRate: 24000 }),
     createGain: () => ({ gain: { value: 0 }, connect() {} }),
+    createBufferSource: () => new FakeSource(),
   },
   { createVoiceEngine } = await import(
     pathToFileURL(`${process.cwd()}/dist/assets/js/voice-engine.js`)
@@ -84,20 +79,17 @@ await engine.speak('1 2', {
   onend: () => (cancelledCallbackRan = true),
 });
 engine.cancel();
-await new Promise((resolve) => setTimeout(resolve, 150));
+await new Promise((resolve) => setTimeout(resolve, 40));
 if (cancelledCallbackRan) throw new Error('A cancelled bundled callout completed its callback');
+if (activeSources.size) throw new Error('Cancelled bundled sources must be stopped');
 
 await new Promise((resolve) => engine.speak('1 2', { rate: 1.485, onend: resolve }));
 await engine.speak('unknown line');
 
-const start = calls.findLast((call) => call.method === 'start'),
-  addBuffers = calls.findLast((call) => call.method === 'addBuffers'),
-  expectedTempo = 1.485 / manifest.generationSpeed;
-if (!start || Math.abs(start.args[3] - expectedTempo) > 0.0001)
-  throw new Error('Bundled tempo was not sent to the time stretcher');
-if (start.args[4] !== 0) throw new Error('Bundled pitch must remain at zero semitones');
-if (addBuffers?.transferred !== 1)
-  throw new Error('Bundled samples were not transferred efficiently');
+const expectedRate = 1.485 / manifest.generationSpeed,
+  starts = calls.filter((call) => call.method === 'start');
+if (!starts.length || starts.some((call) => Math.abs(call.rate - expectedRate) > 0.0001))
+  throw new Error('Bundled playback rate was not applied');
 if (fallbackText !== 'unknown line') throw new Error('Unknown lines must use device fallback');
 
-console.log('Validated pitch-preserving tempo, cancellation, completion, and device fallback.');
+console.log('Validated reliable bundled playback, cancellation, completion, and device fallback.');

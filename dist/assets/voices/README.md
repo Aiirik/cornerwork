@@ -21,9 +21,8 @@ line changes:
 If a bundled voice cannot resolve a line, Cornerwork deliberately falls back to the selected device
 voice instead of dropping the instruction.
 
-Bundled playback uses the vendored Signalsmith Stretch module so the number and word speed controls
-change tempo without shifting the coach's pitch. Run `npm run vendor:audio` after updating that
-dependency, and keep its license beside the vendored module.
+Bundled playback uses the Web Audio sprite engine. Keep the playback path dependency-free and test
+both Cornerwork and Device voice modes on mobile whenever it changes.
 
 ## Adding another bundled voice
 
