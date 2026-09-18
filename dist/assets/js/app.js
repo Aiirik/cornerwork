@@ -19,7 +19,7 @@ import {
   loadIconThemes,
   renderIconThemeOptions,
 } from './icon-themes.js?v=186';
-import { createVoiceEngine } from './voice-engine.js?v=232';
+import { createVoiceEngine } from './voice-engine.js?v=233';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
@@ -2674,6 +2674,7 @@ import { createVoiceEngine } from './voice-engine.js?v=232';
     }
   }
   function unlockAudio() {
+    if (settings.voiceSource === 'bundled') bundledSpeech.unlock();
     const a = audioEngine();
     if (!a) return;
     try {
@@ -3815,8 +3816,12 @@ import { createVoiceEngine } from './voice-engine.js?v=232';
     settings.bundledVoice = settings.bundledVoice === 'michael' ? 'michael' : 'bella';
     $('#voiceSource').value = settings.voiceSource;
     $('#bundledVoice').value = settings.bundledVoice;
-    $('#bundledVoiceRow').classList.toggle('hidden', settings.voiceSource === 'device');
-    $('#deviceVoiceRow').classList.toggle('hidden', settings.voiceSource !== 'device');
+    const bundledRow = $('#bundledVoiceRow'),
+      deviceRow = $('#deviceVoiceRow');
+    bundledRow.classList.remove('hidden');
+    deviceRow.classList.remove('hidden');
+    bundledRow.hidden = settings.voiceSource === 'device';
+    deviceRow.hidden = settings.voiceSource !== 'device';
     $('#voiceSource')._syncCustomSelect?.();
     $('#bundledVoice')._syncCustomSelect?.();
     refreshDeviceVoiceOptions();
@@ -4044,8 +4049,10 @@ import { createVoiceEngine } from './voice-engine.js?v=232';
     $('#wordMoveGapValue').textContent = settings.wordMoveGap + ' ms';
     saveSettings();
   };
-  $('#testComboSpeed').onclick = () =>
+  $('#testComboSpeed').onclick = () => {
+    if (settings.voiceSource === 'bundled') bundledSpeech.unlock();
     sayCombo([1, 2, 'body 3', 'slip outside', 'step in', 'pivot', 'step out']);
+  };
   ['clockSize', 'calloutSize'].forEach((id) => {
     $('#' + id).oninput = () => {
       settings[id] = +$('#' + id).value;

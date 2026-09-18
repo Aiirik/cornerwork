@@ -11,9 +11,18 @@ const normalize = (value) =>
 
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
 
-export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback }) {
+export function createVoiceEngine({
+  getContext,
+  getVolume,
+  getVoiceId,
+  fallback,
+  createMediaElement = () => (typeof Audio === 'function' ? new Audio() : null),
+}) {
   let manifestPromise,
-    generation = 0;
+    generation = 0,
+    media = null,
+    mediaUrl = '',
+    unlockingMedia = false;
   const buffers = new Map(),
     activeSources = new Set();
 
@@ -96,6 +105,133 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
     return result.length ? result : null;
   }
 
+  function combinedSamples(audioBuffer, voice, clips, playbackRate) {
+    const channel = audioBuffer.getChannelData(0),
+      sampleRate = audioBuffer.sampleRate,
+      pieces = clips.map(({ line, gap }) => {
+        const clip = voice.clips[line.id];
+        if (!clip) throw new Error(`Missing bundled clip: ${line.key}`);
+        const start = clamp(Math.round(clip.start * sampleRate), 0, channel.length),
+          end = clamp(Math.round((clip.start + clip.duration) * sampleRate), start, channel.length),
+          silence = Math.max(0, Math.round(gap * playbackRate * sampleRate));
+        return { start, end, silence };
+      }),
+      samples = new Float32Array(
+        pieces.reduce((total, piece) => total + piece.end - piece.start + piece.silence, 0),
+      );
+    let offset = 0;
+    pieces.forEach(({ start, end, silence }) => {
+      samples.set(channel.subarray(start, end), offset);
+      offset += end - start + silence;
+    });
+    return samples;
+  }
+
+  function waveBlob(samples, sampleRate) {
+    const buffer = new ArrayBuffer(44 + samples.length * 2),
+      view = new DataView(buffer),
+      write = (offset, text) => {
+        for (let index = 0; index < text.length; index++)
+          view.setUint8(offset + index, text.charCodeAt(index));
+      };
+    write(0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * 2, true);
+    write(8, 'WAVE');
+    write(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    write(36, 'data');
+    view.setUint32(40, samples.length * 2, true);
+    samples.forEach((sample, index) => {
+      const value = clamp(sample, -1, 1);
+      view.setInt16(44 + index * 2, value < 0 ? value * 32768 : value * 32767, true);
+    });
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  function pitchMedia() {
+    if (media) return media;
+    media = createMediaElement();
+    if (!media) return null;
+    media.preload = 'auto';
+    media.preservesPitch = true;
+    media.webkitPreservesPitch = true;
+    media.mozPreservesPitch = true;
+    return media;
+  }
+
+  function releaseMediaUrl() {
+    if (!mediaUrl) return;
+    URL.revokeObjectURL(mediaUrl);
+    mediaUrl = '';
+  }
+
+  function unlock() {
+    const audio = pitchMedia();
+    if (!audio || !audio.paused || audio.src) return;
+    unlockingMedia = true;
+    audio.volume = 0;
+    audio.src =
+      'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+    const playPromise = audio.play();
+    playPromise
+      ?.then(() => {
+        if (!unlockingMedia) return;
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load?.();
+        unlockingMedia = false;
+      })
+      .catch(() => {
+        unlockingMedia = false;
+      });
+  }
+
+  async function playPitchPreserved(samples, sampleRate, playbackRate, requestGeneration, onend) {
+    const audio = pitchMedia();
+    if (
+      !audio ||
+      typeof Blob !== 'function' ||
+      typeof URL === 'undefined' ||
+      typeof URL.createObjectURL !== 'function'
+    )
+      return false;
+    unlockingMedia = false;
+    audio.pause();
+    releaseMediaUrl();
+    mediaUrl = URL.createObjectURL(waveBlob(samples, sampleRate));
+    audio.src = mediaUrl;
+    audio.volume = clamp(getVolume() / 100, 0, 1);
+    audio.defaultPlaybackRate = playbackRate;
+    audio.playbackRate = playbackRate;
+    audio.preservesPitch = true;
+    audio.webkitPreservesPitch = true;
+    audio.mozPreservesPitch = true;
+    let started = false;
+    audio.onended = () => {
+      releaseMediaUrl();
+      if (requestGeneration === generation) onend?.();
+    };
+    audio.onerror = () => {
+      releaseMediaUrl();
+      if (started && requestGeneration === generation) onend?.();
+    };
+    try {
+      await audio.play();
+      started = true;
+      return true;
+    } catch (error) {
+      audio.onended = null;
+      releaseMediaUrl();
+      return false;
+    }
+  }
+
   async function prepare(voiceId = getVoiceId()) {
     try {
       const data = await manifest(),
@@ -123,6 +259,20 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
 
       const playbackRate = rate == null ? 1 : clamp(rate / (data.generationSpeed || 1), 0.55, 1.8),
         gain = context.createGain();
+      if (playbackRate !== 1) {
+        const samples = combinedSamples(audioBuffer, voice, clips, playbackRate);
+        if (
+          await playPitchPreserved(
+            samples,
+            audioBuffer.sampleRate,
+            playbackRate,
+            requestGeneration,
+            onend,
+          )
+        )
+          return true;
+        if (requestGeneration !== generation) return true;
+      }
       gain.gain.value = clamp(getVolume() / 100, 0, 1);
       gain.connect(context.destination);
       let when = context.currentTime + 0.015,
@@ -158,6 +308,14 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
 
   function cancel() {
     generation++;
+    unlockingMedia = false;
+    if (media) {
+      media.onended = null;
+      media.onerror = null;
+      media.pause();
+      releaseMediaUrl();
+      media.removeAttribute('src');
+    }
     activeSources.forEach((source) => {
       try {
         source.stop();
@@ -166,5 +324,5 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
     activeSources.clear();
   }
 
-  return { cancel, prepare, speak };
+  return { cancel, prepare, speak, unlock };
 }

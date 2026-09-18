@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url';
 
 const calls = [],
+  mediaStarts = [],
   activeSources = new Set();
 
 class FakeSource {
@@ -23,6 +24,46 @@ class FakeSource {
     clearTimeout(this.timer);
     activeSources.delete(this);
     queueMicrotask(() => this.onended?.());
+  }
+}
+
+class FakeMedia {
+  constructor() {
+    this.paused = true;
+    this.src = '';
+  }
+
+  play() {
+    this.paused = false;
+    if (!this.src.startsWith('data:')) {
+      mediaStarts.push({
+        rate: this.playbackRate,
+        preservesPitch: this.preservesPitch,
+        webkitPreservesPitch: this.webkitPreservesPitch,
+      });
+      this.timer = setTimeout(() => {
+        this.paused = true;
+        this.onended?.();
+      }, 20);
+    }
+    return Promise.resolve();
+  }
+
+  pause() {
+    clearTimeout(this.timer);
+    this.paused = true;
+  }
+
+  removeAttribute(name) {
+    if (name === 'src') this.src = '';
+  }
+
+  load() {}
+}
+
+class RejectingMedia extends FakeMedia {
+  play() {
+    return Promise.reject(new Error('Media playback unavailable'));
   }
 }
 
@@ -51,12 +92,14 @@ globalThis.fetch = async (url) => ({
   arrayBuffer: async () => new ArrayBuffer(url.includes('bella') ? 8 : 0),
 });
 
+const channel = new Float32Array(2000);
+channel.fill(0.25);
 const context = {
     state: 'running',
     currentTime: 1,
     destination: {},
     resume: async () => {},
-    decodeAudioData: async () => ({ sampleRate: 24000 }),
+    decodeAudioData: async () => ({ sampleRate: 24000, getChannelData: () => channel }),
     createGain: () => ({ gain: { value: 0 }, connect() {} }),
     createBufferSource: () => new FakeSource(),
   },
@@ -71,6 +114,7 @@ const engine = createVoiceEngine({
   getVolume: () => 80,
   getVoiceId: () => 'bella',
   fallback: (text) => (fallbackText = text),
+  createMediaElement: () => new FakeMedia(),
 });
 
 await engine.prepare();
@@ -87,17 +131,27 @@ await new Promise((resolve) => engine.speak('1 2', { rate: 1.485, onend: resolve
 await new Promise((resolve) => engine.speak('1', { onend: resolve }));
 await engine.speak('unknown line');
 
+const fallbackEngine = createVoiceEngine({
+  getContext: () => context,
+  getVolume: () => 80,
+  getVoiceId: () => 'bella',
+  fallback: () => {},
+  createMediaElement: () => new RejectingMedia(),
+});
+await new Promise((resolve) => fallbackEngine.speak('1', { rate: 1.485, onend: resolve }));
+
 const expectedRate = 1.485 / manifest.generationSpeed,
   starts = calls.filter((call) => call.method === 'start'),
-  naturalStart = starts.at(-1),
-  adjustedStarts = starts.slice(0, -1);
-if (
-  !adjustedStarts.length ||
-  adjustedStarts.some((call) => Math.abs(call.rate - expectedRate) > 0.0001)
-)
-  throw new Error('Bundled playback rate was not applied');
+  naturalStart = starts.at(-2),
+  fallbackStart = starts.at(-1);
+if (!mediaStarts.length || mediaStarts.some((call) => Math.abs(call.rate - expectedRate) > 0.0001))
+  throw new Error('Bundled tempo was not applied through pitch-preserving playback');
+if (mediaStarts.some((call) => !call.preservesPitch || !call.webkitPreservesPitch))
+  throw new Error('Bundled tempo changes must preserve pitch');
 if (!naturalStart || naturalStart.rate !== 1)
   throw new Error('Bundled announcements must use the recording speed');
+if (!fallbackStart || Math.abs(fallbackStart.rate - expectedRate) > 0.0001)
+  throw new Error('Pitch-preserving media failures must fall back to Web Audio');
 if (fallbackText !== 'unknown line') throw new Error('Unknown lines must use device fallback');
 
 console.log('Validated reliable bundled playback, cancellation, completion, and device fallback.');

@@ -21,8 +21,9 @@ line changes:
 If a bundled voice cannot resolve a line, Cornerwork deliberately falls back to the selected device
 voice instead of dropping the instruction.
 
-Bundled playback uses the Web Audio sprite engine. Keep the playback path dependency-free and test
-both Cornerwork and Device voice modes on mobile whenever it changes.
+Bundled playback uses the Web Audio sprite engine. Tempo-adjusted combo readouts are assembled into
+a temporary WAV and use the browser's native pitch-preserving media playback, with Web Audio as the
+reliability fallback. Test both Cornerwork and Device voice modes on mobile whenever this changes.
 
 ## Adding another bundled voice
 
