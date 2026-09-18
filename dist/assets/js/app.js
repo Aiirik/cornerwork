@@ -19,7 +19,7 @@ import {
   loadIconThemes,
   renderIconThemeOptions,
 } from './icon-themes.js?v=186';
-import { createVoiceEngine } from './voice-engine.js?v=233';
+import { createVoiceEngine } from './voice-engine.js?v=234';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
