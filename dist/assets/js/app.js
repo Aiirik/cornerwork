@@ -536,6 +536,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     wakeLock = null,
     wakeLockPending = false,
     audioContext = null,
+    audioSessionClassified = false,
     speechTimers = [],
     deviceSpeechStartTimer = null,
     activeDeviceUtterances = new Set(),
@@ -2664,6 +2665,19 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
   }
   function audioEngine() {
     try {
+      // Coach callouts are brief prompts, not persistent media playback. Classifying
+      // them as transient lets supporting platforms avoid treating the workout like
+      // a music session while leaving unsupported browsers on their normal path.
+      if (!audioSessionClassified) {
+        audioSessionClassified = true;
+        if ('audioSession' in navigator) {
+          try {
+            navigator.audioSession.type = 'transient';
+          } catch (error) {
+            console.debug('Transient audio sessions are unavailable.', error);
+          }
+        }
+      }
       const AudioEngine = window.AudioContext || window.webkitAudioContext;
       if (!AudioEngine) return null;
       if (!audioContext || audioContext.state === 'closed') audioContext = new AudioEngine();
