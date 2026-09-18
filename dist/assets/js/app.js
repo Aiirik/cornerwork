@@ -416,14 +416,14 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     allerta: '"Allerta Stencil"',
     keania: '"Keania One"',
   };
-  // Each bundled font has a different digit width. These caps let the clock fill the
-  // phone without making the viewport fitter shrink and recenter the whole workout.
+  // Each bundled font has different visible numeral proportions. These caps let the
+  // largest setting approach the phone edges while retaining a small clipping margin.
   const mobileClockWidthLimits = {
-    league: 33,
-    montserrat: 29,
-    barlow: 44,
-    allerta: 29,
-    keania: 30,
+    league: 46,
+    montserrat: 41,
+    barlow: 61,
+    allerta: 41,
+    keania: 42,
   };
   let iconThemes = new Map([['default', createIconTheme('default')]]);
   const displayDefaults = {
@@ -3772,11 +3772,18 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         right = contentRect.right,
         top = contentRect.top,
         bottom = contentRect.bottom;
+      const timer = content.querySelector('.timer'),
+        mobileLayout = window.matchMedia('(max-width: 820px)').matches;
       content.querySelectorAll('*').forEach((element) => {
         if (!element.getClientRects().length) return;
         const rect = element.getBoundingClientRect();
-        left = Math.min(left, rect.left);
-        right = Math.max(right, rect.right);
+        // Timer slots use equal advances for stable digits. At large phone sizes those
+        // invisible slot boxes can extend farther than the actual numeral shapes. Do
+        // not let that whitespace shrink and vertically recenter the entire workout.
+        if (!mobileLayout || !timer?.contains(element)) {
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
         top = Math.min(top, rect.top);
         bottom = Math.max(bottom, rect.bottom);
       });
