@@ -166,6 +166,8 @@ These rules are easy to break and should be deliberately verified after related 
 
 - Voice volume follows the main workout volume.
 - Number speed and word speed are independent.
+- Bundled coach speed uses pitch-preserving time stretching. Changing number, word, or announcement
+  tempo must not raise or lower the coach's pitch.
 - Normal combo frequency begins after the complete spoken combination and any attached coaching cue finishes.
 - iPhone and iPad speech rate is compensated so it better matches desktop playback.
 - Round announcements use normal announcement timing, not combo readout speed.
@@ -239,8 +241,8 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 | `cornerwork-studio-programs`          | User-created Program Studio definitions                       |
 | `cornerwork-studio-program-deletions` | Cross-device Studio deletion timestamps                       |
 | `cornerwork-program-variations`       | Last-started repeatable seed for each program session         |
-| `cornerwork-preset-deletions`          | Cross-device saved-workout deletion timestamps                |
-| `cornerwork-user-data-meta`            | Per-section timestamps for conflict-safe account syncing      |
+| `cornerwork-preset-deletions`         | Cross-device saved-workout deletion timestamps                |
+| `cornerwork-user-data-meta`           | Per-section timestamps for conflict-safe account syncing      |
 | `cornerwork-setup-mode`               | Current custom, Studio, quick, program, or preset selection   |
 | `cornerwork-active-selection`         | Selected preset description                                   |
 | `cornerwork-custom-workout`           | Last custom setup before loading a preset                     |

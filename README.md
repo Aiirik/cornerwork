@@ -20,14 +20,14 @@ Workouts can be as simple as a few timed rounds or as detailed as a complete tra
 
 ## Ways to train
 
-| Workout type | What it does |
-| --- | --- |
-| **Custom** | Build a workout from scratch by choosing the timing, skill level, techniques, combinations, round focuses, and coaching behavior. |
-| **Quick Start** | Answer a few questions about duration, goal, skill, equipment, and training style to generate an editable workout. |
-| **Presets** | Start from a ready-made general workout configuration, then adjust it using the normal Cornerwork controls. |
-| **Programs** | Follow purpose-built sessions for focus drills, heavy bag work, shadowboxing, foundations, intervals, and fight-style training. |
-| **Program Studio** | Create a locked multi-round plan with shared timing and a specific focus for each round. Studio programs can be saved, replayed, shared, and synced. |
-| **Endless** | Keep clearing progressively harder levels with no final round. Round length, rest, callout pace, skill, and combination length increase gradually while points track the work called. |
+| Workout type       | What it does                                                                                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Custom**         | Build a workout from scratch by choosing the timing, skill level, techniques, combinations, round focuses, and coaching behavior.                                                     |
+| **Quick Start**    | Answer a few questions about duration, goal, skill, equipment, and training style to generate an editable workout.                                                                    |
+| **Presets**        | Start from a ready-made general workout configuration, then adjust it using the normal Cornerwork controls.                                                                           |
+| **Programs**       | Follow purpose-built sessions for focus drills, heavy bag work, shadowboxing, foundations, intervals, and fight-style training.                                                       |
+| **Program Studio** | Create a locked multi-round plan with shared timing and a specific focus for each round. Studio programs can be saved, replayed, shared, and synced.                                  |
+| **Endless**        | Keep clearing progressively harder levels with no final round. Round length, rest, callout pace, skill, and combination length increase gradually while points track the work called. |
 
 Built-in Programs show their session structure before loading. Completed sessions are tracked individually, and repeatable programs can create a fresh valid variation or replay the exact last-started sequence.
 
@@ -115,12 +115,12 @@ Most data stays in the browser. If Google sign-in is used, only the supported sa
 
 ## Keyboard controls
 
-| Action | Default key |
-| --- | --- |
-| Start or pause | Space |
-| Next phase | N |
-| Previous phase | R |
-| Mute voice | M |
+| Action         | Default key |
+| -------------- | ----------- |
+| Start or pause | Space       |
+| Next phase     | N           |
+| Previous phase | R           |
+| Mute voice     | M           |
 
 Keyboard shortcuts can be changed in Settings. Their labels can also be hidden from the workout controls.
 

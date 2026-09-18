@@ -19,7 +19,7 @@ import {
   loadIconThemes,
   renderIconThemeOptions,
 } from './icon-themes.js?v=186';
-import { createVoiceEngine } from './voice-engine.js?v=229';
+import { createVoiceEngine } from './voice-engine.js?v=230';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
@@ -2465,12 +2465,16 @@ import { createVoiceEngine } from './voice-engine.js?v=229';
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
   function speakUtterance(text, onend, rate = 0.95) {
+    const sequence = speechSequence,
+      finish = () => {
+        if (sequence === speechSequence) onend?.();
+      };
     if (!speechAvailable()) {
-      onend?.();
+      finish();
       return;
     }
-    if (settings.voiceSource === 'bundled') bundledSpeech.speak(text, { onend, rate });
-    else speakDeviceUtterance(text, onend, rate);
+    if (settings.voiceSource === 'bundled') bundledSpeech.speak(text, { onend: finish, rate });
+    else speakDeviceUtterance(text, finish, rate);
   }
   function say(text, onend) {
     cancelSpeech();
@@ -2546,6 +2550,18 @@ import { createVoiceEngine } from './voice-engine.js?v=229';
       () => newCombo(true),
       (activeFocusedDrill() ? focusedDelay() : cadence()) * 1000,
     );
+  }
+  function resumeWorkoutAfterSpeechSettingChange() {
+    if (!running || phase !== 'work') return;
+    if (roundAnnouncementActive) {
+      announceRound();
+      return;
+    }
+    if (punchOutActive) return;
+    clearTimeout(comboTick);
+    comboTick = setTimeout(() => {
+      if (running && phase === 'work') newCombo(true);
+    }, 250);
   }
   function maybeAdvanceBlock() {
     if (settings.structured === 'off' || phase !== 'work') return;
@@ -3942,6 +3958,7 @@ import { createVoiceEngine } from './voice-engine.js?v=229';
           if (!on) {
             cancelSpeech();
             if (roundAnnouncementActive) finishRoundAnnouncement();
+            else resumeWorkoutAfterSpeechSettingChange();
           }
         }
         if (b.id === 'clapperEnabled') {
@@ -3970,17 +3987,20 @@ import { createVoiceEngine } from './voice-engine.js?v=229';
     settings.voiceSource = $('#voiceSource').value === 'device' ? 'device' : 'bundled';
     syncVoiceControls();
     saveSettings();
+    resumeWorkoutAfterSpeechSettingChange();
   };
   $('#bundledVoice').onchange = () => {
     cancelSpeech();
     settings.bundledVoice = $('#bundledVoice').value === 'michael' ? 'michael' : 'bella';
     bundledSpeech.prepare(settings.bundledVoice);
     saveSettings();
+    resumeWorkoutAfterSpeechSettingChange();
   };
   $('#deviceVoice').onchange = () => {
     cancelSpeech();
     settings.deviceVoice = $('#deviceVoice').value;
     saveSettings();
+    resumeWorkoutAfterSpeechSettingChange();
   };
   $('#wordSpeechRate').oninput = () => {
     settings.wordSpeechRate = +$('#wordSpeechRate').value;

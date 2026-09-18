@@ -3,10 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "vendor:audio": "node .github/scripts/vendor-audio.mjs",
     "voice:generate": "node .github/scripts/generate-voice-packs.mjs",
-    "voice:check": "node .github/scripts/validate-voice-packs.mjs"
+    "voice:check": "node .github/scripts/validate-voice-packs.mjs",
+    "voice:test": "node .github/scripts/test-voice-engine.mjs"
   },
   "devDependencies": {
-    "kokoro-js": "1.2.1"
+    "kokoro-js": "1.2.1",
+    "signalsmith-stretch": "1.3.2"
   }
 }

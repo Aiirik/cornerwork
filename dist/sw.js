@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v254';
+const CACHE = 'cornerwork-v255';
 const CORE = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const CORE = [
   './assets/js/endless.js',
   './assets/js/icon-themes.js',
   './assets/js/voice-engine.js',
+  './assets/js/vendor/signalsmith-stretch.mjs',
   './assets/voices/manifest.json',
   './assets/voices/bella.opus',
   './assets/voices/michael.opus',
