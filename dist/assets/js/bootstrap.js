@@ -54,7 +54,7 @@
     document.addEventListener('DOMContentLoaded', addAccessibilitySetting, { once: true });
   else addAccessibilitySetting();
   const core = document.createElement('script');
-  core.src = 'assets/js/enhancements.js?v=241';
+  core.src = 'assets/js/enhancements.js?v=242';
   core.defer = true;
   core.addEventListener('load', () => {
     const endless = document.createElement('script');
