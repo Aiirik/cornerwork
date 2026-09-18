@@ -604,6 +604,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     const currentLevel = Math.max(1, Math.floor(Number(level) || 1)),
       workTier = Math.floor((currentLevel - 1) / 3),
       restTier = Math.floor((currentLevel - 1) / 4),
+      cadenceTier = Math.floor((currentLevel - 1) / 4),
       progression = settings.endlessDifficulty === 'advanced' ? 'advanced' : 'basic',
       skill =
         progression === 'advanced'
@@ -625,7 +626,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       level: currentLevel,
       roundTime: Math.min(300, 60 + workTier * 15),
       restTime: Math.min(60, 20 + restTier * 5),
-      pace: Math.max(2, 8 - workTier),
+      pace: Math.max(3, 7 - cadenceTier),
       skill,
       maxMoves: Math.min(8, 2 + workTier),
       includeTypes,
