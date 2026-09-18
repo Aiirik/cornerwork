@@ -86,7 +86,9 @@ Use these labels consistently in the interface and documentation:
 
 - Endless is a separate workout type with its own focused setup panel. Selecting it must not reload the page or disturb the normal Custom, Program Studio, Quick Start, Presets, or Programs flows.
 - Endless exposes warm-up duration as its only timing control. Levels, rests, callout cadence, skill, included technique categories, and maximum combination length follow one deterministic progression every run.
-- Level 1 starts with 1:00 work and 0:20 rest. Every two levels add 0:15 work and 0:05 rest, capped at 5:00 work and 1:00 rest. Callouts accelerate toward a two-second cadence while longer combinations and more technique categories unlock.
+- Level 1 starts with 1:00 work and 0:20 rest. Work adds 0:15 every three levels and rest adds
+  0:05 every four levels, capped at 5:00 and 1:00. Callout delay starts at seven seconds, drops
+  one second every four levels, and stops accelerating at three seconds.
 - Endless uses weighted points while preserving a separate move count. Jabs, crosses, feints, defense, and movement earn one point; hooks and uppercuts earn two; and every body punch adds a one-point bonus. A body hook therefore earns three points. The app does not claim to detect whether the user physically performed a move.
 - Endless strongly favors one- and two-action combinations in its opening levels. As levels rise, medium and complex calls become more likely, but simple combinations always retain at least a 25% selection band so late levels remain varied rather than becoming exclusively difficult.
 - Endless exposes the shared voice-coaching controls in its setup panel and uses its own motivational and recovery cue pools during a run.
@@ -96,7 +98,7 @@ Use these labels consistently in the interface and documentation:
 - Endless uses the standard `Warmup` heading, shows `Endless mode` in the shared phase row before the run begins, and describes its recovery countdown as `Next rest`.
 - On mobile Standard layouts, combo callouts stay visually centered between the top-aligned clock block and the fixed content below it. Callout font scaling preserves that center point. Endless omits its redundant `Endless` summary pill while retaining skill, upcoming move count, and next-rest details.
 - Endless omits the redundant `No finish line` and levels-cleared line below the clock. Current level progress remains available in its level timeline, and points appear in the shared Combos and Moves line without adding another row.
-- Endless offers Basic and Advanced progression. Both add 0:15 work every three levels and 0:05 rest every four levels. Basic uses Basic difficulty for Levels 1–5, Intermediate for 6–11, and Advanced from 12 onward; Advanced uses Basic for 1–2, Intermediate for 3–6, and Advanced from 7 onward. Maximum combination length and callout pace advance on the same three-level cadence as work duration.
+- Endless offers Basic and Advanced progression. Both add 0:15 work every three levels and 0:05 rest every four levels. Basic uses Basic difficulty for Levels 1–5, Intermediate for 6–11, and Advanced from 12 onward; Advanced uses Basic for 1–2, Intermediate for 3–6, and Advanced from 7 onward. Maximum combination length advances every three levels; callout delay advances every four levels from seven seconds to a three-second minimum.
 - On mobile Standard layouts, the summary pills, round or level pips, primary controls, and audio note form one shared bottom-anchored footer in every workout mode. The callout area flexes into the remaining middle space, so removing mode-specific text cannot lift the controls.
 - Endless keeps the normal Standard and Compact workout geometry. It does not add a separate status board; only Points are added to the existing workout-stat line. Switching workout types also preserves the user's active display layout and sizing preferences.
 - Ready, warmup, work, rest, and complete phases
