@@ -1727,6 +1727,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
   }
   function numbered(x) {
     if (typeof x === 'number') return String(x);
+    if (x === 'jab feint') return '1 Feint';
     if (x.startsWith('body ')) return x.slice(-1) + ' Body';
     if (x.startsWith('head ')) return x.slice(-1) + ' Head';
     return phrase(x);
@@ -2508,6 +2509,10 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       return combo.map((move) => ({ kind: 'word', text: phrase(move) }));
     const segments = [];
     combo.forEach((move) => {
+      if (move === 'jab feint') {
+        segments.push({ kind: 'mixed', text: 'One feint', endsWith: 'word' });
+        return;
+      }
       const targeted =
         typeof move === 'string' && (move.startsWith('body ') || move.startsWith('head '));
       if (typeof move === 'number' || targeted) {
