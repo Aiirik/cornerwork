@@ -166,6 +166,8 @@ These rules are easy to break and should be deliberately verified after related 
 
 - Voice volume follows the main workout volume.
 - Number speed and word speed are independent.
+- Number format applies to punch-based variations as well as standard punches. A jab feint displays
+  as `1 Feint`, speaks as “One feint,” and uses `Jab Feint` only in name format.
 - Bundled coach playback must use the broadly supported Web Audio sprite path. A failed optional
   audio enhancement must never silence bundled or device voices.
 - Bundled combo tempo changes use native media playback with pitch preservation enabled. If that
