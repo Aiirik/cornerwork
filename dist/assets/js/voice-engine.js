@@ -108,7 +108,7 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
     }
   }
 
-  async function speak(text, { rate = 0.95, onend } = {}) {
+  async function speak(text, { rate, onend } = {}) {
     const requestGeneration = generation;
     try {
       const data = await manifest(),
@@ -121,7 +121,7 @@ export function createVoiceEngine({ getContext, getVolume, getVoiceId, fallback 
       if (context.state !== 'running') await context.resume().catch(() => {});
       if (requestGeneration !== generation) return true;
 
-      const playbackRate = clamp(rate / (data.generationSpeed || 1), 0.55, 1.8),
+      const playbackRate = rate == null ? 1 : clamp(rate / (data.generationSpeed || 1), 0.55, 1.8),
         gain = context.createGain();
       gain.gain.value = clamp(getVolume() / 100, 0, 1);
       gain.connect(context.destination);

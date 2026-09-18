@@ -84,12 +84,20 @@ if (cancelledCallbackRan) throw new Error('A cancelled bundled callout completed
 if (activeSources.size) throw new Error('Cancelled bundled sources must be stopped');
 
 await new Promise((resolve) => engine.speak('1 2', { rate: 1.485, onend: resolve }));
+await new Promise((resolve) => engine.speak('1', { onend: resolve }));
 await engine.speak('unknown line');
 
 const expectedRate = 1.485 / manifest.generationSpeed,
-  starts = calls.filter((call) => call.method === 'start');
-if (!starts.length || starts.some((call) => Math.abs(call.rate - expectedRate) > 0.0001))
+  starts = calls.filter((call) => call.method === 'start'),
+  naturalStart = starts.at(-1),
+  adjustedStarts = starts.slice(0, -1);
+if (
+  !adjustedStarts.length ||
+  adjustedStarts.some((call) => Math.abs(call.rate - expectedRate) > 0.0001)
+)
   throw new Error('Bundled playback rate was not applied');
+if (!naturalStart || naturalStart.rate !== 1)
+  throw new Error('Bundled announcements must use the recording speed');
 if (fallbackText !== 'unknown line') throw new Error('Unknown lines must use device fallback');
 
 console.log('Validated reliable bundled playback, cancellation, completion, and device fallback.');

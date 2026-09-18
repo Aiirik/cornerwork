@@ -19,7 +19,7 @@ import {
   loadIconThemes,
   renderIconThemeOptions,
 } from './icon-themes.js?v=186';
-import { createVoiceEngine } from './voice-engine.js?v=231';
+import { createVoiceEngine } from './voice-engine.js?v=232';
 (() => {
   // Core combo library and workout defaults.
   const $ = (s) => document.querySelector(s),
@@ -462,6 +462,7 @@ import { createVoiceEngine } from './voice-engine.js?v=231';
     brandLayoutHeaderV3: true,
     wordSpeechRateScaleV2: true,
     speechGapControlsV2: true,
+    voiceSourceDeviceDefaultV1: true,
     trainingMode: 'bag',
     structured: 'off',
     focusedDrill: null,
@@ -487,7 +488,7 @@ import { createVoiceEngine } from './voice-engine.js?v=231';
     sidebarShortcuts: false,
     showFullscreen: false,
     voice: true,
-    voiceSource: 'bundled',
+    voiceSource: 'device',
     bundledVoice: 'bella',
     deviceVoice: '',
     speechRate: 5,
@@ -2485,7 +2486,7 @@ import { createVoiceEngine } from './voice-engine.js?v=231';
     bundledSpeech.cancel();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
-  function speakUtterance(text, onend, rate = 0.95) {
+  function speakUtterance(text, onend, rate) {
     const sequence = speechSequence,
       finish = () => {
         if (sequence === speechSequence) onend?.();
@@ -3529,6 +3530,11 @@ import { createVoiceEngine } from './voice-engine.js?v=231';
         const oldRate = 0.96 + ((Number(saved.wordSpeechRate) || 5) - 5) * 0.085;
         settings.wordSpeechRate = Math.min(10, Math.max(1, Math.round(1 + (oldRate - 0.9) / 0.1)));
         settings.wordSpeechRateScaleV2 = true;
+        saveSettings();
+      }
+      if (!saved.voiceSourceDeviceDefaultV1) {
+        settings.voiceSource = 'device';
+        settings.voiceSourceDeviceDefaultV1 = true;
         saveSettings();
       }
       if (!saved.roundStartDefaultV2) {

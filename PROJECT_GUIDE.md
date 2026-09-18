@@ -168,6 +168,8 @@ These rules are easy to break and should be deliberately verified after related 
 - Number speed and word speed are independent.
 - Bundled coach playback must use the broadly supported Web Audio sprite path. A failed optional
   audio enhancement must never silence bundled or device voices.
+- Bundled round announcements and coaching cues play at the recording's natural speed. Explicit
+  number and word rates are only applied to combo readouts.
 - Normal combo frequency begins after the complete spoken combination and any attached coaching cue finishes.
 - iPhone and iPad speech rate is compensated so it better matches desktop playback.
 - Round announcements use normal announcement timing, not combo readout speed.
