@@ -324,12 +324,15 @@ button {
   text-align: center;
 }
 .timer {
+  /* Trim the font's invisible ascent so the visible numerals, rather than the
+     line box, set their distance from the phase label at every clock size. */
+  --timer-leading-trim: 0.2em;
   font-variant-numeric: tabular-nums;
   font-size: calc(clamp(84px, 13vw, 172px) * var(--clock-scale));
   line-height: 0.92;
   font-weight: 900;
   letter-spacing: -0.025em;
-  margin: 8px auto 6px;
+  margin: calc(8px - var(--timer-leading-trim)) auto 6px;
   width: 5ch;
   white-space: nowrap;
   text-align: center;
@@ -2307,7 +2310,7 @@ body.compact-workout .workout-display .phase {
 }
 body.compact-workout .workout-display .timer {
   grid-area: timer;
-  margin: 0 auto 2px;
+  margin: calc(0px - var(--timer-leading-trim)) auto 2px;
   font-size: min(
     calc(clamp(72px, min(13vw, 20dvh), 156px) * var(--clock-scale)),
     var(--mobile-clock-width-limit, 29vw)
