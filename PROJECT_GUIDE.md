@@ -113,7 +113,6 @@ Use these labels consistently in the interface and documentation:
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
 - In Standard layout on phones and desktops, the round label, countdown, stats, and time-left block stay top-aligned while the callout area flexes and the footer remains anchored below it. Clock placement is not user-adjustable. Large phone clocks may grow close to the screen edges, but invisible equal-width digit slots must not trigger whole-workout scaling, add top spacing, or shift the timeline and controls.
-- The timer trims its font-leading at the top so the visible clock numerals keep a consistent tight gap below the phase label as the selected clock size changes. Apply that trim in both Standard and Compact layouts rather than moving the timer with a size-specific offset.
 - Full round-focus labels wrap to two lines inside timeline pips, with an optional compact abbreviated-label display setting
 
 ### Saving and continuity
