@@ -3814,14 +3814,16 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
             candidate.width <= widthLimit + 0.5 && candidate.height <= heightLimit + 0.5;
         if (!fitsClock(bounds)) {
           let low = minimumSize,
-            high = requestedSize;
-          for (let attempt = 0; attempt < 8; attempt++) {
+            // A fixed upper bound gives every slider value above the fit limit
+            // the same result, rather than a slightly different approximation.
+            high = Math.max(400, requestedSize);
+          for (let attempt = 0; attempt < 12; attempt++) {
             const middle = (low + high) / 2;
             timer.style.setProperty('--clock-fit-cap', middle + 'px');
             if (fitsClock(measureContent())) low = middle;
             else high = middle;
           }
-          timer.style.setProperty('--clock-fit-cap', low + 'px');
+          timer.style.setProperty('--clock-fit-cap', Math.floor(low * 2) / 2 + 'px');
         } else timer.style.removeProperty('--clock-fit-cap');
         bounds = measureContent();
       }
