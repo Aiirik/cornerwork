@@ -3753,6 +3753,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     fitWorkoutToViewport();
   }
   let workoutFitFrame = 0;
+  let lastFittedCenterSize = null;
   function fitWorkoutToViewport() {
     cancelAnimationFrame(workoutFitFrame);
     workoutFitFrame = requestAnimationFrame(() => {
@@ -3841,6 +3842,9 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       content.style.setProperty('--workout-fit-inverse', String(1 / scale));
       content.style.setProperty('--workout-shift-x', shiftX.toFixed(2) + 'px');
       content.style.setProperty('--workout-shift-y', shiftY.toFixed(2) + 'px');
+      // The clock cap can resize .center. Remember the settled layout so its
+      // ResizeObserver notification does not start another fit cycle.
+      lastFittedCenterSize = { width: content.offsetWidth, height: content.offsetHeight };
     });
   }
   function syncSoundControls(prefix) {
@@ -4777,7 +4781,18 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       location.reload();
     },
   };
-  const fitObserver = 'ResizeObserver' in window ? new ResizeObserver(fitWorkoutToViewport) : null;
+  const fitObserver =
+    'ResizeObserver' in window
+      ? new ResizeObserver((entries) => {
+          const content = $('.center');
+          const viewportChanged = entries.some((entry) => entry.target === $('.workout'));
+          const contentChanged =
+            !lastFittedCenterSize ||
+            content.offsetWidth !== lastFittedCenterSize.width ||
+            content.offsetHeight !== lastFittedCenterSize.height;
+          if (viewportChanged || contentChanged) fitWorkoutToViewport();
+        })
+      : null;
   if (fitObserver) {
     fitObserver.observe($('.workout'));
     fitObserver.observe($('.center'));
