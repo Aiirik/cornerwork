@@ -1,4 +1,4 @@
-const CACHE = 'cornerwork-v264';
+const CACHE = 'cornerwork-v265';
 const CORE = [
   './',
   './index.html',
@@ -7,6 +7,9 @@ const CORE = [
   './assets/icons/ui-icons.svg',
   './assets/icons/Header-icon.png',
   './assets/icons/social-preview.png',
+  './favicon.ico',
+  './favicon-v2.png',
+  './apple-touch-icon-v2.png',
   './assets/js/app.js',
   './assets/js/bootstrap.js',
   './assets/js/enhancements.js',

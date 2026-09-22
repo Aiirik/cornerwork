@@ -2942,12 +2942,17 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     const selectedIconTheme =
         iconThemes.get(settings.appIconTheme) || createIconTheme(settings.appIconTheme),
       activeIconTheme = legacyBrand ? selectedIconTheme : createIconTheme('default'),
+      usesDefaultIcon = activeIconTheme.id === 'default',
       brandIcon = $('#brandIcon'),
       brandIconSource = legacyBrand
         ? selectedIconTheme.root + '/icon.png'
         : 'assets/icons/Header-icon.png',
-      browserIconSource = activeIconTheme.root + '/icon-192.png',
-      appleTouchIconSource = activeIconTheme.root + '/apple-touch-icon.png';
+      browserIconSource = usesDefaultIcon
+        ? 'favicon-v2.png'
+        : activeIconTheme.root + '/icon.png?v=2',
+      appleTouchIconSource = usesDefaultIcon
+        ? 'apple-touch-icon-v2.png'
+        : activeIconTheme.root + '/apple-touch-icon.png?v=2';
     if (brandIcon.getAttribute('src') !== brandIconSource) brandIcon.src = brandIconSource;
     brandIcon.alt = legacyBrand ? '' : 'Cornerwork';
     $('#appIconSettingRow').hidden = !legacyBrand;
@@ -3776,7 +3781,8 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         mobileLayout = window.matchMedia('(max-width: 820px)').matches;
       content.querySelectorAll('*').forEach((element) => {
         if (!element.getClientRects().length) return;
-        const rect = element.getBoundingClientRect();
+        const rect = element.getBoundingClientRect(),
+          isTimerGlyph = element !== timer && timer?.contains(element);
         // Timer slots use equal advances for stable digits. At large phone sizes those
         // invisible slot boxes can extend farther than the actual numeral shapes. Do
         // not let that whitespace shrink and vertically recenter the entire workout.
@@ -3784,8 +3790,12 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         }
-        top = Math.min(top, rect.top);
-        bottom = Math.max(bottom, rect.bottom);
+        // The glyphs are lifted visually inside the timer's unchanged layout box.
+        // Measure that stable parent box so the lift cannot trigger viewport scaling.
+        if (!isTimerGlyph) {
+          top = Math.min(top, rect.top);
+          bottom = Math.max(bottom, rect.bottom);
+        }
       });
       const contentWidth = Math.max(1, right - left),
         contentHeight = Math.max(1, bottom - top),

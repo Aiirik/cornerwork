@@ -113,6 +113,7 @@ Use these labels consistently in the interface and documentation:
 - Remappable keyboard shortcuts and screen Wake Lock while running
 - Standard and compact main-page layouts with the same workout information and controls
 - In Standard layout on phones and desktops, the round label, countdown, stats, and time-left block stay top-aligned while the callout area flexes and the footer remains anchored below it. Clock placement is not user-adjustable. Large phone clocks may grow close to the screen edges, but invisible equal-width digit slots must not trigger whole-workout scaling, add top spacing, or shift the timeline and controls.
+- Remove visible font-leading above the timer by lifting only its rendered numeral and colon glyphs inside the unchanged timer box. The viewport fitter must measure the stable timer box rather than those lifted glyphs so clock sizing cannot introduce extra whole-workout scaling.
 - Full round-focus labels wrap to two lines inside timeline pips, with an optional compact abbreviated-label display setting
 
 ### Saving and continuity
@@ -135,6 +136,7 @@ Use these labels consistently in the interface and documentation:
 - Appearance, accessibility, audio, and display preferences
 - Display preferences include a gear-opened icon gallery generated from the default artwork and every valid folder inside `assets/icons`. Each folder name is used unchanged as its gallery label. The selection updates the in-app header, browser icon, Apple touch link, and active manifest. Phones may require removing and reinstalling an existing Home Screen app before its operating-system-cached icon changes.
 - The Default logo layout uses `assets/icons/Header-icon.png`, which contains the complete Cornerwork logo. It has no frame and no separate header text. In Default, the root icon set supplies the favicon, browser icon, manifest, and iPhone Home Screen icon.
+- Safari-facing favicon and Apple touch links use versioned root aliases generated from the default root icon set. Bump those alias filenames when the default artwork changes because Safari may retain webpage icons separately from normal website data. Keep a root `favicon.ico` fallback generated from the same artwork.
 - Public link and browser suggestion previews use the separate 1200 x 630 `assets/icons/social-preview.png` artwork. Keep this wide branded image distinct from the square favicon and install icons, and update its cache-busting metadata whenever the artwork changes.
 - The Legacy logo layout preserves the framed selectable app icon with Corner and Work stacked beside it. The App icon selector is shown only in Legacy, retains the user's selected theme while Default is active, and includes a saved header-only shape choice. Square is the default, while Circle clips the Legacy header frame and artwork without changing the browser or installed app icon.
 - On mobile, the header order is Workout, brand, volume, then Settings, with the brand anchored to the true horizontal center of the screen. Desktop keeps the brand on the left and its controls on the right.

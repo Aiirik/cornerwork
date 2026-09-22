@@ -2206,12 +2206,15 @@ button *,
   flex: 0 0 1ch;
   width: 1ch;
   text-align: center;
+  /* Move ink within the unchanged timer box; its height must not affect fitting. */
+  transform: translateY(-0.17em);
 }
 .timer-colon {
   display: inline-block;
   flex: 0 0 0.45ch;
   width: 0.45ch;
   text-align: center;
+  transform: translateY(-0.17em);
 }
 .workout-stats {
   display: flex;
