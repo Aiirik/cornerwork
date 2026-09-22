@@ -3763,6 +3763,8 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       content.style.setProperty('--workout-fit-inverse', '1');
       content.style.setProperty('--workout-shift-x', '0px');
       content.style.setProperty('--workout-shift-y', '0px');
+      const timer = content.querySelector('.timer');
+      timer?.style.removeProperty('--clock-fit-cap');
       const style = getComputedStyle(viewport),
         viewportRect = viewport.getBoundingClientRect(),
         inset = 4,
@@ -3772,31 +3774,57 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         visibleBottom = viewportRect.bottom - parseFloat(style.paddingBottom) - inset,
         availableWidth = Math.max(1, visibleRight - visibleLeft),
         availableHeight = Math.max(1, visibleBottom - visibleTop),
-        contentRect = content.getBoundingClientRect();
-      let left = contentRect.left,
-        right = contentRect.right,
-        top = contentRect.top,
-        bottom = contentRect.bottom;
-      const timer = content.querySelector('.timer'),
         mobileLayout = window.matchMedia('(max-width: 820px)').matches;
-      content.querySelectorAll('*').forEach((element) => {
-        if (!element.getClientRects().length) return;
-        const rect = element.getBoundingClientRect(),
-          isTimerGlyph = element !== timer && timer?.contains(element);
-        // Timer slots use equal advances for stable digits. At large phone sizes those
-        // invisible slot boxes can extend farther than the actual numeral shapes. Do
-        // not let that whitespace shrink and vertically recenter the entire workout.
-        if (!mobileLayout || !timer?.contains(element)) {
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        }
-        // The glyphs are lifted visually inside the timer's unchanged layout box.
-        // Measure that stable parent box so the lift cannot trigger viewport scaling.
-        if (!isTimerGlyph) {
-          top = Math.min(top, rect.top);
-          bottom = Math.max(bottom, rect.bottom);
-        }
-      });
+      const measureContent = () => {
+        const rect = content.getBoundingClientRect();
+        let left = rect.left,
+          right = rect.right,
+          top = rect.top,
+          bottom = rect.bottom;
+        content.querySelectorAll('*').forEach((element) => {
+          if (!element.getClientRects().length) return;
+          const childRect = element.getBoundingClientRect(),
+            isTimerGlyph = element !== timer && timer?.contains(element);
+          // Equal-width clock slots may extend beyond the visible numbers on phones.
+          if (!mobileLayout || !timer?.contains(element)) {
+            left = Math.min(left, childRect.left);
+            right = Math.max(right, childRect.right);
+          }
+          // Lifted glyphs do not change the timer's layout box or fitting bounds.
+          if (!isTimerGlyph) {
+            top = Math.min(top, childRect.top);
+            bottom = Math.max(bottom, childRect.bottom);
+          }
+        });
+        return { rect, left, right, top, bottom, width: right - left, height: bottom - top };
+      };
+      let bounds = measureContent();
+      if (timer) {
+        // The full-height Standard center and its safety inset can exceed the
+        // nominal available box even with a tiny clock. Keep that baseline fit,
+        // but never let an enlarged clock make the rest of the UI fit smaller.
+        const requestedSize = parseFloat(getComputedStyle(timer).fontSize),
+          minimumSize = Math.min(requestedSize, 48);
+        timer.style.setProperty('--clock-fit-cap', minimumSize + 'px');
+        const minimumBounds = measureContent(),
+          widthLimit = Math.max(availableWidth, minimumBounds.width),
+          heightLimit = Math.max(availableHeight, minimumBounds.height),
+          fitsClock = (candidate) =>
+            candidate.width <= widthLimit + 0.5 && candidate.height <= heightLimit + 0.5;
+        if (!fitsClock(bounds)) {
+          let low = minimumSize,
+            high = requestedSize;
+          for (let attempt = 0; attempt < 8; attempt++) {
+            const middle = (low + high) / 2;
+            timer.style.setProperty('--clock-fit-cap', middle + 'px');
+            if (fitsClock(measureContent())) low = middle;
+            else high = middle;
+          }
+          timer.style.setProperty('--clock-fit-cap', low + 'px');
+        } else timer.style.removeProperty('--clock-fit-cap');
+        bounds = measureContent();
+      }
+      const { rect: contentRect, left, right, top, bottom } = bounds;
       const contentWidth = Math.max(1, right - left),
         contentHeight = Math.max(1, bottom - top),
         scale = Math.max(

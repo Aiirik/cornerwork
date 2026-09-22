@@ -325,7 +325,7 @@ button {
 }
 .timer {
   font-variant-numeric: tabular-nums;
-  font-size: calc(clamp(84px, 13vw, 172px) * var(--clock-scale));
+  font-size: min(calc(clamp(84px, 13vw, 172px) * var(--clock-scale)), var(--clock-fit-cap, 9999px));
   line-height: 0.92;
   font-weight: 900;
   letter-spacing: -0.025em;
@@ -2165,7 +2165,8 @@ button *,
        shrink and recenter the entire workout, which would add space above it. */
     font-size: min(
       calc(clamp(78px, 25vw, 120px) * var(--clock-scale)),
-      var(--mobile-clock-width-limit, 29vw)
+      var(--mobile-clock-width-limit, 29vw),
+      var(--clock-fit-cap, 9999px)
     );
   }
   .combo {
@@ -2176,7 +2177,8 @@ button *,
   .timer {
     font-size: min(
       calc(clamp(68px, 20vw, 96px) * var(--clock-scale)),
-      var(--mobile-clock-width-limit, 29vw)
+      var(--mobile-clock-width-limit, 29vw),
+      var(--clock-fit-cap, 9999px)
     );
   }
 }
@@ -2313,7 +2315,8 @@ body.compact-workout .workout-display .timer {
   margin: 0 auto 2px;
   font-size: min(
     calc(clamp(72px, min(13vw, 20dvh), 156px) * var(--clock-scale)),
-    var(--mobile-clock-width-limit, 29vw)
+    var(--mobile-clock-width-limit, 29vw),
+    var(--clock-fit-cap, 9999px)
   );
 }
 body.compact-workout .workout-display .workout-left {
