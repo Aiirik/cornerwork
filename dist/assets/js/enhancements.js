@@ -3000,6 +3000,8 @@
       const currentDisplay = Object.fromEntries(
         [
           'displayMode',
+          'autoLayout',
+          'landscapeSide',
           'compactRoundLabels',
           'clockSize',
           'clockFont',

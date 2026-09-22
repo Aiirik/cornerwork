@@ -480,6 +480,8 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     stance: 'orthodox',
     format: 'numbers',
     displayMode: 'standard',
+    autoLayout: false,
+    landscapeSide: 'clock-left',
     appIconTheme: 'default',
     headerIconShape: 'square',
     brandLayout: 'default',
@@ -1097,6 +1099,8 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     const clean = JSON.parse(JSON.stringify(value));
     [
       'displayMode',
+      'autoLayout',
+      'landscapeSide',
       'compactRoundLabels',
       'clockSize',
       'clockFont',
@@ -2934,7 +2938,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     document.body.classList.toggle('high-contrast', !!settings.highContrast);
     document.body.classList.toggle('white-outline-text', !!settings.whiteOutlineText);
     document.body.classList.toggle('show-fullscreen-button', !!settings.showFullscreen);
-    document.body.classList.toggle('compact-workout', settings.displayMode === 'compact');
+    syncWorkoutLayout();
     const legacyBrand = settings.brandLayout === 'legacy';
     document.body.classList.toggle('legacy-brand', legacyBrand);
     document.body.classList.toggle('circular-header-icon', settings.headerIconShape === 'circle');
@@ -3689,6 +3693,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     ['shortcutLabels', settings.shortcutLabels],
     ['sidebarShortcutToggle', settings.sidebarShortcuts],
     ['showFullscreen', settings.showFullscreen],
+    ['autoLayout', settings.autoLayout],
     ['compactRoundLabels', settings.compactRoundLabels],
     ['voice', settings.voice],
     ['clapperEnabled', settings.clapperEnabled],
@@ -3742,6 +3747,10 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       '--mobile-clock-width-limit',
       mobileClockWidthLimits[settings.clockFont] + 'vw',
     );
+    document.documentElement.style.setProperty(
+      '--landscape-clock-width-limit',
+      mobileClockWidthLimits[settings.clockFont] / 2 + 'cqi',
+    );
     document.documentElement.style.setProperty('--clock-scale', settings.clockSize / 100);
     document.documentElement.style.setProperty('--callout-scale', settings.calloutSize / 100);
     $('#clockFont').value = settings.clockFont;
@@ -3752,6 +3761,28 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     $('#calloutSizeValue').textContent = settings.calloutSize + '%';
     fitWorkoutToViewport();
   }
+  function syncWorkoutLayout() {
+    const viewport = $('.workout');
+    const layout = settings.autoLayout
+      ? viewport && viewport.clientWidth >= 760 && viewport.clientHeight >= 480
+        ? 'landscape'
+        : 'standard'
+      : settings.displayMode;
+    document.body.classList.toggle('compact-workout', layout === 'compact');
+    document.body.classList.toggle('landscape-workout', layout === 'landscape');
+    document.body.classList.toggle(
+      'landscape-reverse',
+      layout === 'landscape' && settings.landscapeSide === 'clock-right',
+    );
+    $('#landscapeSideRow').hidden = layout !== 'landscape';
+    const group = $('.segmented[data-setting="displayMode"]');
+    group.classList.toggle('auto-layout-selected', !!settings.autoLayout);
+    group.querySelectorAll('button').forEach((button) => {
+      button.disabled = !!settings.autoLayout;
+      button.classList.toggle('active', button.dataset.value === layout);
+    });
+    return layout;
+  }
   let workoutFitFrame = 0;
   let lastFittedCenterSize = null;
   function fitWorkoutToViewport() {
@@ -3760,6 +3791,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       const viewport = $('.workout'),
         content = $('.center');
       if (!viewport || !content) return;
+      syncWorkoutLayout();
       content.style.setProperty('--workout-fit', '1');
       content.style.setProperty('--workout-fit-inverse', '1');
       content.style.setProperty('--workout-shift-x', '0px');
@@ -3968,11 +4000,12 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
           renderComboList();
           renderCombo();
           render();
-          if (['displayMode', 'brandLayout'].includes(group.dataset.setting))
+          if (['displayMode', 'landscapeSide', 'brandLayout'].includes(group.dataset.setting))
             fitWorkoutToViewport();
         }),
     );
   });
+  syncWorkoutLayout();
   $$('#include .check').forEach(
     (b) =>
       (b.onclick = () => {
@@ -4083,6 +4116,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         if (b.id === 'showTimeLeft') settings.showTimeLeft = on;
         if (b.id === 'shortcutLabels') settings.shortcutLabels = on;
         if (b.id === 'showFullscreen') settings.showFullscreen = on;
+        if (b.id === 'autoLayout') settings.autoLayout = on;
         if (b.id === 'compactRoundLabels') settings.compactRoundLabels = on;
         if (b.id === 'sidebarShortcutToggle') {
           settings.sidebarShortcuts = on;
@@ -4090,6 +4124,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         }
         render();
         saveSettings();
+        if (b.id === 'autoLayout') fitWorkoutToViewport();
       }),
   );
   $('#speechRate').oninput = () => {
@@ -4346,6 +4381,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       ['shortcutLabels', settings.shortcutLabels],
       ['sidebarShortcutToggle', settings.sidebarShortcuts],
       ['showFullscreen', settings.showFullscreen],
+      ['autoLayout', settings.autoLayout],
       ['compactRoundLabels', settings.compactRoundLabels],
       ['voice', settings.voice],
       ['clapperEnabled', settings.clapperEnabled],

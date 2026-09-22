@@ -59,7 +59,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=209" />
+    <link rel="stylesheet" href="assets/css/app.css?v=210" />
   </head>
   <body>
     <main class="app">
@@ -682,8 +682,15 @@
             <div class="settings-tip" role="tooltip">
               <span
                 ><strong>Main page layout:</strong> Standard keeps the open workout view. Compact
-                places the timer and workout information in a shorter wide card for small
-                screens.</span
+                places the timer and workout information in a shorter wide card for small screens.
+                Landscape gives the clock and callouts half the workout area each.</span
+              ><span
+                ><strong>Landscape sides:</strong> Choose which side holds the clock and workout
+                information.</span
+              ><span
+                ><strong>Auto layout:</strong> Uses Landscape when the workout area is wide and tall
+                enough, and Standard when it is smaller. Turn it off to use your selected
+                layout.</span
               ><span
                 ><strong>Clock size:</strong> Makes the main countdown smaller or larger without
                 changing its timing.</span
@@ -716,12 +723,31 @@
               >
             </div>
           </div>
-          <div class="setting-row">
+          <div class="setting-row layout-setting-row">
             <span>Main page layout</span>
             <div class="segmented" data-setting="displayMode">
               <button class="active" data-value="standard">Standard</button
-              ><button data-value="compact">Compact</button>
+              ><button data-value="compact">Compact</button
+              ><button data-value="landscape">Landscape</button>
             </div>
+          </div>
+          <div class="setting-row layout-setting-row" id="landscapeSideRow" hidden>
+            <span>Landscape sides</span>
+            <div class="segmented" data-setting="landscapeSide">
+              <button class="active" data-value="clock-left">Clock left</button
+              ><button data-value="clock-right">Clock right</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span>Auto layout</span
+            ><button
+              class="switch"
+              id="autoLayout"
+              aria-label="Automatically use Landscape on large screens and Standard on smaller screens"
+              aria-pressed="false"
+            >
+              <i></i>
+            </button>
           </div>
           <div class="setting-row">
             <span>Logo layout</span>
@@ -1306,8 +1332,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=245"></script>
+    <script type="module" src="assets/js/app.js?v=246"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=252" defer></script>
+    <script src="assets/js/bootstrap.js?v=253" defer></script>
   </body>
 </html>
