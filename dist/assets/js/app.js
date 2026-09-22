@@ -3800,6 +3800,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         return { rect, left, right, top, bottom, width: right - left, height: bottom - top };
       };
       let bounds = measureContent();
+      let fitBounds = bounds;
       if (timer) {
         // The full-height Standard center and its safety inset can exceed the
         // nominal available box even with a tiny clock. Keep that baseline fit,
@@ -3812,6 +3813,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
           heightLimit = Math.max(availableHeight, minimumBounds.height),
           fitsClock = (candidate) =>
             candidate.width <= widthLimit + 0.5 && candidate.height <= heightLimit + 0.5;
+        fitBounds = minimumBounds;
         if (!fitsClock(bounds)) {
           let low = minimumSize,
             // A fixed upper bound gives every slider value above the fit limit
@@ -3828,11 +3830,15 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         bounds = measureContent();
       }
       const { rect: contentRect, left, right, top, bottom } = bounds;
-      const contentWidth = Math.max(1, right - left),
-        contentHeight = Math.max(1, bottom - top),
-        scale = Math.max(
+      // Only the clock is allowed to grow. Fit the rest of the workout from
+      // its small-clock baseline, not the enlarged timer's final bounds.
+      const scale = Math.max(
           0.1,
-          Math.min(1, availableWidth / contentWidth, availableHeight / contentHeight),
+          Math.min(
+            1,
+            availableWidth / Math.max(1, fitBounds.width),
+            availableHeight / Math.max(1, fitBounds.height),
+          ),
         ),
         transformOriginX = contentRect.left + contentRect.width / 2,
         transformOriginY = contentRect.top + contentRect.height / 2,
