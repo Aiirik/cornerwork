@@ -3829,9 +3829,11 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         } else timer.style.removeProperty('--clock-fit-cap');
         bounds = measureContent();
       }
-      const { rect: contentRect, left, right, top, bottom } = bounds;
+      const { rect: contentRect } = bounds;
       // Only the clock is allowed to grow. Fit the rest of the workout from
-      // its small-clock baseline, not the enlarged timer's final bounds.
+      // its small-clock baseline, not the enlarged timer's final bounds. Keep
+      // the centering anchored to that baseline too, so the controls do not
+      // translate when the clock reaches its cap.
       const scale = Math.max(
           0.1,
           Math.min(
@@ -3842,8 +3844,12 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         ),
         transformOriginX = contentRect.left + contentRect.width / 2,
         transformOriginY = contentRect.top + contentRect.height / 2,
-        scaledCenterX = transformOriginX + ((left + right) / 2 - transformOriginX) * scale,
-        scaledCenterY = transformOriginY + ((top + bottom) / 2 - transformOriginY) * scale,
+        baselineOriginX = fitBounds.rect.left + fitBounds.rect.width / 2,
+        baselineOriginY = fitBounds.rect.top + fitBounds.rect.height / 2,
+        scaledCenterX =
+          transformOriginX + ((fitBounds.left + fitBounds.right) / 2 - baselineOriginX) * scale,
+        scaledCenterY =
+          transformOriginY + ((fitBounds.top + fitBounds.bottom) / 2 - baselineOriginY) * scale,
         shiftX = (visibleLeft + visibleRight) / 2 - scaledCenterX,
         shiftY = (visibleTop + visibleBottom) / 2 - scaledCenterY;
       content.style.setProperty('--workout-fit', String(scale));
