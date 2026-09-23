@@ -3799,8 +3799,8 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         detailVisible = getComputedStyle(secondary).display !== 'none',
         detail = detailVisible ? secondary.getBoundingClientRect() : null;
       return (
-        main.top >= area.top - 1 &&
-        (detail || main).bottom <= area.bottom + 1 &&
+        main.top >= area.top + 4 &&
+        (detail || main).bottom <= area.bottom - 4 &&
         primary.scrollWidth <= primary.clientWidth + 1 &&
         (!detailVisible || secondary.scrollWidth <= secondary.clientWidth + 1)
       );
