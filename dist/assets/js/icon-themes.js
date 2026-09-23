@@ -59,7 +59,7 @@ export function renderIconThemeOptions(container, themes) {
         id +
         '" role="radio" aria-checked="false"><span class="icon-picker-preview"><img src="' +
         root +
-        '/icon.png" alt="' +
+        '/icon-192.png" loading="lazy" decoding="async" width="64" height="64" alt="' +
         label +
         ' Cornerwork icon"></span><strong>' +
         label +

@@ -2950,7 +2950,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       brandIcon = $('#brandIcon'),
       brandIconSource = legacyBrand
         ? selectedIconTheme.root + '/icon.png'
-        : 'assets/icons/Header-icon.png',
+        : 'assets/icons/Header-icon.webp',
       browserIconSource = usesDefaultIcon
         ? 'favicon-v2.png'
         : activeIconTheme.root + '/icon.png?v=2',
@@ -3151,7 +3151,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         val('warmupTime') > 0
           ? '<span class="phase-pip warmup-pip ' +
             (phase === 'warmup' ? 'current' : '') +
-            '" aria-label="Warmup"></span>'
+            '" role="img" aria-label="Warmup"></span>'
           : '';
     $('#timeline').style.gridTemplateColumns = settings.endlessMode
       ? 'repeat(5,minmax(0,1fr))'
@@ -3194,7 +3194,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
                 shortFocus +
                 '</span></span></span></span>' +
                 (resting
-                  ? '<span class="phase-pip rest-pip current" aria-label="Rest period"></span>'
+                  ? '<span class="phase-pip rest-pip current" role="img" aria-label="Rest period"></span>'
                   : '')
               );
             }).join(''),
@@ -3727,8 +3727,10 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     }
     syncIconPicker();
   }
-  initializeIconPicker();
-  $('#openIconPicker').onclick = () => {
+  let iconPickerPromise;
+  $('#openIconPicker').onclick = async () => {
+    iconPickerPromise ||= initializeIconPicker();
+    await iconPickerPromise;
     syncIconPicker();
     const modal = $('#iconPickerModal');
     modal.tabIndex = -1;

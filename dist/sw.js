@@ -1,12 +1,11 @@
-const CACHE = 'cornerwork-v282';
+const CACHE = 'cornerwork-v283';
 const CORE = [
   './',
   './index.html',
   './assets/css/app.css',
   './assets/css/features.css',
   './assets/icons/ui-icons.svg',
-  './assets/icons/Header-icon.png',
-  './assets/icons/social-preview.png',
+  './assets/icons/Header-icon.webp',
   './favicon.ico',
   './favicon-v2.png',
   './apple-touch-icon-v2.png',
@@ -21,40 +20,17 @@ const CORE = [
   './assets/voices/michael.opus',
   './assets/icons/catalog.json',
   './assets/fonts/league-spartan-clock.woff',
-  './assets/fonts/montserrat-clock.woff',
-  './assets/fonts/barlow-condensed-clock.woff',
-  './assets/fonts/allerta-stencil-clock.ttf',
-  './assets/fonts/keania-one-clock.ttf',
   './manifest.webmanifest',
-  './assets/icons/icon.png',
   './assets/icons/apple-touch-icon.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
 ];
-const ICON_FILES = ['icon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
-
-async function cacheIconThemes(cache) {
-  const response = await fetch('./assets/icons/catalog.json');
-  if (!response.ok) return;
-  const catalogue = await response.json();
-  const iconAssets = catalogue.themes.flatMap(({ id }) => {
-    const root = id === 'default' ? './assets/icons' : `./assets/icons/${encodeURIComponent(id)}`;
-    const manifest =
-      id === 'default'
-        ? './manifest.webmanifest'
-        : `./manifest-${encodeURIComponent(id)}.webmanifest`;
-    return [manifest, ...ICON_FILES.map((filename) => `${root}/${filename}`)];
-  });
-  await cache.addAll(iconAssets);
-}
-
 self.addEventListener('install', (event) =>
   event.waitUntil(
     caches
       .open(CACHE)
       .then(async (cache) => {
         await cache.addAll(CORE);
-        await cacheIconThemes(cache);
       })
       .then(() => self.skipWaiting()),
   ),
