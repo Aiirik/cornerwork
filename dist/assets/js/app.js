@@ -3763,10 +3763,15 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
   }
   function syncWorkoutLayout() {
     const viewport = $('.workout');
+    const touchScreen = window.matchMedia('(pointer: coarse)').matches;
     const layout = settings.autoLayout
-      ? viewport && viewport.clientWidth >= 760 && viewport.clientHeight >= 480
-        ? 'landscape'
-        : 'standard'
+      ? touchScreen
+        ? window.matchMedia('(orientation: landscape)').matches
+          ? 'landscape'
+          : 'standard'
+        : viewport && viewport.clientWidth >= 760 && viewport.clientHeight >= 480
+          ? 'landscape'
+          : 'standard'
       : settings.displayMode;
     document.body.classList.toggle('compact-workout', layout === 'compact');
     document.body.classList.toggle('landscape-workout', layout === 'landscape');
@@ -3845,7 +3850,9 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         visibleBottom = viewportRect.bottom - parseFloat(style.paddingBottom) - inset,
         availableWidth = Math.max(1, visibleRight - visibleLeft),
         availableHeight = Math.max(1, visibleBottom - visibleTop),
-        mobileLayout = window.matchMedia('(max-width: 820px)').matches;
+        mobileLayout = window.matchMedia(
+          '(max-width: 820px), (pointer: coarse) and (orientation: landscape) and (max-height: 500px)',
+        ).matches;
       const measureContent = () => {
         const rect = content.getBoundingClientRect();
         let left = rect.left,

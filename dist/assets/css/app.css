@@ -2581,3 +2581,126 @@ body.compact-round-labels .round-focus-short {
     font-size: 11px;
   }
 }
+/* Phones have much less height sideways; preserve room for both large display columns. */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  body.landscape-workout .app {
+    display: block;
+    height: 100dvh;
+  }
+  body.landscape-workout .setup:not(.drawer) {
+    display: none;
+  }
+  body.landscape-workout .stage {
+    height: 100dvh;
+    padding: 5px max(12px, env(safe-area-inset-right)) 5px max(12px, env(safe-area-inset-left));
+  }
+  body.landscape-workout .topbar {
+    position: relative;
+    min-height: 38px;
+    padding-bottom: 0;
+  }
+  body.landscape-workout .top-actions {
+    display: contents;
+  }
+  body.landscape-workout .mobile-settings {
+    display: block;
+    order: 1;
+  }
+  body.landscape-workout .mobile-settings button {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 6px 10px;
+  }
+  body.landscape-workout .setup.drawer {
+    display: flex;
+    position: fixed;
+    inset: 48px 12px 6px;
+    z-index: 30;
+    width: auto;
+    height: auto;
+    max-height: none;
+    overflow-y: auto;
+  }
+  body.landscape-workout .settings-page {
+    top: 48px;
+    max-height: calc(100dvh - 54px);
+  }
+  body.landscape-workout .topbar .brand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  body.landscape-workout .topbar .mark {
+    width: 90px;
+    height: 38px;
+  }
+  body.landscape-workout .topbar .volume-control {
+    order: 3;
+    margin-left: auto;
+  }
+  body.landscape-workout .topbar .settings-btn {
+    order: 4;
+  }
+  body.landscape-workout .workout {
+    padding: 0;
+  }
+  body.landscape-workout .workout-display {
+    column-gap: 12px;
+  }
+  body.landscape-workout .workout-display .clock-column {
+    gap: 2px;
+  }
+  body.landscape-workout .workout-display .phase {
+    font-size: 11px;
+  }
+  body.landscape-workout .workout-display .workout-stats,
+  body.landscape-workout .workout-display .workout-left {
+    font-size: 10px;
+  }
+  body.landscape-workout .workout-summary {
+    margin: 0 0 3px;
+    gap: 4px;
+  }
+  body.landscape-workout .summary-pill {
+    padding: 2px 6px;
+    font-size: 9px;
+  }
+  body.landscape-workout .timeline {
+    width: 100%;
+    transform: none;
+  }
+  body.landscape-workout .round-marker .round-pip,
+  body.landscape-workout.compact-round-labels .round-marker .round-pip {
+    height: 24px;
+    padding: 1px 3px;
+  }
+  body.landscape-workout .round-focus-label {
+    font-size: 9px;
+  }
+  body.landscape-workout .workout > .center .controls {
+    width: 100%;
+    margin-top: 5px;
+    gap: 8px;
+  }
+  body.landscape-workout .controls .circle,
+  body.landscape-workout .controls .primary {
+    height: 44px;
+  }
+  body.landscape-workout .controls .circle {
+    width: 58px;
+    flex: 0 0 58px;
+  }
+  body.landscape-workout .controls .primary {
+    min-width: 0;
+    flex: 1;
+    gap: 2px;
+    font-size: 14px;
+  }
+  body.landscape-workout .mobile-audio-note {
+    display: block;
+    margin-top: 2px;
+    font-size: 9px;
+  }
+}
