@@ -2650,19 +2650,14 @@ body.compact-round-labels .round-focus-short {
     column-gap: 12px;
   }
   body.landscape-workout .workout-display .clock-column {
-    gap: 10px;
-  }
-  body.landscape-workout .workout-display .timer {
-    margin-top: 12px;
-    line-height: 1.05;
+    gap: 6px;
   }
   body.landscape-workout .timer-digit,
   body.landscape-workout .timer-colon {
-    transform: none;
+    transform: translateY(-0.13em);
   }
   body.landscape-workout .workout-display .phase {
     font-size: 11px;
-    margin-bottom: 8px;
   }
   body.landscape-workout .workout-display .workout-stats,
   body.landscape-workout .workout-display .workout-left {
