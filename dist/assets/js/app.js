@@ -482,6 +482,8 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     displayMode: 'standard',
     autoLayout: false,
     landscapeSide: 'clock-left',
+    mobileViewLocked: false,
+    mobileLockedLayout: 'standard',
     appIconTheme: 'default',
     headerIconShape: 'square',
     brandLayout: 'default',
@@ -3694,6 +3696,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     ['sidebarShortcutToggle', settings.sidebarShortcuts],
     ['showFullscreen', settings.showFullscreen],
     ['autoLayout', settings.autoLayout],
+    ['mobileViewLock', settings.mobileViewLocked],
     ['compactRoundLabels', settings.compactRoundLabels],
     ['voice', settings.voice],
     ['clapperEnabled', settings.clapperEnabled],
@@ -3763,27 +3766,32 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
   }
   function syncWorkoutLayout() {
     const viewport = $('.workout');
-    const touchScreen = window.matchMedia('(pointer: coarse)').matches;
-    const layout = settings.autoLayout
-      ? touchScreen
-        ? window.matchMedia('(orientation: landscape)').matches
+    const mobile = window.matchMedia('(pointer: coarse) and (max-width: 1100px)').matches;
+    const layout = mobile
+      ? settings.mobileViewLocked
+        ? settings.mobileLockedLayout === 'landscape'
           ? 'landscape'
           : 'standard'
-        : viewport && viewport.clientWidth >= 760 && viewport.clientHeight >= 480
+        : window.matchMedia('(orientation: landscape)').matches
           ? 'landscape'
           : 'standard'
-      : settings.displayMode;
+      : settings.autoLayout
+        ? viewport && viewport.clientWidth >= 760 && viewport.clientHeight >= 480
+          ? 'landscape'
+          : 'standard'
+        : settings.displayMode;
+    document.body.classList.toggle('mobile-workout', mobile);
     document.body.classList.toggle('compact-workout', layout === 'compact');
     document.body.classList.toggle('landscape-workout', layout === 'landscape');
     document.body.classList.toggle(
       'landscape-reverse',
-      layout === 'landscape' && settings.landscapeSide === 'clock-right',
+      layout === 'landscape' && !mobile && settings.landscapeSide === 'clock-right',
     );
     $('#landscapeSideRow').hidden = layout !== 'landscape';
     const group = $('.segmented[data-setting="displayMode"]');
     group.classList.toggle('auto-layout-selected', !!settings.autoLayout);
     group.querySelectorAll('button').forEach((button) => {
-      button.disabled = !!settings.autoLayout;
+      button.disabled = !!settings.autoLayout && !mobile;
       button.classList.toggle('active', button.dataset.value === layout);
     });
     return layout;
@@ -4162,6 +4170,14 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         if (b.id === 'shortcutLabels') settings.shortcutLabels = on;
         if (b.id === 'showFullscreen') settings.showFullscreen = on;
         if (b.id === 'autoLayout') settings.autoLayout = on;
+        if (b.id === 'mobileViewLock') {
+          if (on) {
+            settings.mobileLockedLayout = document.body.classList.contains('landscape-workout')
+              ? 'landscape'
+              : 'standard';
+          }
+          settings.mobileViewLocked = on;
+        }
         if (b.id === 'compactRoundLabels') settings.compactRoundLabels = on;
         if (b.id === 'sidebarShortcutToggle') {
           settings.sidebarShortcuts = on;
@@ -4169,7 +4185,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         }
         render();
         saveSettings();
-        if (b.id === 'autoLayout') fitWorkoutToViewport();
+        if (b.id === 'autoLayout' || b.id === 'mobileViewLock') fitWorkoutToViewport();
       }),
   );
   $('#speechRate').oninput = () => {
@@ -4427,6 +4443,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       ['sidebarShortcutToggle', settings.sidebarShortcuts],
       ['showFullscreen', settings.showFullscreen],
       ['autoLayout', settings.autoLayout],
+      ['mobileViewLock', settings.mobileViewLocked],
       ['compactRoundLabels', settings.compactRoundLabels],
       ['voice', settings.voice],
       ['clapperEnabled', settings.clapperEnabled],

@@ -679,6 +679,18 @@ button {
 #landscapeSideRow[hidden] {
   display: none;
 }
+#mobileViewLockRow {
+  display: none;
+}
+@media (pointer: coarse) and (max-width: 1100px) {
+  .layout-setting-row,
+  #autoLayoutRow {
+    display: none;
+  }
+  #mobileViewLockRow {
+    display: flex;
+  }
+}
 .segmented.auto-layout-selected {
   opacity: 0.55;
 }
@@ -2582,37 +2594,37 @@ body.compact-round-labels .round-focus-short {
   }
 }
 /* Phones have much less height sideways; preserve room for both large display columns. */
-@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
-  body.landscape-workout .app {
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) and (max-width: 1100px) {
+  body.mobile-workout .app {
     display: block;
     height: 100dvh;
   }
-  body.landscape-workout .setup:not(.drawer) {
+  body.mobile-workout .setup:not(.drawer) {
     display: none;
   }
-  body.landscape-workout .stage {
+  body.mobile-workout .stage {
     height: 100dvh;
     padding: 5px max(12px, env(safe-area-inset-right)) 5px max(12px, env(safe-area-inset-left));
   }
-  body.landscape-workout .topbar {
+  body.mobile-workout .topbar {
     position: relative;
     min-height: 38px;
     padding-bottom: 0;
   }
-  body.landscape-workout .top-actions {
+  body.mobile-workout .top-actions {
     display: contents;
   }
-  body.landscape-workout .mobile-settings {
+  body.mobile-workout .mobile-settings {
     display: block;
     order: 1;
   }
-  body.landscape-workout .mobile-settings button {
+  body.mobile-workout .mobile-settings button {
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--panel);
     padding: 6px 10px;
   }
-  body.landscape-workout .setup.drawer {
+  body.mobile-workout .setup.drawer {
     display: flex;
     position: fixed;
     inset: 48px 12px 6px;
@@ -2622,28 +2634,28 @@ body.compact-round-labels .round-focus-short {
     max-height: none;
     overflow-y: auto;
   }
-  body.landscape-workout .settings-page {
+  body.mobile-workout .settings-page {
     top: 48px;
     max-height: calc(100dvh - 54px);
   }
-  body.landscape-workout .topbar .brand {
+  body.mobile-workout .topbar .brand {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
   }
-  body.landscape-workout .topbar .mark {
+  body.mobile-workout .topbar .mark {
     width: 90px;
     height: 38px;
   }
-  body.landscape-workout .topbar .volume-control {
+  body.mobile-workout .topbar .volume-control {
     order: 3;
     margin-left: auto;
   }
-  body.landscape-workout .topbar .settings-btn {
+  body.mobile-workout .topbar .settings-btn {
     order: 4;
   }
-  body.landscape-workout .workout {
+  body.mobile-workout .workout {
     padding: 0;
   }
   body.landscape-workout .workout-display {
@@ -2707,5 +2719,14 @@ body.compact-round-labels .round-focus-short {
     display: block;
     margin-top: 5px;
     font-size: 9px;
+  }
+}
+@media (pointer: coarse) and (orientation: portrait) and (max-width: 820px) {
+  .controls .circle {
+    width: 76px;
+    flex-basis: 76px;
+  }
+  .controls.show-reset {
+    grid-template-columns: 76px minmax(0, 1fr) 76px;
   }
 }

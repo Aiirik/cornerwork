@@ -59,7 +59,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=216" />
+    <link rel="stylesheet" href="assets/css/app.css?v=217" />
   </head>
   <body>
     <main class="app">
@@ -740,12 +740,23 @@
               ><button data-value="clock-right">Clock right</button>
             </div>
           </div>
-          <div class="setting-row">
+          <div class="setting-row" id="autoLayoutRow">
             <span>Auto layout</span
             ><button
               class="switch"
               id="autoLayout"
               aria-label="Automatically use Landscape when sideways or when the workout area is large"
+              aria-pressed="false"
+            >
+              <i></i>
+            </button>
+          </div>
+          <div class="setting-row" id="mobileViewLockRow">
+            <span>Lock view</span
+            ><button
+              class="switch"
+              id="mobileViewLock"
+              aria-label="Keep the current workout view when the phone rotates"
               aria-pressed="false"
             >
               <i></i>
@@ -1334,8 +1345,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=252"></script>
+    <script type="module" src="assets/js/app.js?v=253"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=258" defer></script>
+    <script src="assets/js/bootstrap.js?v=259" defer></script>
   </body>
 </html>
