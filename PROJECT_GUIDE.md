@@ -199,7 +199,7 @@ These rules are easy to break and should be deliberately verified after related 
 - Normal page scrolling and overscroll are suppressed during the workout interface.
 - The Workout drawer and Settings popup must scroll internally when their content exceeds the viewport.
 - The volume panel overlays the interface instead of pushing controls or content.
-- Pinch zoom is locked by default, with an Accessibility setting to allow it.
+- Pinch zoom stays locked during workouts to avoid accidental scaling.
 - Desktop behavior must remain stable when a fix targets mobile.
 
 ## Runtime architecture
@@ -261,7 +261,6 @@ Keep this boundary stable until a deliberate module migration is planned and tes
 | `cornerwork-active-selection`         | Selected preset description                                   |
 | `cornerwork-custom-workout`           | Last custom setup before loading a preset                     |
 | `cornerwork-workout-fold-state`       | Last open Workout panel groups                                |
-| `cornerwork-allow-page-zoom`          | Mobile zoom accessibility preference                          |
 
 Session storage is used for pending shared workouts, active program sessions, and service-worker update coordination.
 

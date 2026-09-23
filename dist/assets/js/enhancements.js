@@ -2364,7 +2364,7 @@
     const accessibility = document.createElement('div');
     accessibility.className = 'settings-group enhanced-settings';
     accessibility.innerHTML =
-      '<div class="settings-title"><h2>Accessibility</h2><button class="help settings-help" aria-label="About accessibility settings">?</button><div class="settings-tip" role="tooltip"><span><strong>Phone vibration:</strong> Vibrates supported phones during important phase changes.</span><span><strong>High contrast:</strong> Improves separation between text, controls, and the background.</span></div></div><div class="enhanced-row"><label>Phone vibration</label><button class="enhanced-switch" data-setting="haptics"><i></i></button></div><div class="enhanced-row"><label>High contrast</label><button class="enhanced-switch" data-setting="highContrast"><i></i></button></div>';
+      '<div class="settings-title"><h2>Accessibility</h2><button class="help settings-help" aria-label="About accessibility settings">?</button><div class="settings-tip" role="tooltip"><span><strong>High contrast:</strong> Improves separation between text, controls, and the background.</span></div></div><div class="enhanced-row"><label>High contrast</label><button class="enhanced-switch" data-setting="highContrast"><i></i></button></div>';
     keyboard.before(accessibility);
     accessibility.querySelectorAll('[data-setting]').forEach((button) => {
       const key = button.dataset.setting;

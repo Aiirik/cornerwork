@@ -510,7 +510,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     cueFrequency: 5,
     recoveryInstructions: false,
     guidedBeginner: false,
-    haptics: true,
     highContrast: false,
     endlessMode: false,
     endlessWarmup: 30,
@@ -734,7 +733,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     'cueFrequency',
     'recoveryInstructions',
     'guidedBeginner',
-    'haptics',
     'highContrast',
   ];
   let presets = [];
@@ -1105,7 +1103,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       'clockSize',
       'clockFont',
       'calloutSize',
-      'haptics',
       'highContrast',
     ].forEach((key) => delete clean[key]);
     return clean;
@@ -2645,9 +2642,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     }
     say(message, finishRoundAnnouncement);
   }
-  function vibrate(pattern) {
-    if (settings.haptics && navigator.vibrate) navigator.vibrate(pattern);
-  }
   function activateRound() {
     phase = 'work';
     time = val('roundTime');
@@ -2670,7 +2664,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         ? Math.floor(val('roundTime') * (0.42 + sessionRandom() * 0.25))
         : -1;
     newCombo(false);
-    vibrate([100, 60, 100]);
     announceRound();
   }
   function audioEngine() {
@@ -3313,7 +3306,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       };
       if (speechAvailable()) say('Punch out', beginBurst);
       else beginBurst();
-      vibrate([80, 40, 80, 40, 120]);
     }
     if (phase === 'work' && punchOutActive && time === punchOutUntil) {
       punchOutActive = false;
@@ -3328,7 +3320,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       cancelSpeech();
       clearInterval(comboTick);
       playWarning();
-      vibrate([140, 80, 140]);
       const resume = setTimeout(
         () => {
           if (running && phase === 'work') beginComboCadence();
@@ -3351,14 +3342,12 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         if (!settings.endlessMode && round >= val('rounds')) {
           phase = 'complete';
           time = 0;
-          vibrate([180, 90, 180]);
           roundEndBell(() => say('Workout complete. Great work.'));
         } else if (nextRest > 0) {
           if (settings.endlessMode) endlessLevelsCompleted = round;
           phase = 'rest';
           time = nextRest;
           running = true;
-          vibrate([160, 80, 160]);
           roundEndBell(() =>
             say(restCall, () => {
               if (settings.recoveryInstructions && running && phase === 'rest')
@@ -3473,7 +3462,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     betweenCue = '';
     pendingMovement = '';
     render();
-    vibrate([180, 90, 180]);
     roundEndBell(() => say('Endless run complete. ' + pointsLabel(scoreTotal) + '.'));
   }
   function cancelPrimaryHold() {
