@@ -482,7 +482,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     displayMode: 'standard',
     autoLayout: false,
     landscapeSide: 'clock-left',
-    mobileViewLocked: false,
     appIconTheme: 'default',
     headerIconShape: 'square',
     brandLayout: 'default',
@@ -3539,6 +3538,11 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         shortcuts: { ...settings.shortcuts, ...(saved.shortcuts || {}) },
         workout: { ...settings.workout, ...(saved.workout || {}) },
       };
+      if ('mobileViewLocked' in settings || 'mobileLockedLayout' in settings) {
+        delete settings.mobileViewLocked;
+        delete settings.mobileLockedLayout;
+        saveSettings();
+      }
       if (!saved.brandLayoutHeaderV3) {
         settings.brandLayout = 'default';
         settings.brandLayoutHeaderV3 = true;
@@ -3695,7 +3699,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     ['sidebarShortcutToggle', settings.sidebarShortcuts],
     ['showFullscreen', settings.showFullscreen],
     ['autoLayout', settings.autoLayout],
-    ['mobileViewLock', settings.mobileViewLocked],
     ['compactRoundLabels', settings.compactRoundLabels],
     ['voice', settings.voice],
     ['clapperEnabled', settings.clapperEnabled],
@@ -4141,7 +4144,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
   $$('.switch').forEach(
     (b) =>
       (b.onclick = () => {
-        if (b.id === 'mobileViewLock') return;
         b.classList.toggle('on');
         const on = b.classList.contains('on');
         b.setAttribute('aria-pressed', on);
@@ -4176,51 +4178,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         if (b.id === 'autoLayout') fitWorkoutToViewport();
       }),
   );
-  const rotationLockButton = $('#mobileViewLock');
-  const rotationLockNote = $('#mobileRotationNote');
-  const rotationApi = screen.orientation;
-  const canLockRotation = typeof rotationApi?.lock === 'function';
-  if (!canLockRotation) {
-    rotationLockButton.hidden = true;
-    rotationLockNote.textContent =
-      'Safari cannot lock this app’s rotation. Use Portrait Orientation Lock in Control Center to keep it upright.';
-    rotationLockNote.hidden = false;
-    if (settings.mobileViewLocked) {
-      settings.mobileViewLocked = false;
-      rotationLockButton.classList.remove('on');
-      rotationLockButton.setAttribute('aria-pressed', 'false');
-      saveSettings();
-    }
-  } else {
-    const updateRotationLock = (locked) => {
-      settings.mobileViewLocked = locked;
-      rotationLockButton.classList.toggle('on', locked);
-      rotationLockButton.setAttribute('aria-pressed', String(locked));
-      saveSettings();
-    };
-    const lockCurrentOrientation = async () => {
-      const direction = window.matchMedia('(orientation: landscape)').matches
-        ? 'landscape'
-        : 'portrait';
-      try {
-        await rotationApi.lock(direction);
-        rotationLockNote.hidden = true;
-        updateRotationLock(true);
-      } catch (error) {
-        rotationLockNote.textContent = 'This browser may require full screen to lock rotation.';
-        rotationLockNote.hidden = false;
-        updateRotationLock(false);
-      }
-    };
-    rotationLockButton.onclick = () => {
-      if (settings.mobileViewLocked) {
-        rotationApi.unlock?.();
-        rotationLockNote.hidden = true;
-        updateRotationLock(false);
-      } else lockCurrentOrientation();
-    };
-    if (settings.mobileViewLocked) lockCurrentOrientation();
-  }
   $('#speechRate').oninput = () => {
     settings.speechRate = +$('#speechRate').value;
     $('#speechRateValue').textContent = settings.speechRate;
@@ -4476,7 +4433,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       ['sidebarShortcutToggle', settings.sidebarShortcuts],
       ['showFullscreen', settings.showFullscreen],
       ['autoLayout', settings.autoLayout],
-      ['mobileViewLock', settings.mobileViewLocked],
       ['compactRoundLabels', settings.compactRoundLabels],
       ['voice', settings.voice],
       ['clapperEnabled', settings.clapperEnabled],
