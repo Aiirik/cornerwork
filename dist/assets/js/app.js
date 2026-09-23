@@ -483,7 +483,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     autoLayout: false,
     landscapeSide: 'clock-left',
     mobileViewLocked: false,
-    mobileLockedLayout: 'standard',
     appIconTheme: 'default',
     headerIconShape: 'square',
     brandLayout: 'default',
@@ -3768,13 +3767,9 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     const viewport = $('.workout');
     const mobile = window.matchMedia('(pointer: coarse) and (max-width: 1100px)').matches;
     const layout = mobile
-      ? settings.mobileViewLocked
-        ? settings.mobileLockedLayout === 'landscape'
-          ? 'landscape'
-          : 'standard'
-        : window.matchMedia('(orientation: landscape)').matches
-          ? 'landscape'
-          : 'standard'
+      ? window.matchMedia('(orientation: landscape)').matches
+        ? 'landscape'
+        : 'standard'
       : settings.autoLayout
         ? viewport && viewport.clientWidth >= 760 && viewport.clientHeight >= 480
           ? 'landscape'
@@ -4146,6 +4141,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
   $$('.switch').forEach(
     (b) =>
       (b.onclick = () => {
+        if (b.id === 'mobileViewLock') return;
         b.classList.toggle('on');
         const on = b.classList.contains('on');
         b.setAttribute('aria-pressed', on);
@@ -4170,14 +4166,6 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         if (b.id === 'shortcutLabels') settings.shortcutLabels = on;
         if (b.id === 'showFullscreen') settings.showFullscreen = on;
         if (b.id === 'autoLayout') settings.autoLayout = on;
-        if (b.id === 'mobileViewLock') {
-          if (on) {
-            settings.mobileLockedLayout = document.body.classList.contains('landscape-workout')
-              ? 'landscape'
-              : 'standard';
-          }
-          settings.mobileViewLocked = on;
-        }
         if (b.id === 'compactRoundLabels') settings.compactRoundLabels = on;
         if (b.id === 'sidebarShortcutToggle') {
           settings.sidebarShortcuts = on;
@@ -4185,9 +4173,54 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
         }
         render();
         saveSettings();
-        if (b.id === 'autoLayout' || b.id === 'mobileViewLock') fitWorkoutToViewport();
+        if (b.id === 'autoLayout') fitWorkoutToViewport();
       }),
   );
+  const rotationLockButton = $('#mobileViewLock');
+  const rotationLockNote = $('#mobileRotationNote');
+  const rotationApi = screen.orientation;
+  const canLockRotation = typeof rotationApi?.lock === 'function';
+  if (!canLockRotation) {
+    rotationLockButton.hidden = true;
+    rotationLockNote.textContent =
+      'Safari cannot lock this app’s rotation. Use Portrait Orientation Lock in Control Center to keep it upright.';
+    rotationLockNote.hidden = false;
+    if (settings.mobileViewLocked) {
+      settings.mobileViewLocked = false;
+      rotationLockButton.classList.remove('on');
+      rotationLockButton.setAttribute('aria-pressed', 'false');
+      saveSettings();
+    }
+  } else {
+    const updateRotationLock = (locked) => {
+      settings.mobileViewLocked = locked;
+      rotationLockButton.classList.toggle('on', locked);
+      rotationLockButton.setAttribute('aria-pressed', String(locked));
+      saveSettings();
+    };
+    const lockCurrentOrientation = async () => {
+      const direction = window.matchMedia('(orientation: landscape)').matches
+        ? 'landscape'
+        : 'portrait';
+      try {
+        await rotationApi.lock(direction);
+        rotationLockNote.hidden = true;
+        updateRotationLock(true);
+      } catch (error) {
+        rotationLockNote.textContent = 'This browser may require full screen to lock rotation.';
+        rotationLockNote.hidden = false;
+        updateRotationLock(false);
+      }
+    };
+    rotationLockButton.onclick = () => {
+      if (settings.mobileViewLocked) {
+        rotationApi.unlock?.();
+        rotationLockNote.hidden = true;
+        updateRotationLock(false);
+      } else lockCurrentOrientation();
+    };
+    if (settings.mobileViewLocked) lockCurrentOrientation();
+  }
   $('#speechRate').oninput = () => {
     settings.speechRate = +$('#speechRate').value;
     $('#speechRateValue').textContent = settings.speechRate;

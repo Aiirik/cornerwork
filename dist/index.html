@@ -59,7 +59,7 @@
       type="font/woff"
       crossorigin
     />
-    <link rel="stylesheet" href="assets/css/app.css?v=217" />
+    <link rel="stylesheet" href="assets/css/app.css?v=218" />
   </head>
   <body>
     <main class="app">
@@ -752,11 +752,16 @@
             </button>
           </div>
           <div class="setting-row" id="mobileViewLockRow">
-            <span>Lock view</span
+            <span
+              >Lock rotation<small
+                id="mobileRotationNote"
+                class="mobile-rotation-note"
+                hidden
+              ></small></span
             ><button
               class="switch"
               id="mobileViewLock"
-              aria-label="Keep the current workout view when the phone rotates"
+              aria-label="Lock the phone to its current orientation"
               aria-pressed="false"
             >
               <i></i>
@@ -1345,8 +1350,8 @@
       </div>
     </section>
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" defer></script>
-    <script type="module" src="assets/js/app.js?v=253"></script>
+    <script type="module" src="assets/js/app.js?v=254"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" defer></script>
-    <script src="assets/js/bootstrap.js?v=259" defer></script>
+    <script src="assets/js/bootstrap.js?v=260" defer></script>
   </body>
 </html>

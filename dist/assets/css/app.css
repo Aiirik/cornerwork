@@ -682,6 +682,17 @@ button {
 #mobileViewLockRow {
   display: none;
 }
+.mobile-rotation-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.mobile-rotation-note[hidden],
+#mobileViewLock[hidden] {
+  display: none;
+}
 @media (pointer: coarse) and (max-width: 1100px) {
   .layout-setting-row,
   #autoLayoutRow {
@@ -689,6 +700,9 @@ button {
   }
   #mobileViewLockRow {
     display: flex;
+  }
+  .settings-page .settings-collapsible.collapsed > #mobileViewLockRow {
+    display: none;
   }
 }
 .segmented.auto-layout-selected {
