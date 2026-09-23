@@ -2650,14 +2650,19 @@ body.compact-round-labels .round-focus-short {
     column-gap: 12px;
   }
   body.landscape-workout .workout-display .clock-column {
-    gap: 8px;
+    gap: 10px;
+  }
+  body.landscape-workout .workout-display .timer {
+    margin-top: 12px;
+    line-height: 1.05;
   }
   body.landscape-workout .timer-digit,
   body.landscape-workout .timer-colon {
-    transform: translateY(-0.04em);
+    transform: none;
   }
   body.landscape-workout .workout-display .phase {
     font-size: 11px;
+    margin-bottom: 8px;
   }
   body.landscape-workout .workout-display .workout-stats,
   body.landscape-workout .workout-display .workout-left {
@@ -2691,11 +2696,11 @@ body.compact-round-labels .round-focus-short {
   }
   body.landscape-workout .controls .circle,
   body.landscape-workout .controls .primary {
-    height: 44px;
+    height: 50px;
   }
   body.landscape-workout .controls .circle {
-    width: 58px;
-    flex: 0 0 58px;
+    width: 96px;
+    flex: 0 0 96px;
   }
   body.landscape-workout .controls .primary {
     min-width: 0;
