@@ -3784,7 +3784,44 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     return layout;
   }
   let workoutFitFrame = 0;
+  let calloutFitFrame = 0;
   let lastFittedCenterSize = null;
+  function fitCalloutToSpace() {
+    const wrap = $('.combo-wrap'),
+      primary = $('#combo'),
+      secondary = $('#comboNumbers');
+    if (!wrap || !primary || !secondary) return;
+    wrap.style.removeProperty('--callout-fit');
+    const area = wrap.getBoundingClientRect();
+    if (!area.width || !area.height) return;
+    const fits = () => {
+      const main = primary.getBoundingClientRect(),
+        detailVisible = getComputedStyle(secondary).display !== 'none',
+        detail = detailVisible ? secondary.getBoundingClientRect() : null;
+      return (
+        main.top >= area.top - 1 &&
+        (detail || main).bottom <= area.bottom + 1 &&
+        primary.scrollWidth <= primary.clientWidth + 1 &&
+        (!detailVisible || secondary.scrollWidth <= secondary.clientWidth + 1)
+      );
+    };
+    if (fits()) return;
+    let low = 0.08,
+      high = 1;
+    // The slider is the preferred maximum. Shrink both formats together only
+    // when this callout would leave its reserved area or overlap the footer.
+    for (let attempt = 0; attempt < 11; attempt++) {
+      const middle = (low + high) / 2;
+      wrap.style.setProperty('--callout-fit', middle.toFixed(4));
+      if (fits()) low = middle;
+      else high = middle;
+    }
+    wrap.style.setProperty('--callout-fit', low.toFixed(4));
+  }
+  function scheduleCalloutFit() {
+    cancelAnimationFrame(calloutFitFrame);
+    calloutFitFrame = requestAnimationFrame(fitCalloutToSpace);
+  }
   function fitWorkoutToViewport() {
     cancelAnimationFrame(workoutFitFrame);
     workoutFitFrame = requestAnimationFrame(() => {
@@ -3798,6 +3835,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       content.style.setProperty('--workout-shift-y', '0px');
       const timer = content.querySelector('.timer');
       timer?.style.removeProperty('--clock-fit-cap');
+      fitCalloutToSpace();
       const style = getComputedStyle(viewport),
         viewportRect = viewport.getBoundingClientRect(),
         inset = 4,
@@ -4836,17 +4874,29 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       ? new ResizeObserver((entries) => {
           const content = $('.center');
           const viewportChanged = entries.some((entry) => entry.target === $('.workout'));
+          const calloutChanged = entries.some((entry) => entry.target === $('.combo-wrap'));
           const contentChanged =
             !lastFittedCenterSize ||
             content.offsetWidth !== lastFittedCenterSize.width ||
             content.offsetHeight !== lastFittedCenterSize.height;
           if (viewportChanged || contentChanged) fitWorkoutToViewport();
+          else if (calloutChanged) scheduleCalloutFit();
         })
       : null;
   if (fitObserver) {
     fitObserver.observe($('.workout'));
     fitObserver.observe($('.center'));
+    fitObserver.observe($('.combo-wrap'));
   }
+  const calloutObserver = new MutationObserver(scheduleCalloutFit);
+  calloutObserver.observe($('#combo'), { childList: true, characterData: true, subtree: true });
+  calloutObserver.observe($('#comboNumbers'), {
+    childList: true,
+    characterData: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['style'],
+  });
   window.addEventListener('resize', fitWorkoutToViewport);
   window.addEventListener('orientationchange', fitWorkoutToViewport);
   window.visualViewport?.addEventListener('resize', fitWorkoutToViewport);

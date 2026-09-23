@@ -354,21 +354,24 @@ button {
   flex-direction: column;
   justify-content: center;
   margin: 15px 0;
+  overflow: hidden;
 }
 .combo {
-  font-size: calc(clamp(34px, 5.5vw, 76px) * var(--callout-scale));
+  font-size: calc(clamp(34px, 5.5vw, 76px) * var(--callout-scale) * var(--callout-fit, 1));
   line-height: 1.08;
   font-weight: 900;
   letter-spacing: -0.045em;
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 .combo-numbers {
   margin-top: 14px;
   color: var(--muted);
-  font-size: calc(16px * var(--callout-scale));
+  font-size: calc(16px * var(--callout-scale) * var(--callout-fit, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 .next {
   margin-top: 30px;
@@ -2197,7 +2200,7 @@ button *,
     );
   }
   .combo {
-    font-size: calc(clamp(32px, 10vw, 52px) * var(--callout-scale));
+    font-size: calc(clamp(32px, 10vw, 52px) * var(--callout-scale) * var(--callout-fit, 1));
   }
 }
 @media (max-width: 820px) and (max-height: 700px) {
@@ -2315,7 +2318,7 @@ body:not(.compact-workout) .workout > .center {
 }
 body:not(.compact-workout) .workout > .center .combo-wrap {
   min-height: 112px;
-  flex: 1 1 auto;
+  flex: 1 1 0;
 }
 body:not(.compact-workout) .workout-footer {
   display: block;
@@ -2357,11 +2360,12 @@ body.compact-workout .workout-display .workout-left {
 }
 body.compact-workout .workout-display .combo-wrap {
   grid-area: combo;
-  min-height: clamp(72px, 12dvh, 118px);
+  height: clamp(72px, 12dvh, 118px);
+  min-height: 0;
   margin: 0;
 }
 body.compact-workout .workout-display .combo {
-  font-size: calc(clamp(28px, 4.5vw, 58px) * var(--callout-scale));
+  font-size: calc(clamp(28px, 4.5vw, 58px) * var(--callout-scale) * var(--callout-fit, 1));
 }
 body.compact-workout .workout-display .workout-stats {
   grid-area: stats;
@@ -2422,7 +2426,7 @@ body.landscape-workout .workout-display .combo-wrap {
   align-self: stretch;
 }
 body.landscape-workout .workout-display .combo {
-  font-size: calc(clamp(48px, 6vw, 110px) * var(--callout-scale));
+  font-size: calc(clamp(48px, 6vw, 110px) * var(--callout-scale) * var(--callout-fit, 1));
 }
 body.landscape-reverse .workout-display .clock-column {
   grid-column: 2;
