@@ -18,7 +18,7 @@
   document.head.appendChild(tooltipStyle);
 
   const core = document.createElement('script');
-  core.src = 'assets/js/enhancements.js?v=264';
+  core.src = 'assets/js/enhancements.js?v=265';
   core.defer = true;
   core.addEventListener('load', () => {
     const endless = document.createElement('script');

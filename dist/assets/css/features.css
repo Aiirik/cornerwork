@@ -1592,7 +1592,8 @@ select {
   position: relative;
   z-index: 1;
 }
-.advanced-fold-body > section:has(.help.open) {
+.advanced-fold-body
+  > section:has(.title-help.help-open, .title-help:hover, .title-help:focus-within) {
   z-index: 20;
 }
 .settings-page .settings-shell {

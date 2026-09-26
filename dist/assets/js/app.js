@@ -517,7 +517,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
     buttonTextBrightness: 98,
     whiteOutlineText: false,
     accentColor: 'red',
-    includeTypes: ['punch', 'defense', 'footwork'],
+    includeTypes: ['punch'],
     workout: { rounds: 6, warmupTime: 45, roundTime: 180, restTime: 30, pace: 6 },
     allowedCombos: null,
     shortcuts: { start: 'Space', next: 'N', restart: 'R', mute: 'M' },
@@ -2361,7 +2361,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       ? 0
       : settings.repeats === 'more'
         ? 2
-        : settings.repeats === 'some' && sessionRandom() < 0.5
+        : settings.repeats === 'some' && sessionRandom() < 0.2
           ? 1
           : 0;
     renderCombo();
@@ -3317,16 +3317,7 @@ import { createVoiceEngine } from './voice-engine.js?v=234';
       else endBurst();
     }
     if (phase === 'work' && time > 0 && settings.clapperEnabled && time === +settings.clapperTime) {
-      cancelSpeech();
-      clearInterval(comboTick);
       playWarning();
-      const resume = setTimeout(
-        () => {
-          if (running && phase === 'work') beginComboCadence();
-        },
-        (settings.warningHits - 1) * settings.warningSpacing + 300,
-      );
-      soundTimers.push(resume);
     }
     if (time <= 0) {
       clear();

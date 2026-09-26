@@ -81,6 +81,7 @@ Use these labels consistently in the interface and documentation:
 - Advanced combo setup: complexity, repeats, movement between combos, and unique rounds
 - Allowed-combo selection and custom combo creation
 - Optional round focuses and 30 or 60-second structured blocks
+- On a first launch, Custom includes only Punches. Existing saved technique choices remain unchanged.
 
 ### Workout execution
 
@@ -104,7 +105,7 @@ Use these labels consistently in the interface and documentation:
 - Ready, warmup, work, rest, and complete phases
 - Spoken round announcements followed by the configured start sound
 - First combo hidden until the round announcement and start sound finish
-- Randomized compatible combos with duplicate avoidance and optional repeats
+- Randomized compatible combos with duplicate avoidance and optional repeats. Some repeats a newly selected combo once about 20% of the time; More repeats each selection twice.
 - Optional coaching cues and compatible between-combo movement
 - Final-seconds warning and configurable round bells
 - Punch-out intervals, round focus labels, progress markers, and completion statistics
@@ -185,7 +186,7 @@ These rules are easy to break and should be deliberately verified after related 
 - Normal combo frequency begins after the complete spoken combination and any attached coaching cue finishes.
 - iPhone and iPad speech rate is compensated so it better matches desktop playback.
 - Round announcements use normal announcement timing, not combo readout speed.
-- Warning audio interrupts the current callout near the end of the round and then restores cadence.
+- Warning audio plays over an active callout near the end of the round without interrupting the coach or restarting cadence.
 - Custom workouts, Quick Start, Presets, and Programs all use the same configured round-start, final-warning, and round-end sound sequence. Starting a workout unlocks one reusable audio engine so delayed program instructions cannot prevent later bells on mobile.
 - Sound tests must use the currently selected fine-tuning values.
 
